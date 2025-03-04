@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -841,3 +842,58 @@ const ResumeBuilder = () => {
                       </CardContent>
                     </Card>
                   </TabsContent>
+                </Tabs>
+              </div>
+              
+              <div className="flex justify-between">
+                <Button
+                  variant="outline"
+                  onClick={handlePrevious}
+                  disabled={activeTab === "personal"}
+                >
+                  Previous
+                </Button>
+                
+                {activeTab === "objectives" ? (
+                  <Button onClick={handleGenerate} disabled={!formValid}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Generate Resume
+                  </Button>
+                ) : (
+                  <Button onClick={handleNext}>
+                    Next
+                  </Button>
+                )}
+              </div>
+            </div>
+            
+            {showLivePreview && (
+              <div className="lg:col-span-1">
+                <div className="sticky top-20">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Resume Preview</CardTitle>
+                      <CardDescription>
+                        Live preview of your resume
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <div className="border rounded-md overflow-hidden">
+                        <ResumePreviewContent
+                          data={getResumeData()}
+                          previewMode
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
+};
+
+export default ResumeBuilder;
