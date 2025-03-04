@@ -5,6 +5,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Download, ArrowLeft } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
 
 const ResumePreview = () => {
   const [searchParams] = useSearchParams();
@@ -35,12 +36,16 @@ const ResumePreview = () => {
 
   const handleDownload = () => {
     window.print();
+    toast({
+      title: "Downloading Resume",
+      description: "Your resume is being prepared for download"
+    });
   };
 
   const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boolean }) => {
     if (!data) return null;
     
-    const { personalInfo, education, experience, skills, objective } = data;
+    const { personalInfo, education, experience, skills, objective, projects } = data;
     
     return (
       <Card className={`p-8 bg-white shadow-lg print:shadow-none ${isPreview ? 'max-h-full overflow-auto' : 'max-w-3xl w-full'}`}>
@@ -78,6 +83,35 @@ const ResumePreview = () => {
                     <p className="text-sm text-right">{edu.graduationDate}</p>
                   </div>
                   {edu.score && <p className="text-sm text-muted-foreground mt-1">{edu.score}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {projects && projects.length > 0 && projects[0].title && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold border-b pb-1 mb-2">Projects</h3>
+            <div className="space-y-4">
+              {projects
+                .filter((proj: any) => proj.title.trim() !== "")
+                .map((proj: any) => (
+                <div key={proj.id}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium">{proj.title}</p>
+                      {proj.technologies && <p className="text-sm text-muted-foreground">{proj.technologies}</p>}
+                    </div>
+                    {proj.link && (
+                      <a href={proj.link} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
+                        View Project
+                      </a>
+                    )}
+                  </div>
+                  {proj.description && (
+                    <div className="text-sm mt-1" 
+                         dangerouslySetInnerHTML={{ __html: proj.description.replace(/\n/g, '<br/>') }} />
+                  )}
                 </div>
               ))}
             </div>
@@ -199,7 +233,7 @@ export const ResumePreviewContent = ({ data, templateId }: { data: any, template
   const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boolean }) => {
     if (!data) return null;
     
-    const { personalInfo, education, experience, skills, objective } = data;
+    const { personalInfo, education, experience, skills, objective, projects } = data;
     
     return (
       <Card className={`p-4 bg-white shadow-lg print:shadow-none ${isPreview ? 'max-h-full overflow-auto' : 'max-w-3xl w-full'}`}>
@@ -237,6 +271,33 @@ export const ResumePreviewContent = ({ data, templateId }: { data: any, template
                     <p className="text-xs text-right">{edu.graduationDate}</p>
                   </div>
                   {edu.score && <p className="text-xs text-muted-foreground mt-1">{edu.score}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {projects && projects.length > 0 && projects[0].title && (
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold border-b pb-1 mb-1">Projects</h3>
+            <div className="space-y-2">
+              {projects
+                .filter((proj: any) => proj.title.trim() !== "")
+                .map((proj: any) => (
+                <div key={proj.id}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium text-xs">{proj.title}</p>
+                      {proj.technologies && <p className="text-xs text-muted-foreground">{proj.technologies}</p>}
+                    </div>
+                    {proj.link && (
+                      <p className="text-xs text-primary">Link</p>
+                    )}
+                  </div>
+                  {proj.description && (
+                    <div className="text-xs mt-1" 
+                         dangerouslySetInnerHTML={{ __html: proj.description.replace(/\n/g, '<br/>') }} />
+                  )}
                 </div>
               ))}
             </div>

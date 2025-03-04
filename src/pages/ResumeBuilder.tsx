@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -27,7 +26,8 @@ import {
   GraduationCap,
   Briefcase,
   User,
-  Eye
+  Eye,
+  Code
 } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
@@ -50,6 +50,14 @@ interface Experience {
   startDate: string;
   endDate: string;
   description: string;
+}
+
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  technologies: string;
+  link: string;
 }
 
 interface PersonalInfo {
@@ -83,6 +91,8 @@ const countryCodes = [
   { value: "+39", label: "Italy (+39)" },
   { value: "+1", label: "Canada (+1)" },
 ];
+
+const STORAGE_KEY = "resume_builder_data";
 
 const ResumeBuilder = () => {
   const [searchParams] = useSearchParams();
@@ -123,6 +133,16 @@ const ResumeBuilder = () => {
       description: ""
     }
   ]);
+
+  const [projects, setProjects] = useState<Project[]>([
+    {
+      id: "proj1",
+      title: "",
+      description: "",
+      technologies: "",
+      link: ""
+    }
+  ]);
   
   const [skills, setSkills] = useState<Skills>({
     professional: "",
@@ -153,7 +173,59 @@ const ResumeBuilder = () => {
     };
     
     detectCountryCode();
+    loadSavedData();
   }, []);
+
+  const loadSavedData = () => {
+    try {
+      const savedData = localStorage.getItem(STORAGE_KEY);
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        
+        if (parsedData.personalInfo) setPersonalInfo(parsedData.personalInfo);
+        if (parsedData.education) setEducation(parsedData.education);
+        if (parsedData.experience) setExperience(parsedData.experience);
+        if (parsedData.projects) setProjects(parsedData.projects);
+        if (parsedData.skills) setSkills(parsedData.skills);
+        if (parsedData.objective) setObjective(parsedData.objective);
+        
+        toast({
+          title: "Data Loaded",
+          description: "Your previously saved resume data has been loaded."
+        });
+      }
+    } catch (error) {
+      console.error("Error loading saved data:", error);
+    }
+  };
+
+  const saveData = () => {
+    try {
+      const dataToSave = {
+        personalInfo,
+        education,
+        experience,
+        projects,
+        skills,
+        objective,
+        templateId
+      };
+      
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+      
+      toast({
+        title: "Resume Saved",
+        description: "Your resume has been saved to browser storage."
+      });
+    } catch (error) {
+      console.error("Error saving data:", error);
+      toast({
+        title: "Save Failed",
+        description: "Could not save your resume data.",
+        variant: "destructive"
+      });
+    }
+  };
 
   const getResumeData = () => {
     return {
@@ -163,6 +235,7 @@ const ResumeBuilder = () => {
       },
       education,
       experience,
+      projects,
       skills,
       objective,
       templateId
@@ -219,7 +292,7 @@ const ResumeBuilder = () => {
   }, [personalInfo, education, skills, objective]);
   
   const handleNext = () => {
-    const tabs = ["personal", "education", "experience", "skills", "objectives"];
+    const tabs = ["personal", "education", "experience", "projects", "skills", "objectives"];
     const currentIndex = tabs.indexOf(activeTab);
     
     if (currentIndex < tabs.length - 1) {
@@ -228,7 +301,7 @@ const ResumeBuilder = () => {
   };
   
   const handlePrevious = () => {
-    const tabs = ["personal", "education", "experience", "skills", "objectives"];
+    const tabs = ["personal", "education", "experience", "projects", "skills", "objectives"];
     const currentIndex = tabs.indexOf(activeTab);
     
     if (currentIndex > 0) {
@@ -286,6 +359,9 @@ const ResumeBuilder = () => {
     const resumeData = getResumeData();
     
     console.log("Generating resume with data:", resumeData);
+    
+    // Save data automatically when generating
+    saveData();
     
     toast({
       title: "Resume Generated!",
@@ -355,6 +431,37 @@ const ResumeBuilder = () => {
     ));
   };
   
+  const handleAddProject = () => {
+    const newProject: Project = {
+      id: `proj${projects.length + 1}`,
+      title: "",
+      description: "",
+      technologies: "",
+      link: ""
+    };
+    
+    setProjects([...projects, newProject]);
+  };
+  
+  const handleRemoveProject = (id: string) => {
+    if (projects.length <= 1) {
+      toast({
+        title: "Cannot Remove",
+        description: "You must have at least one project entry.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setProjects(projects.filter(proj => proj.id !== id));
+  };
+  
+  const handleProjectChange = (id: string, field: keyof Project, value: string) => {
+    setProjects(projects.map(proj => 
+      proj.id === id ? { ...proj, [field]: value } : proj
+    ));
+  };
+  
   const handleAddExperience = () => {
     const newExperience: Experience = {
       id: `exp${experience.length + 1}`,
@@ -415,6 +522,27 @@ const ResumeBuilder = () => {
             exp.id === context.id ? { ...exp, description: generatedContent } : exp
           ));
           break;
+          
+        case "projectDescription":
+          const projectTitle = projects.find(proj => proj.id === context.id)?.title || "";
+          
+          if (projectTitle.toLowerCase().includes("e-commerce") || projectTitle.toLowerCase().includes("ecommerce")) {
+            generatedContent = `• Built a full-featured e-commerce platform with product catalog, cart, and checkout functionality\n• Implemented secure payment processing integration with multiple payment gateways\n• Created admin dashboard for inventory and order management\n• Optimized site performance resulting in 30% faster page load times`;
+          } else if (projectTitle.toLowerCase().includes("mobile") || projectTitle.toLowerCase().includes("app")) {
+            generatedContent = `• Developed a cross-platform mobile application with React Native for iOS and Android\n• Implemented offline-first architecture with local data persistence\n• Integrated with RESTful APIs for real-time data synchronization\n• Added push notification system with targeted user messaging`;
+          } else if (projectTitle.toLowerCase().includes("dashboard") || projectTitle.toLowerCase().includes("analytics")) {
+            generatedContent = `• Created an interactive data visualization dashboard with real-time analytics\n• Implemented filterable data views and exportable reports\n• Built user authentication and role-based access control\n• Optimized query performance for handling large datasets`;
+          } else if (projectTitle.toLowerCase().includes("game") || projectTitle.toLowerCase().includes("gaming")) {
+            generatedContent = `• Developed an interactive browser-based game with modern JavaScript\n• Designed responsive user interface that works across desktop and mobile\n• Implemented game mechanics including scoring, levels, and achievements\n• Created custom animations and sound effects for enhanced user experience`;
+          } else {
+            generatedContent = `• Designed and implemented key features including user authentication and data management\n• Developed responsive UI that works seamlessly across desktop and mobile devices\n• Created comprehensive documentation for codebase and user guides\n• Implemented automated testing for critical application workflows`;
+          }
+          
+          setProjects(projects.map(proj => 
+            proj.id === context.id ? { ...proj, description: generatedContent } : proj
+          ));
+          break;
+        
           
         case "score":
           generatedContent = "GPA: 3.8/4.0";
@@ -515,7 +643,11 @@ const ResumeBuilder = () => {
                       <Eye className="h-4 w-4 mr-1" /> 
                       {showLivePreview ? "Hide Preview" : "Show Preview"}
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={saveData}
+                    >
                       <Save className="h-4 w-4 mr-1" /> Save
                     </Button>
                   </div>
@@ -534,6 +666,10 @@ const ResumeBuilder = () => {
                     <TabsTrigger value="experience" className="flex items-center gap-1">
                       <Briefcase className="h-4 w-4" />
                       <span className="hidden sm:inline">Experience</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="projects" className="flex items-center gap-1">
+                      <Code className="h-4 w-4" />
+                      <span className="hidden sm:inline">Projects</span>
                     </TabsTrigger>
                     <TabsTrigger value="skills" className="flex items-center gap-1">
                       <ListChecks className="h-4 w-4" />
@@ -623,7 +759,7 @@ const ResumeBuilder = () => {
                             <div className="flex max-w-md gap-2">
                               <Select 
                                 value={personalInfo.countryCode} 
-                                onValueChange={handleCountryCodeChange}
+                                onValueChange={(value) => handleCountryCodeChange(value)}
                               >
                                 <SelectTrigger className="w-[120px]">
                                   <SelectValue placeholder="+1" />
@@ -641,7 +777,11 @@ const ResumeBuilder = () => {
                                 placeholder="1234567890"
                                 className="flex-1"
                                 value={personalInfo.phone}
-                                onChange={handlePhoneChange}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  const numericValue = value.replace(/[^0-9]/g, "");
+                                  setPersonalInfo({...personalInfo, phone: numericValue});
+                                }}
                                 ref={phoneInputRef}
                               />
                             </div>
@@ -702,375 +842,4 @@ const ResumeBuilder = () => {
                               </div>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                  <Label htmlFor={`school-${edu.id}`} className="flex items-center">
-                                    School/University <span className="text-red-500 ml-1">*</span>
-                                  </Label>
-                                  <Input 
-                                    id={`school-${edu.id}`}
-                                    placeholder="Harvard University"
-                                    className="max-w-md"
-                                    value={edu.school}
-                                    onChange={(e) => handleEducationChange(edu.id, "school", e.target.value)}
-                                  />
-                                  <FormValidator 
-                                    value={edu.school} 
-                                    required 
-                                    errorMessage="Institution name is required"
-                                    showMessage={false}
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor={`degree-${edu.id}`} className="flex items-center">
-                                    Degree <span className="text-red-500 ml-1">*</span>
-                                  </Label>
-                                  <Input 
-                                    id={`degree-${edu.id}`}
-                                    placeholder="Bachelor of Science"
-                                    className="max-w-md"
-                                    value={edu.degree}
-                                    onChange={(e) => handleEducationChange(edu.id, "degree", e.target.value)}
-                                  />
-                                  <FormValidator 
-                                    value={edu.degree} 
-                                    required 
-                                    errorMessage="Degree is required"
-                                    showMessage={false} 
-                                  />
-                                </div>
-                              </div>
-                              
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                <div className="space-y-2">
-                                  <Label htmlFor={`graduationDate-${edu.id}`} className="flex items-center">
-                                    Year of Completion <span className="text-red-500 ml-1">*</span>
-                                  </Label>
-                                  <Input 
-                                    id={`graduationDate-${edu.id}`}
-                                    placeholder="May 2020"
-                                    className="max-w-md"
-                                    value={edu.graduationDate}
-                                    onChange={(e) => handleEducationChange(edu.id, "graduationDate", e.target.value)}
-                                  />
-                                  <FormValidator 
-                                    value={edu.graduationDate} 
-                                    required 
-                                    errorMessage="Graduation date is required"
-                                    showMessage={false} 
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor={`score-${edu.id}`} className="flex items-center">
-                                    Score/GPA <span className="text-red-500 ml-1">*</span>
-                                  </Label>
-                                  <Input 
-                                    id={`score-${edu.id}`}
-                                    placeholder="e.g., GPA 3.8/4.0"
-                                    className="max-w-md"
-                                    value={edu.score}
-                                    onChange={(e) => handleEducationChange(edu.id, "score", e.target.value)}
-                                  />
-                                  <FormValidator 
-                                    value={edu.score} 
-                                    required 
-                                    errorMessage="Score is required"
-                                    showMessage={false}
-                                  />
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      className="gap-1 text-sm"
-                                      onClick={() => generateAIContent("score", {id: edu.id})}
-                                      disabled={generatingAI}
-                                    >
-                                      <Sparkles className="h-3 w-3" />
-                                      AI Format
-                                    </Button>
-                                    <span className="text-sm text-muted-foreground">Format score professionally</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                          
-                          <Button 
-                            variant="outline" 
-                            className="gap-2 w-full"
-                            onClick={handleAddEducation}
-                          >
-                            <Plus className="h-4 w-4" />
-                            Add Another Education
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                  
-                  <TabsContent value="experience" className="p-0">
-                    <Card className="border-0 shadow-none">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-xl">Work Experience</CardTitle>
-                        <CardDescription>
-                          Add your work history, starting with the most recent (optional)
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="space-y-6">
-                          {experience.map((exp, index) => (
-                            <div key={exp.id} className="p-4 border rounded-md">
-                              <div className="flex justify-between items-start mb-3">
-                                <h4 className="font-medium">Experience #{index + 1}</h4>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="h-8 w-8 p-0"
-                                  onClick={() => handleRemoveExperience(exp.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-muted-foreground" />
-                                </Button>
-                              </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                  <Label htmlFor={`jobTitle-${exp.id}`}>
-                                    Job Title
-                                  </Label>
-                                  <Input 
-                                    id={`jobTitle-${exp.id}`}
-                                    placeholder="Senior Marketing Specialist"
-                                    value={exp.jobTitle}
-                                    onChange={(e) => handleExperienceChange(exp.id, "jobTitle", e.target.value)}
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor={`companyName-${exp.id}`}>
-                                    Company Name
-                                  </Label>
-                                  <Input 
-                                    id={`companyName-${exp.id}`}
-                                    placeholder="ACME Corporation"
-                                    value={exp.companyName}
-                                    onChange={(e) => handleExperienceChange(exp.id, "companyName", e.target.value)}
-                                  />
-                                </div>
-                              </div>
-                              
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                <div className="space-y-2">
-                                  <Label htmlFor={`startDate-${exp.id}`}>
-                                    Start Date
-                                  </Label>
-                                  <Input 
-                                    id={`startDate-${exp.id}`}
-                                    placeholder="June 2018"
-                                    value={exp.startDate}
-                                    onChange={(e) => handleExperienceChange(exp.id, "startDate", e.target.value)}
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor={`endDate-${exp.id}`}>
-                                    End Date
-                                  </Label>
-                                  <Input 
-                                    id={`endDate-${exp.id}`}
-                                    placeholder="Present (or Month Year)"
-                                    value={exp.endDate}
-                                    onChange={(e) => handleExperienceChange(exp.id, "endDate", e.target.value)}
-                                  />
-                                </div>
-                              </div>
-                              
-                              <div className="space-y-2 mt-4">
-                                <div className="flex items-center justify-between">
-                                  <Label htmlFor={`description-${exp.id}`}>
-                                    Description
-                                  </Label>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    className="gap-1 text-xs"
-                                    onClick={() => generateAIContent("jobDescription", {id: exp.id})}
-                                    disabled={generatingAI}
-                                  >
-                                    <Sparkles className="h-3 w-3" />
-                                    Generate with AI
-                                  </Button>
-                                </div>
-                                <Textarea 
-                                  id={`description-${exp.id}`}
-                                  placeholder="Describe your role and responsibilities"
-                                  value={exp.description}
-                                  onChange={(e) => handleExperienceChange(exp.id, "description", e.target.value)}
-                                />
-                              </div>
-                            </div>
-                          ))}
-                          
-                          <Button 
-                            variant="outline" 
-                            className="gap-2 w-full"
-                            onClick={handleAddExperience}
-                          >
-                            <Plus className="h-4 w-4" />
-                            Add Another Experience
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                  
-                  <TabsContent value="skills" className="p-0">
-                    <Card className="border-0 shadow-none">
-                      <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                        <div>
-                          <CardTitle className="text-xl">Skills</CardTitle>
-                          <CardDescription>
-                            List your skills and expertise
-                          </CardDescription>
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="gap-1 whitespace-nowrap"
-                          onClick={() => generateAIContent("skillSuggestions")}
-                          disabled={generatingAI}
-                        >
-                          <Sparkles className="h-3 w-3" />
-                          Suggest Skills
-                        </Button>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="professional">
-                                Professional Skills
-                              </Label>
-                              <Input 
-                                id="professional"
-                                placeholder="e.g., Marketing, Sales, Programming"
-                                value={skills.professional}
-                                onChange={(e) => setSkills({...skills, professional: e.target.value})}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="technical">
-                                Technical Skills
-                              </Label>
-                              <Input 
-                                id="technical"
-                                placeholder="e.g., HTML, CSS, JavaScript"
-                                value={skills.technical}
-                                onChange={(e) => setSkills({...skills, technical: e.target.value})}
-                              />
-                            </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="soft">
-                                Soft Skills
-                              </Label>
-                              <Input 
-                                id="soft"
-                                placeholder="e.g., Communication, Teamwork, Leadership"
-                                value={skills.soft}
-                                onChange={(e) => setSkills({...skills, soft: e.target.value})}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                  
-                  <TabsContent value="objectives" className="p-0">
-                    <Card className="border-0 shadow-none">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-xl">Career Objectives</CardTitle>
-                        <CardDescription>
-                          Set your career goals
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <Label htmlFor="objective">
-                                Objective
-                              </Label>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="gap-1 text-xs"
-                                onClick={() => generateAIContent("objective")}
-                                disabled={generatingAI}
-                              >
-                                <Sparkles className="h-3 w-3" />
-                                Generate with AI
-                              </Button>
-                            </div>
-                            <Textarea 
-                              id="objective"
-                              placeholder="e.g., Seeking a challenging marketing position"
-                              value={objective}
-                              onChange={(e) => setObjective(e.target.value)}
-                            />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                </Tabs>
-              </div>
-            </div>
-            {showLivePreview && (
-              <div className="hidden lg:block">
-                <div className="sticky top-24">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg">Live Preview</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                      <div className="h-[600px] overflow-auto border-t">
-                        <ResumePreviewContent 
-                          data={getResumeData()}
-                          templateId={templateId}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            )}
-          </div>
-          
-          <div className="mt-8 flex justify-between">
-            <Button 
-              variant="outline" 
-              onClick={handlePrevious}
-              disabled={activeTab === "personal"}
-            >
-              Previous
-            </Button>
-            
-            {activeTab !== "objectives" ? (
-              <Button onClick={handleNext}>
-                Next
-              </Button>
-            ) : (
-              <Button 
-                onClick={handleGenerate}
-                disabled={!formValid}
-              >
-                <FileText className="mr-2 h-4 w-4" />
-                Generate Resume
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-    </MainLayout>
-  );
-};
-
-export default ResumeBuilder;
+                                  <Label htmlFor={`school-${
