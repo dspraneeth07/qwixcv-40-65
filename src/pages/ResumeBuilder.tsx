@@ -360,7 +360,6 @@ const ResumeBuilder = () => {
     
     console.log("Generating resume with data:", resumeData);
     
-    // Save data automatically when generating
     saveData();
     
     toast({
@@ -842,4 +841,437 @@ const ResumeBuilder = () => {
                               </div>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                  <Label htmlFor={`school-${
+                                  <Label htmlFor={`school-${edu.id}`} className="flex items-center">
+                                    School <span className="text-red-500 ml-1">*</span>
+                                  </Label>
+                                  <Input 
+                                    id={`school-${edu.id}`}
+                                    placeholder="University Name"
+                                    value={edu.school}
+                                    onChange={(e) => handleEducationChange(edu.id, "school", e.target.value)}
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor={`degree-${edu.id}`} className="flex items-center">
+                                    Degree <span className="text-red-500 ml-1">*</span>
+                                  </Label>
+                                  <Input 
+                                    id={`degree-${edu.id}`}
+                                    placeholder="Bachelor's Degree"
+                                    value={edu.degree}
+                                    onChange={(e) => handleEducationChange(edu.id, "degree", e.target.value)}
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor={`graduationDate-${edu.id}`} className="flex items-center">
+                                    Graduation Date <span className="text-red-500 ml-1">*</span>
+                                  </Label>
+                                  <Input 
+                                    id={`graduationDate-${edu.id}`}
+                                    placeholder="MM/YYYY"
+                                    value={edu.graduationDate}
+                                    onChange={(e) => handleEducationChange(edu.id, "graduationDate", e.target.value)}
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor={`score-${edu.id}`} className="flex items-center">
+                                    Score
+                                  </Label>
+                                  <Input 
+                                    id={`score-${edu.id}`}
+                                    placeholder="GPA"
+                                    value={edu.score}
+                                    onChange={(e) => handleEducationChange(edu.id, "score", e.target.value)}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            className="w-full" 
+                            onClick={handleAddEducation}
+                          >
+                            <Plus className="mr-2 h-4 w-4" /> Add Education Entry
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="experience" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Work Experience</CardTitle>
+                        <CardDescription>
+                          Add your work history
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-6">
+                          {experience.map((exp, index) => (
+                            <div key={exp.id} className="p-4 border rounded-md">
+                              <div className="flex justify-between items-start mb-3">
+                                <div className="space-y-2 max-w-xs">
+                                  <Label htmlFor={`jobTitle-${exp.id}`} className="flex items-center">
+                                    Job Title <span className="text-red-500 ml-1">*</span>
+                                  </Label>
+                                  <Input 
+                                    id={`jobTitle-${exp.id}`}
+                                    placeholder="Software Engineer"
+                                    value={exp.jobTitle}
+                                    onChange={(e) => handleExperienceChange(exp.id, "jobTitle", e.target.value)}
+                                  />
+                                </div>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => handleRemoveExperience(exp.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-muted-foreground" />
+                                </Button>
+                              </div>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div className="space-y-2">
+                                  <Label htmlFor={`companyName-${exp.id}`} className="flex items-center">
+                                    Company <span className="text-red-500 ml-1">*</span>
+                                  </Label>
+                                  <Input 
+                                    id={`companyName-${exp.id}`}
+                                    placeholder="Company Name"
+                                    value={exp.companyName}
+                                    onChange={(e) => handleExperienceChange(exp.id, "companyName", e.target.value)}
+                                  />
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <Label htmlFor={`startDate-${exp.id}`} className="flex items-center">
+                                      Start Date
+                                    </Label>
+                                    <Input 
+                                      id={`startDate-${exp.id}`}
+                                      placeholder="MM/YYYY"
+                                      value={exp.startDate}
+                                      onChange={(e) => handleExperienceChange(exp.id, "startDate", e.target.value)}
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label htmlFor={`endDate-${exp.id}`} className="flex items-center">
+                                      End Date
+                                    </Label>
+                                    <Input 
+                                      id={`endDate-${exp.id}`}
+                                      placeholder="MM/YYYY or Present"
+                                      value={exp.endDate}
+                                      onChange={(e) => handleExperienceChange(exp.id, "endDate", e.target.value)}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label htmlFor={`description-${exp.id}`} className="flex items-center">
+                                  Description <span className="text-red-500 ml-1">*</span>
+                                </Label>
+                                <div className="relative">
+                                  <Textarea 
+                                    id={`description-${exp.id}`}
+                                    placeholder="Describe your responsibilities and achievements"
+                                    className="min-h-[120px]"
+                                    value={exp.description}
+                                    onChange={(e) => handleExperienceChange(exp.id, "description", e.target.value)}
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute bottom-2 right-2 h-7 text-xs bg-primary/10 hover:bg-primary/20"
+                                    onClick={() => generateAIContent("jobDescription", { id: exp.id })}
+                                    disabled={generatingAI || !exp.jobTitle}
+                                  >
+                                    {generatingAI ? (
+                                      <span>Generating...</span>
+                                    ) : (
+                                      <>
+                                        <Sparkles className="mr-1 h-3 w-3" />
+                                        <span>AI Suggest</span>
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            className="w-full" 
+                            onClick={handleAddExperience}
+                          >
+                            <Plus className="mr-2 h-4 w-4" /> Add Work Experience
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="projects" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Projects</CardTitle>
+                        <CardDescription>
+                          Add your projects and portfolio work
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-6">
+                          {projects.map((proj, index) => (
+                            <div key={proj.id} className="p-4 border rounded-md">
+                              <div className="flex justify-between items-start mb-3">
+                                <div className="space-y-2 max-w-xs">
+                                  <Label htmlFor={`title-${proj.id}`} className="flex items-center">
+                                    Project Title <span className="text-red-500 ml-1">*</span>
+                                  </Label>
+                                  <Input 
+                                    id={`title-${proj.id}`}
+                                    placeholder="E-commerce Website"
+                                    value={proj.title}
+                                    onChange={(e) => handleProjectChange(proj.id, "title", e.target.value)}
+                                  />
+                                </div>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => handleRemoveProject(proj.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-muted-foreground" />
+                                </Button>
+                              </div>
+                              
+                              <div className="space-y-2 mb-4">
+                                <Label htmlFor={`technologies-${proj.id}`} className="flex items-center">
+                                  Technologies Used
+                                </Label>
+                                <Input 
+                                  id={`technologies-${proj.id}`}
+                                  placeholder="React, Node.js, MongoDB"
+                                  value={proj.technologies}
+                                  onChange={(e) => handleProjectChange(proj.id, "technologies", e.target.value)}
+                                />
+                              </div>
+                              
+                              <div className="space-y-2 mb-4">
+                                <Label htmlFor={`link-${proj.id}`} className="flex items-center">
+                                  Project Link
+                                </Label>
+                                <Input 
+                                  id={`link-${proj.id}`}
+                                  placeholder="https://github.com/username/project"
+                                  value={proj.link}
+                                  onChange={(e) => handleProjectChange(proj.id, "link", e.target.value)}
+                                />
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label htmlFor={`project-description-${proj.id}`} className="flex items-center">
+                                  Description <span className="text-red-500 ml-1">*</span>
+                                </Label>
+                                <div className="relative">
+                                  <Textarea 
+                                    id={`project-description-${proj.id}`}
+                                    placeholder="Describe the project, your role, and key achievements"
+                                    className="min-h-[120px]"
+                                    value={proj.description}
+                                    onChange={(e) => handleProjectChange(proj.id, "description", e.target.value)}
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute bottom-2 right-2 h-7 text-xs bg-primary/10 hover:bg-primary/20"
+                                    onClick={() => generateAIContent("projectDescription", { id: proj.id })}
+                                    disabled={generatingAI || !proj.title}
+                                  >
+                                    {generatingAI ? (
+                                      <span>Generating...</span>
+                                    ) : (
+                                      <>
+                                        <Sparkles className="mr-1 h-3 w-3" />
+                                        <span>AI Suggest</span>
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            className="w-full" 
+                            onClick={handleAddProject}
+                          >
+                            <Plus className="mr-2 h-4 w-4" /> Add Project
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="skills" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Skills</CardTitle>
+                        <CardDescription>
+                          Highlight your key skills and competencies
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="professional" className="flex items-center">
+                              Professional Skills <span className="text-red-500 ml-1">*</span>
+                            </Label>
+                            <Input 
+                              id="professional"
+                              placeholder="e.g., Project Management, Data Analysis"
+                              value={skills.professional}
+                              onChange={(e) => setSkills({...skills, professional: e.target.value})}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="technical" className="flex items-center">
+                              Technical Skills <span className="text-red-500 ml-1">*</span>
+                            </Label>
+                            <Input 
+                              id="technical"
+                              placeholder="e.g., JavaScript, React, Node.js"
+                              value={skills.technical}
+                              onChange={(e) => setSkills({...skills, technical: e.target.value})}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="soft" className="flex items-center">
+                              Soft Skills <span className="text-red-500 ml-1">*</span>
+                            </Label>
+                            <Input 
+                              id="soft"
+                              placeholder="e.g., Communication, Teamwork, Problem-solving"
+                              value={skills.soft}
+                              onChange={(e) => setSkills({...skills, soft: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="objectives" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Career Objective</CardTitle>
+                        <CardDescription>
+                          Add a compelling career objective or summary
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="objective" className="flex items-center">
+                              Career Objective <span className="text-red-500 ml-1">*</span>
+                            </Label>
+                            <Input 
+                              id="objective"
+                              placeholder="e.g., Seeking a challenging Software Engineer position to utilize my skills in project management and data analysis."
+                              value={objective}
+                              onChange={(e) => setObjective(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
+                
+                <div className="p-4 flex justify-between border-t">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handlePrevious}
+                    disabled={activeTab === "personal"}
+                  >
+                    Previous
+                  </Button>
+                  
+                  {activeTab === "objectives" ? (
+                    <Button 
+                      type="button"
+                      onClick={handleGenerate}
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      Generate Resume
+                    </Button>
+                  ) : (
+                    <Button 
+                      type="button"
+                      variant="default"
+                      onClick={handleNext}
+                    >
+                      Next
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            <div className="lg:col-span-1">
+              <div className="sticky top-20">
+                {showLivePreview && (
+                  <div className="bg-card border rounded-lg overflow-hidden">
+                    <div className="p-4 bg-muted/50 border-b flex justify-between items-center">
+                      <span className="font-medium">Live Preview</span>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                      >
+                        <Download className="h-4 w-4 mr-1" /> 
+                        Export
+                      </Button>
+                    </div>
+                    <div className="p-4 overflow-auto max-h-[600px] scaled-preview">
+                      <ResumePreviewContent 
+                        data={{
+                          personalInfo: {
+                            ...personalInfo,
+                            phone: personalInfo.phone ? `${personalInfo.countryCode} ${personalInfo.phone}` : ""
+                          },
+                          education,
+                          experience,
+                          projects,
+                          skills,
+                          objective,
+                          templateId
+                        }}
+                        isPreview={true}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
+};
+
+export default ResumeBuilder;
