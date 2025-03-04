@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -275,6 +276,7 @@ const ResumeBuilder = () => {
     if (personalInfo.location.trim() === "") errors.location = true;
     
     education.forEach((edu, index) => {
+      // Remove customName from validation
       if (edu.school.trim() === "") errors[`edu_${index}_school`] = true;
       if (edu.degree.trim() === "") errors[`edu_${index}_degree`] = true;
       if (edu.graduationDate.trim() === "") errors[`edu_${index}_graduationDate`] = true;
@@ -542,7 +544,6 @@ const ResumeBuilder = () => {
           ));
           break;
         
-          
         case "score":
           generatedContent = "GPA: 3.8/4.0";
           setEducation(education.map(edu => 
@@ -567,6 +568,24 @@ const ResumeBuilder = () => {
               professional: "Software Development, Web Application Architecture, Database Design, API Integration, Testing & Debugging",
               technical: "JavaScript, React, Node.js, Python, SQL, Git, Docker, CI/CD",
               soft: "Problem-solving, Communication, Teamwork, Time Management, Adaptability"
+            });
+          } else if (personalInfo.jobTitle?.toLowerCase().includes("designer")) {
+            setSkills({
+              professional: "UI/UX Design, Visual Design, User Research, Wireframing, Prototyping",
+              technical: "Figma, Adobe Creative Suite, Sketch, HTML/CSS, Design Systems",
+              soft: "Creativity, Communication, Teamwork, Attention to Detail, Time Management"
+            });
+          } else if (personalInfo.jobTitle?.toLowerCase().includes("data")) {
+            setSkills({
+              professional: "Data Analysis, Statistical Modeling, Data Visualization, Business Intelligence, Predictive Analytics",
+              technical: "Python, SQL, R, Tableau, Power BI, Excel, TensorFlow, PyTorch",
+              soft: "Analytical Thinking, Problem-solving, Communication, Attention to Detail, Continuous Learning"
+            });
+          } else if (personalInfo.jobTitle?.toLowerCase().includes("sales")) {
+            setSkills({
+              professional: "Account Management, Lead Generation, Negotiation, CRM Management, Sales Strategy",
+              technical: "Salesforce, HubSpot, Microsoft Office, CRM Software, LinkedIn Sales Navigator",
+              soft: "Communication, Persuasion, Relationship Building, Active Listening, Resilience"
             });
           } else {
             setSkills({
@@ -623,8 +642,8 @@ const ResumeBuilder = () => {
             </div>
           )}
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
+          <div className={`grid grid-cols-1 ${showLivePreview ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-8`}>
+            <div className={showLivePreview ? 'lg:col-span-2' : 'lg:col-span-1'}>
               <div className="bg-card shadow-sm rounded-lg border mb-6">
                 <div className="p-4 flex items-center justify-between border-b">
                   <div className="flex items-center gap-2">
@@ -821,7 +840,7 @@ const ResumeBuilder = () => {
                               <div className="flex justify-between items-start mb-3">
                                 <div className="space-y-2 max-w-xs">
                                   <Label htmlFor={`customName-${edu.id}`} className="flex items-center">
-                                    Entry Name <span className="text-red-500 ml-1">*</span>
+                                    Entry Name {/* Removed asterisk to make it optional */}
                                   </Label>
                                   <Input 
                                     id={`customName-${edu.id}`}
@@ -864,13 +883,17 @@ const ResumeBuilder = () => {
                                 </div>
                                 <div className="space-y-2">
                                   <Label htmlFor={`graduationDate-${edu.id}`} className="flex items-center">
-                                    Graduation Date <span className="text-red-500 ml-1">*</span>
+                                    Graduation Year <span className="text-red-500 ml-1">*</span>
                                   </Label>
                                   <Input 
                                     id={`graduationDate-${edu.id}`}
-                                    placeholder="MM/YYYY"
+                                    placeholder="YYYY"
                                     value={edu.graduationDate}
-                                    onChange={(e) => handleEducationChange(edu.id, "graduationDate", e.target.value)}
+                                    onChange={(e) => {
+                                      // Only allow 4-digit years
+                                      const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 4);
+                                      handleEducationChange(edu.id, "graduationDate", value);
+                                    }}
                                   />
                                 </div>
                                 <div className="space-y-2">
@@ -1169,6 +1192,30 @@ const ResumeBuilder = () => {
                               onChange={(e) => setSkills({...skills, soft: e.target.value})}
                             />
                           </div>
+                          
+                          {/* AI Skills Suggestion Button */}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="mt-2"
+                            onClick={() => generateAIContent("skillSuggestions")}
+                            disabled={generatingAI || !personalInfo.jobTitle}
+                          >
+                            {generatingAI ? (
+                              <span>Generating...</span>
+                            ) : (
+                              <>
+                                <Sparkles className="mr-2 h-4 w-4" />
+                                <span>Generate AI Skills Suggestions</span>
+                              </>
+                            )}
+                          </Button>
+                          {!personalInfo.jobTitle && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Enter a job title in the Personal tab for more relevant skill suggestions
+                            </p>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -1188,12 +1235,37 @@ const ResumeBuilder = () => {
                             <Label htmlFor="objective" className="flex items-center">
                               Career Objective <span className="text-red-500 ml-1">*</span>
                             </Label>
-                            <Input 
-                              id="objective"
-                              placeholder="e.g., Seeking a challenging Software Engineer position to utilize my skills in project management and data analysis."
-                              value={objective}
-                              onChange={(e) => setObjective(e.target.value)}
-                            />
+                            <div className="relative">
+                              <Textarea 
+                                id="objective"
+                                placeholder="e.g., Seeking a challenging Software Engineer position to utilize my skills in project management and data analysis."
+                                className="min-h-[120px]"
+                                value={objective}
+                                onChange={(e) => setObjective(e.target.value)}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute bottom-2 right-2 h-7 text-xs bg-primary/10 hover:bg-primary/20"
+                                onClick={() => generateAIContent("objective")}
+                                disabled={generatingAI || (!personalInfo.jobTitle && !skills.professional)}
+                              >
+                                {generatingAI ? (
+                                  <span>Generating...</span>
+                                ) : (
+                                  <>
+                                    <Sparkles className="mr-1 h-3 w-3" />
+                                    <span>AI Suggest</span>
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                            {(!personalInfo.jobTitle && !skills.professional) && (
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Fill in job title and skills for better AI-generated objectives
+                              </p>
+                            )}
                           </div>
                         </div>
                       </CardContent>
@@ -1232,9 +1304,9 @@ const ResumeBuilder = () => {
               </div>
             </div>
             
-            <div className="lg:col-span-1">
-              <div className="sticky top-20">
-                {showLivePreview && (
+            {showLivePreview && (
+              <div className="lg:col-span-1">
+                <div className="sticky top-20">
                   <div className="bg-card border rounded-lg overflow-hidden">
                     <div className="p-4 bg-muted/50 border-b flex justify-between items-center">
                       <span className="font-medium">Live Preview</span>
@@ -1264,9 +1336,9 @@ const ResumeBuilder = () => {
                       />
                     </div>
                   </div>
-                )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
