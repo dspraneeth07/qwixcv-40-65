@@ -1152,7 +1152,7 @@ const ResumeBuilder = () => {
                     <div className="p-0 max-h-[calc(100vh-200px)] overflow-y-auto">
                       <div className="scale-[0.65] origin-top transform p-6">
                         <ResumePreviewContent 
-                          resumeData={getResumeData()}
+                          data={getResumeData()}
                           templateId={templateId}
                         />
                       </div>

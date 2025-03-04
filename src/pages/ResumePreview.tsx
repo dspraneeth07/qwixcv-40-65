@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -202,7 +201,7 @@ const ResumePreview = () => {
 
 export { ResumePreview };
 
-export const ResumePreviewContent = ({ data }: { data: any }) => {
+export const ResumePreviewContent = ({ data, templateId }: { data: any, templateId?: string }) => {
   const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boolean }) => {
     if (!data) return null;
     
