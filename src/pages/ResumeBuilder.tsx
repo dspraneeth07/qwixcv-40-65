@@ -875,3 +875,159 @@ const ResumeBuilder = () => {
                               
                               <div className="space-y-2 mt-4">
                                 <Label htmlFor={`description-${exp.id}`}>
+                                  Description
+                                </Label>
+                                <Textarea 
+                                  id={`description-${exp.id}`}
+                                  placeholder="Describe your role and responsibilities"
+                                  value={exp.description}
+                                  onChange={(e) => handleExperienceChange(exp.id, "description", e.target.value)}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                          
+                          <Button 
+                            variant="outline" 
+                            className="gap-2 w-full"
+                            onClick={handleAddExperience}
+                          >
+                            <Plus className="h-4 w-4" />
+                            Add Another Experience
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="skills" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Skills</CardTitle>
+                        <CardDescription>
+                          List your skills and expertise
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="professional">
+                                Professional Skills
+                              </Label>
+                              <Input 
+                                id="professional"
+                                placeholder="e.g., Marketing, Sales, Programming"
+                                value={skills.professional}
+                                onChange={(e) => setSkills({...skills, professional: e.target.value})}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="technical">
+                                Technical Skills
+                              </Label>
+                              <Input 
+                                id="technical"
+                                placeholder="e.g., HTML, CSS, JavaScript"
+                                value={skills.technical}
+                                onChange={(e) => setSkills({...skills, technical: e.target.value})}
+                              />
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="soft">
+                                Soft Skills
+                              </Label>
+                              <Input 
+                                id="soft"
+                                placeholder="e.g., Communication, Teamwork, Leadership"
+                                value={skills.soft}
+                                onChange={(e) => setSkills({...skills, soft: e.target.value})}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="objectives" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Career Objectives</CardTitle>
+                        <CardDescription>
+                          Set your career goals
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="objective">
+                                Objective
+                              </Label>
+                              <Input 
+                                id="objective"
+                                placeholder="e.g., Seeking a challenging marketing position"
+                                value={objective}
+                                onChange={(e) => setObjective(e.target.value)}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </div>
+            {showLivePreview && (
+              <div className="hidden lg:block">
+                <div className="sticky top-24">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Live Preview</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <div className="h-[600px] overflow-auto border-t">
+                        <ResumePreviewContent />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="mt-8 flex justify-between">
+            <Button 
+              variant="outline" 
+              onClick={handlePrevious}
+              disabled={activeTab === "personal"}
+            >
+              Previous
+            </Button>
+            
+            {activeTab !== "objectives" ? (
+              <Button onClick={handleNext}>
+                Next
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleGenerate}
+                disabled={!formValid}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Generate Resume
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
+};
+
+export default ResumeBuilder;
