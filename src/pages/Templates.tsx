@@ -13,7 +13,7 @@ const templates = [
     id: "modern1",
     name: "Modern Professional",
     category: "modern",
-    image: "/placeholder.svg",
+    image: "/lovable-uploads/c58a81e3-51cc-4bc6-a9be-db15cade0cbb.png",
     description: "Clean and professional design with a modern touch",
     featured: true,
   },
@@ -21,7 +21,7 @@ const templates = [
     id: "classic1",
     name: "Classic Elegant",
     category: "classic",
-    image: "/placeholder.svg",
+    image: "/lovable-uploads/c58a81e3-51cc-4bc6-a9be-db15cade0cbb.png",
     description: "Timeless design suitable for all industries",
     featured: false,
   },
@@ -29,7 +29,7 @@ const templates = [
     id: "creative1",
     name: "Creative Bold",
     category: "creative",
-    image: "/placeholder.svg",
+    image: "/lovable-uploads/c58a81e3-51cc-4bc6-a9be-db15cade0cbb.png",
     description: "Stand out with a unique creative layout",
     featured: true,
   },
@@ -37,7 +37,7 @@ const templates = [
     id: "ats1",
     name: "ATS Optimized",
     category: "ats",
-    image: "/placeholder.svg",
+    image: "/lovable-uploads/c58a81e3-51cc-4bc6-a9be-db15cade0cbb.png",
     description: "Designed specifically to pass ATS systems",
     featured: true,
   },
@@ -45,7 +45,7 @@ const templates = [
     id: "modern2",
     name: "Modern Minimal",
     category: "modern",
-    image: "/placeholder.svg",
+    image: "/lovable-uploads/c58a81e3-51cc-4bc6-a9be-db15cade0cbb.png",
     description: "Sleek and minimal with perfect whitespace balance",
     featured: false,
   },
@@ -53,7 +53,7 @@ const templates = [
     id: "classic2",
     name: "Classic Traditional",
     category: "classic",
-    image: "/placeholder.svg",
+    image: "/lovable-uploads/c58a81e3-51cc-4bc6-a9be-db15cade0cbb.png",
     description: "Traditional format respected in conservative fields",
     featured: false,
   },
@@ -61,7 +61,7 @@ const templates = [
     id: "creative2",
     name: "Vibrant Portfolio",
     category: "creative",
-    image: "/placeholder.svg",
+    image: "/lovable-uploads/c58a81e3-51cc-4bc6-a9be-db15cade0cbb.png",
     description: "Showcase your work with vibrant colors and layouts",
     featured: false,
   },
@@ -69,7 +69,7 @@ const templates = [
     id: "ats2",
     name: "ATS Professional",
     category: "ats",
-    image: "/placeholder.svg",
+    image: "/lovable-uploads/c58a81e3-51cc-4bc6-a9be-db15cade0cbb.png",
     description: "Professional design with optimal ATS compatibility",
     featured: false,
   },
@@ -77,7 +77,7 @@ const templates = [
     id: "modern3",
     name: "Executive Modern",
     category: "modern",
-    image: "/placeholder.svg",
+    image: "/lovable-uploads/c58a81e3-51cc-4bc6-a9be-db15cade0cbb.png",
     description: "Sophisticated design for executive positions",
     featured: false,
   },
@@ -238,6 +238,10 @@ const TemplateCard = ({ template, isSelected, onSelect }: TemplateCardProps) => 
           src={template.image} 
           alt={template.name} 
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = "/placeholder.svg"; // Fallback image if the original fails to load
+          }}
         />
         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           <Button variant="secondary" onClick={onSelect}>

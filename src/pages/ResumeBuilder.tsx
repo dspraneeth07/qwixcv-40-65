@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -101,7 +100,6 @@ const ResumeBuilder = () => {
           )}
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Form Section */}
             <div className="lg:col-span-2">
               <div className="bg-card shadow-sm rounded-lg border mb-6">
                 <div className="p-4 flex items-center justify-between border-b">
@@ -228,36 +226,37 @@ const ResumeBuilder = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label htmlFor="firstName">First Name</Label>
-                            <Input id="firstName" placeholder="John" />
+                            <Input id="firstName" placeholder="John" className="max-w-md" />
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="lastName">Last Name</Label>
-                            <Input id="lastName" placeholder="Doe" />
+                            <Input id="lastName" placeholder="Doe" className="max-w-md" />
                           </div>
                         </div>
                         
                         <div className="space-y-2">
                           <Label htmlFor="jobTitle">Professional Title</Label>
-                          <Input id="jobTitle" placeholder="Marketing Specialist" />
+                          <Input id="jobTitle" placeholder="Marketing Specialist" className="max-w-md" />
                           <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                             <Sparkles className="h-3 w-3 text-primary" />
                             <span>AI suggests titles that match your experience</span>
                           </div>
                         </div>
                         
-                        <div className="space-y-2">
-                          <Label htmlFor="email">Email</Label>
-                          <Input id="email" type="email" placeholder="john.doe@example.com" />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="phone">Phone</Label>
-                          <Input id="phone" placeholder="(123) 456-7890" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input id="email" type="email" placeholder="john.doe@example.com" className="max-w-md" />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="phone">Phone</Label>
+                            <Input id="phone" placeholder="(123) 456-7890" className="max-w-md" />
+                          </div>
                         </div>
                         
                         <div className="space-y-2">
                           <Label htmlFor="location">Location</Label>
-                          <Input id="location" placeholder="New York, NY" />
+                          <Input id="location" placeholder="New York, NY" className="max-w-md" />
                         </div>
                         
                         <div className="space-y-2">
@@ -266,6 +265,7 @@ const ResumeBuilder = () => {
                             id="summary" 
                             placeholder="Experienced marketing professional with 5+ years in digital strategy..."
                             rows={4}
+                            className="max-w-full"
                           />
                           <div className="flex items-center gap-2 mt-1">
                             <Button variant="outline" size="sm" className="gap-1 text-sm">
@@ -299,22 +299,22 @@ const ResumeBuilder = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="space-y-2">
                                 <Label htmlFor="school">School/University</Label>
-                                <Input id="school" placeholder="Harvard University" />
+                                <Input id="school" placeholder="Harvard University" className="max-w-md" />
                               </div>
                               <div className="space-y-2">
                                 <Label htmlFor="degree">Degree</Label>
-                                <Input id="degree" placeholder="Bachelor of Science" />
+                                <Input id="degree" placeholder="Bachelor of Science" className="max-w-md" />
                               </div>
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                               <div className="space-y-2">
                                 <Label htmlFor="fieldOfStudy">Field of Study</Label>
-                                <Input id="fieldOfStudy" placeholder="Computer Science" />
+                                <Input id="fieldOfStudy" placeholder="Computer Science" className="max-w-md" />
                               </div>
                               <div className="space-y-2">
                                 <Label htmlFor="graduationDate">Graduation Date</Label>
-                                <Input id="graduationDate" placeholder="May 2020" />
+                                <Input id="graduationDate" placeholder="May 2020" className="max-w-md" />
                               </div>
                             </div>
                             
@@ -324,6 +324,7 @@ const ResumeBuilder = () => {
                                 id="eduDescription" 
                                 placeholder="Relevant coursework, honors, activities..."
                                 rows={3}
+                                className="max-w-full"
                               />
                             </div>
                           </div>
@@ -357,22 +358,22 @@ const ResumeBuilder = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="space-y-2">
                                 <Label htmlFor="jobTitle">Job Title</Label>
-                                <Input id="jobTitle" placeholder="Marketing Manager" />
+                                <Input id="jobTitle" placeholder="Marketing Manager" className="max-w-md" />
                               </div>
                               <div className="space-y-2">
                                 <Label htmlFor="employer">Employer</Label>
-                                <Input id="employer" placeholder="Acme Inc." />
+                                <Input id="employer" placeholder="Acme Inc." className="max-w-md" />
                               </div>
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                               <div className="space-y-2">
                                 <Label htmlFor="startDate">Start Date</Label>
-                                <Input id="startDate" placeholder="June 2018" />
+                                <Input id="startDate" placeholder="June 2018" className="max-w-md" />
                               </div>
                               <div className="space-y-2">
                                 <Label htmlFor="endDate">End Date</Label>
-                                <Input id="endDate" placeholder="Present" />
+                                <Input id="endDate" placeholder="Present" className="max-w-md" />
                               </div>
                             </div>
                             
@@ -382,6 +383,7 @@ const ResumeBuilder = () => {
                                 id="jobDescription" 
                                 placeholder="• Increased sales by 20% through strategic digital marketing initiatives..."
                                 rows={4}
+                                className="max-w-full"
                               />
                               <div className="flex items-center gap-2 mt-1">
                                 <Button variant="outline" size="sm" className="gap-1 text-sm">
@@ -418,6 +420,7 @@ const ResumeBuilder = () => {
                               id="skills" 
                               placeholder="Social Media Marketing, Content Strategy, SEO/SEM, Google Analytics, Adobe Creative Suite..."
                               rows={3}
+                              className="max-w-full"
                             />
                             <p className="text-xs text-muted-foreground mt-1">Separate skills with commas</p>
                           </div>
@@ -428,6 +431,7 @@ const ResumeBuilder = () => {
                               id="technicalSkills" 
                               placeholder="JavaScript, React, Python, SQL, HTML/CSS..."
                               rows={2}
+                              className="max-w-full"
                             />
                           </div>
                           
@@ -437,6 +441,7 @@ const ResumeBuilder = () => {
                               id="softSkills" 
                               placeholder="Leadership, Communication, Problem-solving, Teamwork..."
                               rows={2}
+                              className="max-w-full"
                             />
                           </div>
                           
@@ -467,6 +472,7 @@ const ResumeBuilder = () => {
                             id="objective" 
                             placeholder="Seeking a challenging position in marketing that allows me to leverage my experience in digital strategies to drive business growth..."
                             rows={4}
+                            className="max-w-full"
                           />
                           <div className="flex items-center gap-2 mt-1">
                             <Button variant="outline" size="sm" className="gap-1 text-sm">
@@ -502,7 +508,6 @@ const ResumeBuilder = () => {
               </div>
             </div>
             
-            {/* Preview Section */}
             <div className={`hidden lg:block ${showPreview ? 'block' : 'hidden'}`}>
               <div className="sticky top-24">
                 <div className="flex items-center justify-between mb-4">
