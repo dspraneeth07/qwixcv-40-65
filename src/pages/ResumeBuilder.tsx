@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -39,13 +40,14 @@ interface Education {
   customName: string;
   school: string;
   degree: string;
-  graduationDate: string;
+  graduationYear: string;
   score: string;
 }
 
 interface Experience {
   id: string;
   jobTitle: string;
+  role: string;
   companyName: string;
   startDate: string;
   endDate: string;
@@ -118,7 +120,7 @@ const ResumeBuilder = () => {
       customName: "Education #1",
       school: "",
       degree: "",
-      graduationDate: "",
+      graduationYear: "",
       score: ""
     }
   ]);
@@ -127,6 +129,7 @@ const ResumeBuilder = () => {
     {
       id: "exp1",
       jobTitle: "",
+      role: "",
       companyName: "",
       startDate: "",
       endDate: "",
@@ -254,8 +257,13 @@ const ResumeBuilder = () => {
     const educationValid = education.every(edu => 
       edu.school.trim() !== "" && 
       edu.degree.trim() !== "" && 
-      edu.graduationDate.trim() !== "" && 
+      edu.graduationYear.trim() !== "" && 
       edu.score.trim() !== ""
+    );
+    
+    const experienceValid = experience.every(exp => 
+      (!exp.companyName.trim() && !exp.jobTitle.trim() && !exp.role.trim()) || 
+      (exp.companyName.trim() !== "" && exp.jobTitle.trim() !== "" && exp.role.trim() !== "")
     );
     
     const skillsValid = 
@@ -277,8 +285,16 @@ const ResumeBuilder = () => {
     education.forEach((edu, index) => {
       if (edu.school.trim() === "") errors[`edu_${index}_school`] = true;
       if (edu.degree.trim() === "") errors[`edu_${index}_degree`] = true;
-      if (edu.graduationDate.trim() === "") errors[`edu_${index}_graduationDate`] = true;
+      if (edu.graduationYear.trim() === "") errors[`edu_${index}_graduationYear`] = true;
       if (edu.score.trim() === "") errors[`edu_${index}_score`] = true;
+    });
+    
+    experience.forEach((exp, index) => {
+      if (exp.companyName.trim() !== "" || exp.jobTitle.trim() !== "" || exp.role.trim() !== "") {
+        if (exp.companyName.trim() === "") errors[`exp_${index}_companyName`] = true;
+        if (exp.jobTitle.trim() === "") errors[`exp_${index}_jobTitle`] = true;
+        if (exp.role.trim() === "") errors[`exp_${index}_role`] = true;
+      }
     });
     
     if (skills.professional.trim() === "") errors.professional = true;
@@ -288,8 +304,8 @@ const ResumeBuilder = () => {
     if (objective.trim() === "") errors.objective = true;
     
     setFormErrors(errors);
-    setFormValid(personalInfoValid && educationValid && skillsValid && objectiveValid);
-  }, [personalInfo, education, skills, objective]);
+    setFormValid(personalInfoValid && educationValid && experienceValid && skillsValid && objectiveValid);
+  }, [personalInfo, education, experience, skills, objective]);
   
   const handleNext = () => {
     const tabs = ["personal", "education", "experience", "projects", "skills", "objectives"];
@@ -328,6 +344,17 @@ const ResumeBuilder = () => {
         toast({
           title: "Missing Information",
           description: "Please fill all required fields in the Education tab.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      const hasExperienceErrors = Object.keys(formErrors).some(key => key.startsWith("exp_"));
+      if (hasExperienceErrors) {
+        setActiveTab("experience");
+        toast({
+          title: "Missing Information",
+          description: "Please fill all required fields in the Experience tab.",
           variant: "destructive"
         });
         return;
@@ -404,7 +431,7 @@ const ResumeBuilder = () => {
       customName: `Education #${education.length + 1}`,
       school: "",
       degree: "",
-      graduationDate: "",
+      graduationYear: "",
       score: ""
     };
     
@@ -425,6 +452,19 @@ const ResumeBuilder = () => {
   };
   
   const handleEducationChange = (id: string, field: keyof Education, value: string) => {
+    // For graduationYear, only allow 4-digit years
+    if (field === "graduationYear") {
+      // Remove non-numeric characters
+      const numericValue = value.replace(/[^0-9]/g, "");
+      // Limit to 4 characters
+      const yearValue = numericValue.substring(0, 4);
+      
+      setEducation(education.map(edu => 
+        edu.id === id ? { ...edu, [field]: yearValue } : edu
+      ));
+      return;
+    }
+    
     setEducation(education.map(edu => 
       edu.id === id ? { ...edu, [field]: value } : edu
     ));
@@ -465,6 +505,7 @@ const ResumeBuilder = () => {
     const newExperience: Experience = {
       id: `exp${experience.length + 1}`,
       jobTitle: "",
+      role: "",
       companyName: "",
       startDate: "",
       endDate: "",
@@ -895,17 +936,18 @@ const ResumeBuilder = () => {
                               <FormValidator value={edu.degree} required showMessage={false} />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor={`edu_${index}_graduationDate`} className="flex items-center">
-                                Graduation Date <span className="text-red-500 ml-1">*</span>
+                              <Label htmlFor={`edu_${index}_graduationYear`} className="flex items-center">
+                                Graduation Year <span className="text-red-500 ml-1">*</span>
                               </Label>
                               <Input 
-                                id={`edu_${index}_graduationDate`}
-                                type="date"
+                                id={`edu_${index}_graduationYear`}
+                                placeholder="YYYY"
                                 className="max-w-md"
-                                value={edu.graduationDate}
-                                onChange={(e) => handleEducationChange(edu.id, "graduationDate", e.target.value)}
+                                value={edu.graduationYear}
+                                onChange={(e) => handleEducationChange(edu.id, "graduationYear", e.target.value)}
+                                maxLength={4}
                               />
-                              <FormValidator value={edu.graduationDate} required showMessage={false} />
+                              <FormValidator value={edu.graduationYear} required showMessage={false} />
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor={`edu_${index}_score`} className="flex items-center">
@@ -946,7 +988,7 @@ const ResumeBuilder = () => {
                         {experience.map((exp, index) => (
                           <div key={exp.id} className="space-y-2">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium">{exp.jobTitle}</span>
+                              <span className="font-medium">{exp.jobTitle || `Experience #${index + 1}`}</span>
                               <Button 
                                 variant="outline" 
                                 size="sm"
@@ -954,6 +996,32 @@ const ResumeBuilder = () => {
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`exp_${index}_jobTitle`} className="flex items-center">
+                                Job Title <span className="text-red-500 ml-1">*</span>
+                              </Label>
+                              <Input 
+                                id={`exp_${index}_jobTitle`}
+                                placeholder="Job Title"
+                                className="max-w-md"
+                                value={exp.jobTitle}
+                                onChange={(e) => handleExperienceChange(exp.id, "jobTitle", e.target.value)}
+                              />
+                              <FormValidator value={exp.jobTitle} required showMessage={false} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`exp_${index}_role`} className="flex items-center">
+                                Role <span className="text-red-500 ml-1">*</span>
+                              </Label>
+                              <Input 
+                                id={`exp_${index}_role`}
+                                placeholder="Your role or position"
+                                className="max-w-md"
+                                value={exp.role}
+                                onChange={(e) => handleExperienceChange(exp.id, "role", e.target.value)}
+                              />
+                              <FormValidator value={exp.role} required showMessage={false} />
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor={`exp_${index}_companyName`} className="flex items-center">
@@ -974,7 +1042,7 @@ const ResumeBuilder = () => {
                               </Label>
                               <Input 
                                 id={`exp_${index}_startDate`}
-                                type="date"
+                                placeholder="MMM YYYY (e.g. Jan 2020)"
                                 className="max-w-md"
                                 value={exp.startDate}
                                 onChange={(e) => handleExperienceChange(exp.id, "startDate", e.target.value)}
@@ -987,16 +1055,29 @@ const ResumeBuilder = () => {
                               </Label>
                               <Input 
                                 id={`exp_${index}_endDate`}
-                                type="date"
+                                placeholder="MMM YYYY or Present"
                                 className="max-w-md"
                                 value={exp.endDate}
                                 onChange={(e) => handleExperienceChange(exp.id, "endDate", e.target.value)}
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor={`exp_${index}_description`} className="flex items-center">
-                                Description
-                              </Label>
+                              <div className="flex justify-between items-center">
+                                <Label htmlFor={`exp_${index}_description`} className="flex items-center">
+                                  Description
+                                </Label>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => generateAIContent("jobDescription", { id: exp.id })}
+                                  disabled={generatingAI || !exp.jobTitle}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Sparkles className="h-4 w-4" />
+                                  {generatingAI ? "Generating..." : "AI Suggest"}
+                                </Button>
+                              </div>
                               <Textarea 
                                 id={`exp_${index}_description`}
                                 placeholder="Description"
@@ -1032,7 +1113,7 @@ const ResumeBuilder = () => {
                         {projects.map((proj, index) => (
                           <div key={proj.id} className="space-y-2">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium">{proj.title}</span>
+                              <span className="font-medium">{proj.title || `Project #${index + 1}`}</span>
                               <Button 
                                 variant="outline" 
                                 size="sm"
@@ -1055,9 +1136,22 @@ const ResumeBuilder = () => {
                               <FormValidator value={proj.title} required showMessage={false} />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor={`proj_${index}_description`} className="flex items-center">
-                                Description
-                              </Label>
+                              <div className="flex justify-between items-center">
+                                <Label htmlFor={`proj_${index}_description`} className="flex items-center">
+                                  Description
+                                </Label>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => generateAIContent("projectDescription", { id: proj.id })}
+                                  disabled={generatingAI || !proj.title}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Sparkles className="h-4 w-4" />
+                                  {generatingAI ? "Generating..." : "AI Suggest"}
+                                </Button>
+                              </div>
                               <Textarea 
                                 id={`proj_${index}_description`}
                                 placeholder="Description"
