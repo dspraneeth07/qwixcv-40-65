@@ -177,8 +177,7 @@ const ResumeBuilder = () => {
       personalInfo.jobTitle.trim() !== "" && 
       personalInfo.email.trim() !== "" && 
       personalInfo.phone.trim() !== "" && 
-      personalInfo.location.trim() !== "" && 
-      personalInfo.summary.trim() !== "";
+      personalInfo.location.trim() !== "";
     
     const educationValid = education.every(edu => 
       edu.school.trim() !== "" && 
@@ -202,7 +201,6 @@ const ResumeBuilder = () => {
     if (personalInfo.email.trim() === "") errors.email = true;
     if (personalInfo.phone.trim() === "") errors.phone = true;
     if (personalInfo.location.trim() === "") errors.location = true;
-    if (personalInfo.summary.trim() === "") errors.summary = true;
     
     education.forEach((edu, index) => {
       if (edu.school.trim() === "") errors[`edu_${index}_school`] = true;
@@ -242,7 +240,7 @@ const ResumeBuilder = () => {
   const handleGenerate = () => {
     if (!formValid) {
       if (formErrors.firstName || formErrors.lastName || formErrors.jobTitle || 
-          formErrors.email || formErrors.phone || formErrors.location || formErrors.summary) {
+          formErrors.email || formErrors.phone || formErrors.location) {
         setActiveTab("personal");
         toast({
           title: "Missing Information",
@@ -554,12 +552,12 @@ const ResumeBuilder = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label htmlFor="firstName" className="flex items-center">
-                              First Name <span className="text-destructive ml-1">*</span>
+                              First Name <span className="text-[#8B5CF6] ml-1">*</span>
                             </Label>
                             <Input 
                               id="firstName"
                               placeholder="John"
-                              className={`max-w-md ${formErrors.firstName ? "border-destructive" : ""}`}
+                              className="max-w-md"
                               value={personalInfo.firstName}
                               onChange={(e) => setPersonalInfo({...personalInfo, firstName: e.target.value})}
                             />
@@ -567,12 +565,12 @@ const ResumeBuilder = () => {
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="lastName" className="flex items-center">
-                              Last Name <span className="text-destructive ml-1">*</span>
+                              Last Name <span className="text-[#8B5CF6] ml-1">*</span>
                             </Label>
                             <Input 
                               id="lastName"
                               placeholder="Doe"
-                              className={`max-w-md ${formErrors.lastName ? "border-destructive" : ""}`}
+                              className="max-w-md"
                               value={personalInfo.lastName}
                               onChange={(e) => setPersonalInfo({...personalInfo, lastName: e.target.value})}
                             />
@@ -582,12 +580,12 @@ const ResumeBuilder = () => {
                         
                         <div className="space-y-2">
                           <Label htmlFor="jobTitle" className="flex items-center">
-                            Professional Title <span className="text-destructive ml-1">*</span>
+                            Professional Title <span className="text-[#8B5CF6] ml-1">*</span>
                           </Label>
                           <Input 
                             id="jobTitle"
                             placeholder="Marketing Specialist"
-                            className={`max-w-md ${formErrors.jobTitle ? "border-destructive" : ""}`}
+                            className="max-w-md"
                             value={personalInfo.jobTitle}
                             onChange={(e) => setPersonalInfo({...personalInfo, jobTitle: e.target.value})}
                           />
@@ -601,13 +599,13 @@ const ResumeBuilder = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label htmlFor="email" className="flex items-center">
-                              Email <span className="text-destructive ml-1">*</span>
+                              Email <span className="text-[#8B5CF6] ml-1">*</span>
                             </Label>
                             <Input 
                               id="email"
                               type="email"
                               placeholder="john.doe@example.com"
-                              className={`max-w-md ${formErrors.email ? "border-destructive" : ""}`}
+                              className="max-w-md"
                               value={personalInfo.email}
                               onChange={(e) => setPersonalInfo({...personalInfo, email: e.target.value})}
                             />
@@ -615,7 +613,7 @@ const ResumeBuilder = () => {
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="phone" className="flex items-center">
-                              Phone <span className="text-destructive ml-1">*</span>
+                              Phone <span className="text-[#8B5CF6] ml-1">*</span>
                             </Label>
                             <div className="flex max-w-md gap-2">
                               <Select 
@@ -636,7 +634,7 @@ const ResumeBuilder = () => {
                               <Input 
                                 id="phone"
                                 placeholder="1234567890"
-                                className={`flex-1 ${formErrors.phone ? "border-destructive" : ""}`}
+                                className="flex-1"
                                 value={personalInfo.phone}
                                 onChange={handlePhoneChange}
                                 ref={phoneInputRef}
@@ -648,44 +646,16 @@ const ResumeBuilder = () => {
                         
                         <div className="space-y-2">
                           <Label htmlFor="location" className="flex items-center">
-                            Location <span className="text-destructive ml-1">*</span>
+                            Location <span className="text-[#8B5CF6] ml-1">*</span>
                           </Label>
                           <Input 
                             id="location"
                             placeholder="New York, NY"
-                            className={`max-w-md ${formErrors.location ? "border-destructive" : ""}`}
+                            className="max-w-md"
                             value={personalInfo.location}
                             onChange={(e) => setPersonalInfo({...personalInfo, location: e.target.value})}
                           />
                           <FormValidator value={personalInfo.location} required showMessage={false} />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="summary" className="flex items-center">
-                            Professional Summary <span className="text-destructive ml-1">*</span>
-                          </Label>
-                          <Textarea 
-                            id="summary" 
-                            placeholder="Experienced marketing professional with 5+ years in digital strategy..."
-                            rows={4}
-                            className={`w-full ${formErrors.summary ? "border-destructive" : ""}`}
-                            value={personalInfo.summary}
-                            onChange={(e) => setPersonalInfo({...personalInfo, summary: e.target.value})}
-                          />
-                          <FormValidator value={personalInfo.summary} required showMessage={false} />
-                          <div className="flex items-center gap-2 mt-1">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="gap-1 text-sm"
-                              onClick={() => generateAIContent("summary")}
-                              disabled={generatingAI}
-                            >
-                              <Lightbulb className="h-3 w-3" />
-                              AI Suggestions
-                            </Button>
-                            <span className="text-sm text-muted-foreground">Let AI write a compelling summary for you</span>
-                          </div>
                         </div>
                       </CardContent>
                     </Card>
