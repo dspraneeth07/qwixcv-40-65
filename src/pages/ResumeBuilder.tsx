@@ -1,4 +1,4 @@
-<lov-code>
+
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -587,7 +587,7 @@ const ResumeBuilder = () => {
                               value={personalInfo.firstName}
                               onChange={(e) => setPersonalInfo({...personalInfo, firstName: e.target.value})}
                             />
-                            <FormValidator value={personalInfo.firstName} required />
+                            <FormValidator value={personalInfo.firstName} required showMessage={false} />
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="lastName" className="flex items-center">
@@ -600,7 +600,7 @@ const ResumeBuilder = () => {
                               value={personalInfo.lastName}
                               onChange={(e) => setPersonalInfo({...personalInfo, lastName: e.target.value})}
                             />
-                            <FormValidator value={personalInfo.lastName} required />
+                            <FormValidator value={personalInfo.lastName} required showMessage={false} />
                           </div>
                         </div>
                         
@@ -615,7 +615,7 @@ const ResumeBuilder = () => {
                             value={personalInfo.jobTitle}
                             onChange={(e) => setPersonalInfo({...personalInfo, jobTitle: e.target.value})}
                           />
-                          <FormValidator value={personalInfo.jobTitle} required />
+                          <FormValidator value={personalInfo.jobTitle} required showMessage={false} />
                           <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                             <Sparkles className="h-3 w-3 text-primary" />
                             <span>AI suggests titles that match your experience</span>
@@ -635,7 +635,7 @@ const ResumeBuilder = () => {
                               value={personalInfo.email}
                               onChange={(e) => setPersonalInfo({...personalInfo, email: e.target.value})}
                             />
-                            <FormValidator value={personalInfo.email} required />
+                            <FormValidator value={personalInfo.email} required showMessage={false} />
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="phone" className="flex items-center">
@@ -666,7 +666,7 @@ const ResumeBuilder = () => {
                                 ref={phoneInputRef}
                               />
                             </div>
-                            <FormValidator value={personalInfo.phone} required />
+                            <FormValidator value={personalInfo.phone} required showMessage={false} />
                           </div>
                         </div>
                         
@@ -681,7 +681,7 @@ const ResumeBuilder = () => {
                             value={personalInfo.location}
                             onChange={(e) => setPersonalInfo({...personalInfo, location: e.target.value})}
                           />
-                          <FormValidator value={personalInfo.location} required />
+                          <FormValidator value={personalInfo.location} required showMessage={false} />
                         </div>
                         
                         <div className="space-y-2">
@@ -696,7 +696,7 @@ const ResumeBuilder = () => {
                             value={personalInfo.summary}
                             onChange={(e) => setPersonalInfo({...personalInfo, summary: e.target.value})}
                           />
-                          <FormValidator value={personalInfo.summary} required />
+                          <FormValidator value={personalInfo.summary} required showMessage={false} />
                           <div className="flex items-center gap-2 mt-1">
                             <Button 
                               variant="outline" 
@@ -763,7 +763,8 @@ const ResumeBuilder = () => {
                                   <FormValidator 
                                     value={edu.school} 
                                     required 
-                                    errorMessage="Institution name is required" 
+                                    errorMessage="Institution name is required"
+                                    showMessage={false}
                                   />
                                 </div>
                                 <div className="space-y-2">
@@ -780,7 +781,8 @@ const ResumeBuilder = () => {
                                   <FormValidator 
                                     value={edu.degree} 
                                     required 
-                                    errorMessage="Degree is required" 
+                                    errorMessage="Degree is required"
+                                    showMessage={false} 
                                   />
                                 </div>
                               </div>
@@ -800,7 +802,8 @@ const ResumeBuilder = () => {
                                   <FormValidator 
                                     value={edu.graduationDate} 
                                     required 
-                                    errorMessage="Graduation date is required" 
+                                    errorMessage="Graduation date is required"
+                                    showMessage={false} 
                                   />
                                 </div>
                                 <div className="space-y-2">
@@ -817,7 +820,8 @@ const ResumeBuilder = () => {
                                   <FormValidator 
                                     value={edu.score} 
                                     required 
-                                    errorMessage="Score is required" 
+                                    errorMessage="Score is required"
+                                    showMessage={false}
                                   />
                                   <div className="flex items-center gap-2 mt-1">
                                     <Button 
@@ -875,4 +879,293 @@ const ResumeBuilder = () => {
                               </div>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                  <Label htmlFor={`
+                                  <Label htmlFor={`jobTitle-${exp.id}`} className="flex items-center">
+                                    Job Title
+                                  </Label>
+                                  <Input 
+                                    id={`jobTitle-${exp.id}`}
+                                    placeholder="Senior Marketing Specialist"
+                                    value={exp.jobTitle}
+                                    onChange={(e) => handleExperienceChange(exp.id, "jobTitle", e.target.value)}
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor={`companyName-${exp.id}`} className="flex items-center">
+                                    Company Name
+                                  </Label>
+                                  <Input 
+                                    id={`companyName-${exp.id}`}
+                                    placeholder="ACME Corporation"
+                                    value={exp.companyName}
+                                    onChange={(e) => handleExperienceChange(exp.id, "companyName", e.target.value)}
+                                  />
+                                </div>
+                              </div>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                <div className="space-y-2">
+                                  <Label htmlFor={`startDate-${exp.id}`} className="flex items-center">
+                                    Start Date
+                                  </Label>
+                                  <Input 
+                                    id={`startDate-${exp.id}`}
+                                    placeholder="June 2018"
+                                    value={exp.startDate}
+                                    onChange={(e) => handleExperienceChange(exp.id, "startDate", e.target.value)}
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor={`endDate-${exp.id}`} className="flex items-center">
+                                    End Date
+                                  </Label>
+                                  <Input 
+                                    id={`endDate-${exp.id}`}
+                                    placeholder="Present (or Month Year)"
+                                    value={exp.endDate}
+                                    onChange={(e) => handleExperienceChange(exp.id, "endDate", e.target.value)}
+                                  />
+                                </div>
+                              </div>
+                              
+                              <div className="space-y-2 mt-4">
+                                <Label htmlFor={`description-${exp.id}`} className="flex items-center">
+                                  Description
+                                </Label>
+                                <Textarea 
+                                  id={`description-${exp.id}`}
+                                  placeholder="Describe your responsibilities and achievements..."
+                                  rows={3}
+                                  value={exp.description}
+                                  onChange={(e) => handleExperienceChange(exp.id, "description", e.target.value)}
+                                />
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="gap-1 text-sm"
+                                    onClick={() => generateAIContent("jobDescription", {id: exp.id})}
+                                    disabled={generatingAI}
+                                  >
+                                    <Lightbulb className="h-3 w-3" />
+                                    AI Suggestions
+                                  </Button>
+                                  <span className="text-sm text-muted-foreground">Let AI write job descriptions for you</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          
+                          <Button 
+                            variant="outline" 
+                            className="gap-2 w-full"
+                            onClick={handleAddExperience}
+                          >
+                            <Plus className="h-4 w-4" />
+                            Add Another Experience
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="skills" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Skills</CardTitle>
+                        <CardDescription>
+                          Add your professional and technical skills
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex justify-end">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="gap-1 text-sm mb-4"
+                            onClick={() => generateAIContent("skillSuggestions")}
+                            disabled={generatingAI}
+                          >
+                            <Sparkles className="h-3 w-3" />
+                            Get AI Skills Suggestions
+                          </Button>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="professionalSkills" className="flex items-center">
+                              Professional Skills <span className="text-destructive ml-1">*</span>
+                            </Label>
+                            <Textarea 
+                              id="professionalSkills" 
+                              placeholder="Project Management, Strategic Planning, Team Leadership..."
+                              rows={3}
+                              className={`w-full ${formErrors.professional ? "border-destructive" : ""}`}
+                              value={skills.professional}
+                              onChange={(e) => setSkills({...skills, professional: e.target.value})}
+                            />
+                            <FormValidator value={skills.professional} required showMessage={false} />
+                            <p className="text-sm text-muted-foreground">
+                              List professional skills related to your field, separated by commas
+                            </p>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="technicalSkills" className="flex items-center">
+                              Technical Skills <span className="text-destructive ml-1">*</span>
+                            </Label>
+                            <Textarea 
+                              id="technicalSkills" 
+                              placeholder="Microsoft Office, Adobe Photoshop, HTML/CSS..."
+                              rows={3}
+                              className={`w-full ${formErrors.technical ? "border-destructive" : ""}`}
+                              value={skills.technical}
+                              onChange={(e) => setSkills({...skills, technical: e.target.value})}
+                            />
+                            <FormValidator value={skills.technical} required showMessage={false} />
+                            <p className="text-sm text-muted-foreground">
+                              List software, tools, and technologies you're proficient in
+                            </p>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="softSkills" className="flex items-center">
+                              Soft Skills <span className="text-destructive ml-1">*</span>
+                            </Label>
+                            <Textarea 
+                              id="softSkills" 
+                              placeholder="Communication, Leadership, Problem-solving..."
+                              rows={3}
+                              className={`w-full ${formErrors.soft ? "border-destructive" : ""}`}
+                              value={skills.soft}
+                              onChange={(e) => setSkills({...skills, soft: e.target.value})}
+                            />
+                            <FormValidator value={skills.soft} required showMessage={false} />
+                            <p className="text-sm text-muted-foreground">
+                              List interpersonal and character traits that make you stand out
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="objectives" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Career Objective</CardTitle>
+                        <CardDescription>
+                          State your professional goal and what you're looking for
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="objective" className="flex items-center">
+                            Career Objective <span className="text-destructive ml-1">*</span>
+                          </Label>
+                          <Textarea 
+                            id="objective" 
+                            placeholder="Seeking a challenging position in..."
+                            rows={4}
+                            className={`w-full ${formErrors.objective ? "border-destructive" : ""}`}
+                            value={objective}
+                            onChange={(e) => setObjective(e.target.value)}
+                          />
+                          <FormValidator value={objective} required showMessage={false} />
+                          <div className="flex items-center gap-2 mt-1">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="gap-1 text-sm"
+                              onClick={() => generateAIContent("objective")}
+                              disabled={generatingAI}
+                            >
+                              <Lightbulb className="h-3 w-3" />
+                              AI Suggestions
+                            </Button>
+                            <span className="text-sm text-muted-foreground">Let AI create a professional objective for you</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between mt-8 pt-4 border-t">
+                          <Button
+                            variant="outline"
+                            onClick={handlePrevious}
+                          >
+                            Back
+                          </Button>
+                          <Button
+                            onClick={handleGenerate}
+                            disabled={!formValid}
+                          >
+                            <Download className="mr-2 h-4 w-4" />
+                            Generate Resume
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
+                
+                <div className="p-4 flex items-center justify-between border-t">
+                  <Button
+                    variant="outline"
+                    onClick={handlePrevious}
+                    disabled={activeTab === "personal"}
+                  >
+                    Back
+                  </Button>
+                  
+                  <div className="flex items-center gap-2">
+                    {!formValid && (
+                      <span className="text-sm text-destructive">
+                        Please fill all required fields
+                      </span>
+                    )}
+                    {activeTab !== "objectives" ? (
+                      <Button
+                        onClick={handleNext}
+                      >
+                        Next Step
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={handleGenerate}
+                        disabled={!formValid}
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Generate Resume
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {showLivePreview && (
+              <div className="hidden lg:block">
+                <div className="sticky top-4">
+                  <div className="bg-card shadow-sm rounded-lg border overflow-hidden">
+                    <div className="p-4 border-b">
+                      <h3 className="font-medium">Live Preview</h3>
+                    </div>
+                    
+                    <div className="p-0 max-h-[calc(100vh-200px)] overflow-y-auto">
+                      <div className="scale-[0.65] origin-top transform p-6">
+                        <ResumePreviewContent 
+                          resumeData={getResumeData()}
+                          templateId={templateId}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
+};
+
+export default ResumeBuilder;
