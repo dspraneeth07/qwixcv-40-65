@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -60,13 +61,6 @@ const ResumePreview = () => {
           <div className="mb-6">
             <h3 className="text-lg font-semibold border-b pb-1 mb-2">Career Objective</h3>
             <p className="text-sm">{objective}</p>
-          </div>
-        )}
-        
-        {personalInfo?.summary && (
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold border-b pb-1 mb-2">Professional Summary</h3>
-            <p className="text-sm">{personalInfo.summary}</p>
           </div>
         )}
         
@@ -226,13 +220,6 @@ export const ResumePreviewContent = ({ data, templateId }: { data: any, template
           <div className="mb-3">
             <h3 className="text-sm font-semibold border-b pb-1 mb-1">Career Objective</h3>
             <p className="text-xs">{objective}</p>
-          </div>
-        )}
-        
-        {personalInfo?.summary && (
-          <div className="mb-3">
-            <h3 className="text-sm font-semibold border-b pb-1 mb-1">Professional Summary</h3>
-            <p className="text-xs">{personalInfo.summary}</p>
           </div>
         )}
         

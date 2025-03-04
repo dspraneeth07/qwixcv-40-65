@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -34,7 +33,6 @@ import { toast } from "@/components/ui/use-toast";
 import { ResumePreviewContent } from "./ResumePreview";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-// Interface for education entries
 interface Education {
   id: string;
   customName: string;
@@ -44,7 +42,6 @@ interface Education {
   score: string;
 }
 
-// Interface for work experience entries
 interface Experience {
   id: string;
   jobTitle: string;
@@ -54,7 +51,6 @@ interface Experience {
   description: string;
 }
 
-// Interface for personal information
 interface PersonalInfo {
   firstName: string;
   lastName: string;
@@ -66,14 +62,12 @@ interface PersonalInfo {
   summary: string;
 }
 
-// Interface for skills
 interface Skills {
   professional: string;
   technical: string;
   soft: string;
 }
 
-// Country codes for the dropdown
 const countryCodes = [
   { value: "+1", label: "United States (+1)" },
   { value: "+44", label: "United Kingdom (+44)" },
@@ -93,19 +87,18 @@ const countryCodes = [
 const ResumeBuilder = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const templateId = searchParams.get("template") || "modern1"; // Default template
+  const templateId = searchParams.get("template") || "modern1";
   const [activeTab, setActiveTab] = useState("personal");
   const [formValid, setFormValid] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, boolean>>({});
   
-  // Form data state
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
     firstName: "",
     lastName: "",
     jobTitle: "",
     email: "",
     phone: "",
-    countryCode: "+1", // Default to US country code
+    countryCode: "+1",
     location: "",
     summary: ""
   });
@@ -142,23 +135,17 @@ const ResumeBuilder = () => {
   const [generatingAI, setGeneratingAI] = useState(false);
   const [showLivePreview, setShowLivePreview] = useState(true);
   
-  // Ref for country code detection
   const phoneInputRef = useRef<HTMLInputElement>(null);
   
   useEffect(() => {
-    // Detect country code based on user's location (simplified example)
-    // In a real app, you would use a geolocation API or service
     const detectCountryCode = async () => {
       try {
-        // This is a placeholder - in a real app you'd use a geolocation service
-        // For demo purposes, we'll stick with +1 (US)
         setPersonalInfo(prev => ({
           ...prev,
           countryCode: "+1"
         }));
       } catch (error) {
         console.error("Error detecting country code:", error);
-        // Default to +1 if detection fails
         setPersonalInfo(prev => ({
           ...prev,
           countryCode: "+1"
@@ -169,12 +156,11 @@ const ResumeBuilder = () => {
     detectCountryCode();
   }, []);
 
-  // Prepare resume data for preview
   const getResumeData = () => {
     return {
       personalInfo: {
         ...personalInfo,
-        phone: `${personalInfo.countryCode} ${personalInfo.phone}`
+        phone: personalInfo.phone ? `${personalInfo.countryCode} ${personalInfo.phone}` : ""
       },
       education,
       experience,
@@ -184,9 +170,7 @@ const ResumeBuilder = () => {
     };
   };
 
-  // Validate form fields
   useEffect(() => {
-    // Check personal info section
     const personalInfoValid = 
       personalInfo.firstName.trim() !== "" && 
       personalInfo.lastName.trim() !== "" && 
@@ -196,7 +180,6 @@ const ResumeBuilder = () => {
       personalInfo.location.trim() !== "" && 
       personalInfo.summary.trim() !== "";
     
-    // Check education section
     const educationValid = education.every(edu => 
       edu.school.trim() !== "" && 
       edu.degree.trim() !== "" && 
@@ -204,21 +187,15 @@ const ResumeBuilder = () => {
       edu.score.trim() !== ""
     );
     
-    // Check skills section
     const skillsValid = 
       skills.professional.trim() !== "" && 
       skills.technical.trim() !== "" && 
       skills.soft.trim() !== "";
     
-    // Check objective
     const objectiveValid = objective.trim() !== "";
     
-    // Work experience is optional
-    
-    // Collect specific errors
     const errors: Record<string, boolean> = {};
     
-    // Personal info fields
     if (personalInfo.firstName.trim() === "") errors.firstName = true;
     if (personalInfo.lastName.trim() === "") errors.lastName = true;
     if (personalInfo.jobTitle.trim() === "") errors.jobTitle = true;
@@ -227,7 +204,6 @@ const ResumeBuilder = () => {
     if (personalInfo.location.trim() === "") errors.location = true;
     if (personalInfo.summary.trim() === "") errors.summary = true;
     
-    // Education fields
     education.forEach((edu, index) => {
       if (edu.school.trim() === "") errors[`edu_${index}_school`] = true;
       if (edu.degree.trim() === "") errors[`edu_${index}_degree`] = true;
@@ -235,12 +211,10 @@ const ResumeBuilder = () => {
       if (edu.score.trim() === "") errors[`edu_${index}_score`] = true;
     });
     
-    // Skills fields
     if (skills.professional.trim() === "") errors.professional = true;
     if (skills.technical.trim() === "") errors.technical = true;
     if (skills.soft.trim() === "") errors.soft = true;
     
-    // Objective
     if (objective.trim() === "") errors.objective = true;
     
     setFormErrors(errors);
@@ -267,7 +241,6 @@ const ResumeBuilder = () => {
   
   const handleGenerate = () => {
     if (!formValid) {
-      // Show which tab has errors
       if (formErrors.firstName || formErrors.lastName || formErrors.jobTitle || 
           formErrors.email || formErrors.phone || formErrors.location || formErrors.summary) {
         setActiveTab("personal");
@@ -279,7 +252,6 @@ const ResumeBuilder = () => {
         return;
       }
       
-      // Check education errors
       const hasEducationErrors = Object.keys(formErrors).some(key => key.startsWith("edu_"));
       if (hasEducationErrors) {
         setActiveTab("education");
@@ -291,7 +263,6 @@ const ResumeBuilder = () => {
         return;
       }
       
-      // Check skills errors
       if (formErrors.professional || formErrors.technical || formErrors.soft) {
         setActiveTab("skills");
         toast({
@@ -302,7 +273,6 @@ const ResumeBuilder = () => {
         return;
       }
       
-      // Check objective error
       if (formErrors.objective) {
         setActiveTab("objectives");
         toast({
@@ -316,7 +286,6 @@ const ResumeBuilder = () => {
       return;
     }
     
-    // Gather all resume data
     const resumeData = getResumeData();
     
     console.log("Generating resume with data:", resumeData);
@@ -326,13 +295,21 @@ const ResumeBuilder = () => {
       description: "Your professional resume has been created successfully.",
     });
     
-    // Open resume preview in new tab
-    const resumeUrl = `/resume-preview?data=${encodeURIComponent(JSON.stringify(resumeData))}`;
-    window.open(resumeUrl, "_blank");
+    try {
+      const encodedData = encodeURIComponent(JSON.stringify(resumeData));
+      const resumeUrl = `/resume-preview?data=${encodedData}`;
+      window.open(resumeUrl, "_blank");
+    } catch (error) {
+      console.error("Error encoding resume data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate resume. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
   
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Only allow numbers
     const value = e.target.value;
     const numericValue = value.replace(/[^0-9]/g, "");
     
@@ -416,7 +393,6 @@ const ResumeBuilder = () => {
   const generateAIContent = (type: string, context: any = {}) => {
     setGeneratingAI(true);
     
-    // Simulate AI suggestion generation
     setTimeout(() => {
       let generatedContent = "";
       
