@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -59,7 +60,6 @@ interface PersonalInfo {
   phone: string;
   countryCode: string;
   location: string;
-  summary: string;
 }
 
 interface Skills {
@@ -99,8 +99,7 @@ const ResumeBuilder = () => {
     email: "",
     phone: "",
     countryCode: "+1",
-    location: "",
-    summary: ""
+    location: ""
   });
   
   const [education, setEducation] = useState<Education[]>([
@@ -296,7 +295,7 @@ const ResumeBuilder = () => {
     try {
       const encodedData = encodeURIComponent(JSON.stringify(resumeData));
       const resumeUrl = `/resume-preview?data=${encodedData}`;
-      window.open(resumeUrl, "_blank");
+      navigate(resumeUrl);
     } catch (error) {
       console.error("Error encoding resume data:", error);
       toast({
@@ -395,16 +394,22 @@ const ResumeBuilder = () => {
       let generatedContent = "";
       
       switch (type) {
-        case "summary":
-          generatedContent = `Experienced ${personalInfo.jobTitle || "professional"} with a strong background in ${skills.professional || "various industries"}. Skilled in ${skills.technical || "relevant technical areas"} with excellent ${skills.soft || "soft skills"}. Seeking to leverage my expertise to drive results and contribute to organizational success.`;
-          setPersonalInfo({
-            ...personalInfo,
-            summary: generatedContent
-          });
-          break;
-          
         case "jobDescription":
-          generatedContent = `• Led cross-functional teams to achieve project objectives and business goals\n• Increased efficiency by 20% through implementation of streamlined processes\n• Collaborated with stakeholders to ensure alignment with organizational strategy\n• Managed resources effectively to optimize productivity and performance`;
+          const jobTitle = experience.find(exp => exp.id === context.id)?.jobTitle || "";
+          
+          if (jobTitle.toLowerCase().includes("marketing")) {
+            generatedContent = `• Developed and executed comprehensive marketing campaigns across digital and traditional channels\n• Increased brand visibility by 30% through strategic social media management\n• Conducted market research to identify customer needs and competitive positioning\n• Collaborated with creative teams to develop compelling marketing materials\n• Tracked campaign performance using analytics tools and presented results to leadership`;
+          } else if (jobTitle.toLowerCase().includes("developer") || jobTitle.toLowerCase().includes("engineer")) {
+            generatedContent = `• Designed and developed scalable application features using modern frameworks and best practices\n• Collaborated with cross-functional teams to implement new product capabilities\n• Reduced application load time by 40% through performance optimization\n• Implemented automated testing, resulting in a 25% decrease in production bugs\n• Participated in code reviews and mentored junior developers`;
+          } else if (jobTitle.toLowerCase().includes("manager")) {
+            generatedContent = `• Led a team of 10+ professionals, providing mentorship and performance evaluations\n• Increased department efficiency by 20% through process improvements and tool adoption\n• Managed project budgets exceeding $500,000 with consistent on-time delivery\n• Developed strategic plans aligned with company objectives and market trends\n• Built strong relationships with key stakeholders and clients`;
+          } else if (jobTitle.toLowerCase().includes("sales")) {
+            generatedContent = `• Consistently exceeded quarterly sales targets by 15-20%\n• Built and maintained a portfolio of 50+ enterprise clients\n• Developed and implemented successful sales strategies for new market segments\n• Conducted product demonstrations and negotiations with potential clients\n• Collaborated with marketing team to develop targeted outreach campaigns`;
+          } else if (jobTitle.toLowerCase().includes("design")) {
+            generatedContent = `• Created user-centered designs for web and mobile applications\n• Developed brand identity systems including logos, color palettes, and style guides\n• Conducted user research and usability testing to inform design decisions\n• Collaborated with development team to ensure design implementation accuracy\n• Maintained design system documentation and component libraries`;
+          } else {
+            generatedContent = `• Implemented key initiatives that resulted in significant improvements to company operations\n• Collaborated with cross-functional teams to achieve project objectives and business goals\n• Increased efficiency by 20% through implementation of streamlined processes\n• Developed and maintained positive relationships with key stakeholders\n• Recognized for exceptional performance and problem-solving abilities`;
+          }
           
           setExperience(experience.map(exp => 
             exp.id === context.id ? { ...exp, description: generatedContent } : exp
@@ -443,14 +448,6 @@ const ResumeBuilder = () => {
               soft: "Communication, Leadership, Problem-solving, Decision Making, Time Management"
             });
           }
-          break;
-        
-        case "personalSummary":
-          generatedContent = `Dedicated ${personalInfo.jobTitle || "professional"} with a passion for excellence and a track record of achieving results. Based in ${personalInfo.location || "my current location"}, I offer a unique combination of expertise and soft skills that enable me to excel in dynamic environments.`;
-          setPersonalInfo({
-            ...personalInfo,
-            summary: generatedContent
-          });
           break;
       }
       
@@ -666,28 +663,6 @@ const ResumeBuilder = () => {
                           <FormValidator value={personalInfo.location} required showMessage={false} />
                         </div>
                         
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <Label htmlFor="summary">Professional Summary</Label>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="gap-1 text-xs"
-                              onClick={() => generateAIContent("personalSummary")}
-                              disabled={generatingAI}
-                            >
-                              <Sparkles className="h-3 w-3" />
-                              Generate with AI
-                            </Button>
-                          </div>
-                          <Textarea 
-                            id="summary"
-                            placeholder="Brief overview of your professional background and goals"
-                            className="min-h-[100px]"
-                            value={personalInfo.summary}
-                            onChange={(e) => setPersonalInfo({...personalInfo, summary: e.target.value})}
-                          />
-                        </div>
                       </CardContent>
                     </Card>
                   </TabsContent>
