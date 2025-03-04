@@ -552,7 +552,7 @@ const ResumeBuilder = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label htmlFor="firstName" className="flex items-center">
-                              First Name <span className="text-[#8B5CF6] ml-1">*</span>
+                              First Name <span className="text-red-500 ml-1">*</span>
                             </Label>
                             <Input 
                               id="firstName"
@@ -565,7 +565,7 @@ const ResumeBuilder = () => {
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="lastName" className="flex items-center">
-                              Last Name <span className="text-[#8B5CF6] ml-1">*</span>
+                              Last Name <span className="text-red-500 ml-1">*</span>
                             </Label>
                             <Input 
                               id="lastName"
@@ -580,7 +580,7 @@ const ResumeBuilder = () => {
                         
                         <div className="space-y-2">
                           <Label htmlFor="jobTitle" className="flex items-center">
-                            Professional Title <span className="text-[#8B5CF6] ml-1">*</span>
+                            Professional Title <span className="text-red-500 ml-1">*</span>
                           </Label>
                           <Input 
                             id="jobTitle"
@@ -599,7 +599,7 @@ const ResumeBuilder = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label htmlFor="email" className="flex items-center">
-                              Email <span className="text-[#8B5CF6] ml-1">*</span>
+                              Email <span className="text-red-500 ml-1">*</span>
                             </Label>
                             <Input 
                               id="email"
@@ -613,7 +613,7 @@ const ResumeBuilder = () => {
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="phone" className="flex items-center">
-                              Phone <span className="text-[#8B5CF6] ml-1">*</span>
+                              Phone <span className="text-red-500 ml-1">*</span>
                             </Label>
                             <div className="flex max-w-md gap-2">
                               <Select 
@@ -646,7 +646,7 @@ const ResumeBuilder = () => {
                         
                         <div className="space-y-2">
                           <Label htmlFor="location" className="flex items-center">
-                            Location <span className="text-[#8B5CF6] ml-1">*</span>
+                            Location <span className="text-red-500 ml-1">*</span>
                           </Label>
                           <Input 
                             id="location"
@@ -676,7 +676,7 @@ const ResumeBuilder = () => {
                               <div className="flex justify-between items-start mb-3">
                                 <div className="space-y-2 max-w-xs">
                                   <Label htmlFor={`customName-${edu.id}`} className="flex items-center">
-                                    Entry Name <span className="text-destructive ml-1">*</span>
+                                    Entry Name <span className="text-red-500 ml-1">*</span>
                                   </Label>
                                   <Input 
                                     id={`customName-${edu.id}`}
@@ -697,7 +697,7 @@ const ResumeBuilder = () => {
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                   <Label htmlFor={`school-${edu.id}`} className="flex items-center">
-                                    School/University <span className="text-destructive ml-1">*</span>
+                                    School/University <span className="text-red-500 ml-1">*</span>
                                   </Label>
                                   <Input 
                                     id={`school-${edu.id}`}
@@ -715,7 +715,7 @@ const ResumeBuilder = () => {
                                 </div>
                                 <div className="space-y-2">
                                   <Label htmlFor={`degree-${edu.id}`} className="flex items-center">
-                                    Degree <span className="text-destructive ml-1">*</span>
+                                    Degree <span className="text-red-500 ml-1">*</span>
                                   </Label>
                                   <Input 
                                     id={`degree-${edu.id}`}
@@ -736,7 +736,7 @@ const ResumeBuilder = () => {
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                 <div className="space-y-2">
                                   <Label htmlFor={`graduationDate-${edu.id}`} className="flex items-center">
-                                    Year of Completion <span className="text-destructive ml-1">*</span>
+                                    Year of Completion <span className="text-red-500 ml-1">*</span>
                                   </Label>
                                   <Input 
                                     id={`graduationDate-${edu.id}`}
@@ -754,7 +754,7 @@ const ResumeBuilder = () => {
                                 </div>
                                 <div className="space-y-2">
                                   <Label htmlFor={`score-${edu.id}`} className="flex items-center">
-                                    Score/GPA <span className="text-destructive ml-1">*</span>
+                                    Score/GPA <span className="text-red-500 ml-1">*</span>
                                   </Label>
                                   <Input 
                                     id={`score-${edu.id}`}
@@ -825,7 +825,7 @@ const ResumeBuilder = () => {
                               </div>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                  <Label htmlFor={`jobTitle-${exp.id}`} className="flex items-center">
+                                  <Label htmlFor={`jobTitle-${exp.id}`}>
                                     Job Title
                                   </Label>
                                   <Input 
@@ -836,7 +836,7 @@ const ResumeBuilder = () => {
                                   />
                                 </div>
                                 <div className="space-y-2">
-                                  <Label htmlFor={`companyName-${exp.id}`} className="flex items-center">
+                                  <Label htmlFor={`companyName-${exp.id}`}>
                                     Company Name
                                   </Label>
                                   <Input 
@@ -850,7 +850,7 @@ const ResumeBuilder = () => {
                               
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                 <div className="space-y-2">
-                                  <Label htmlFor={`startDate-${exp.id}`} className="flex items-center">
+                                  <Label htmlFor={`startDate-${exp.id}`}>
                                     Start Date
                                   </Label>
                                   <Input 
@@ -861,7 +861,7 @@ const ResumeBuilder = () => {
                                   />
                                 </div>
                                 <div className="space-y-2">
-                                  <Label htmlFor={`endDate-${exp.id}`} className="flex items-center">
+                                  <Label htmlFor={`endDate-${exp.id}`}>
                                     End Date
                                   </Label>
                                   <Input 
@@ -874,244 +874,4 @@ const ResumeBuilder = () => {
                               </div>
                               
                               <div className="space-y-2 mt-4">
-                                <Label htmlFor={`description-${exp.id}`} className="flex items-center">
-                                  Description
-                                </Label>
-                                <Textarea 
-                                  id={`description-${exp.id}`}
-                                  placeholder="Describe your responsibilities and achievements..."
-                                  rows={3}
-                                  value={exp.description}
-                                  onChange={(e) => handleExperienceChange(exp.id, "description", e.target.value)}
-                                />
-                                <div className="flex items-center gap-2 mt-1">
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    className="gap-1 text-sm"
-                                    onClick={() => generateAIContent("jobDescription", {id: exp.id})}
-                                    disabled={generatingAI}
-                                  >
-                                    <Lightbulb className="h-3 w-3" />
-                                    AI Suggestions
-                                  </Button>
-                                  <span className="text-sm text-muted-foreground">Let AI write job descriptions for you</span>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                          
-                          <Button 
-                            variant="outline" 
-                            className="gap-2 w-full"
-                            onClick={handleAddExperience}
-                          >
-                            <Plus className="h-4 w-4" />
-                            Add Another Experience
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                  
-                  <TabsContent value="skills" className="p-0">
-                    <Card className="border-0 shadow-none">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-xl">Skills</CardTitle>
-                        <CardDescription>
-                          Add your professional and technical skills
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="flex justify-end">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="gap-1 text-sm mb-4"
-                            onClick={() => generateAIContent("skillSuggestions")}
-                            disabled={generatingAI}
-                          >
-                            <Sparkles className="h-3 w-3" />
-                            Get AI Skills Suggestions
-                          </Button>
-                        </div>
-                        
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="professionalSkills" className="flex items-center">
-                              Professional Skills <span className="text-destructive ml-1">*</span>
-                            </Label>
-                            <Textarea 
-                              id="professionalSkills" 
-                              placeholder="Project Management, Strategic Planning, Team Leadership..."
-                              rows={3}
-                              className={`w-full ${formErrors.professional ? "border-destructive" : ""}`}
-                              value={skills.professional}
-                              onChange={(e) => setSkills({...skills, professional: e.target.value})}
-                            />
-                            <FormValidator value={skills.professional} required showMessage={false} />
-                            <p className="text-sm text-muted-foreground">
-                              List professional skills related to your field, separated by commas
-                            </p>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label htmlFor="technicalSkills" className="flex items-center">
-                              Technical Skills <span className="text-destructive ml-1">*</span>
-                            </Label>
-                            <Textarea 
-                              id="technicalSkills" 
-                              placeholder="Microsoft Office, Adobe Photoshop, HTML/CSS..."
-                              rows={3}
-                              className={`w-full ${formErrors.technical ? "border-destructive" : ""}`}
-                              value={skills.technical}
-                              onChange={(e) => setSkills({...skills, technical: e.target.value})}
-                            />
-                            <FormValidator value={skills.technical} required showMessage={false} />
-                            <p className="text-sm text-muted-foreground">
-                              List software, tools, and technologies you're proficient in
-                            </p>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label htmlFor="softSkills" className="flex items-center">
-                              Soft Skills <span className="text-destructive ml-1">*</span>
-                            </Label>
-                            <Textarea 
-                              id="softSkills" 
-                              placeholder="Communication, Leadership, Problem-solving..."
-                              rows={3}
-                              className={`w-full ${formErrors.soft ? "border-destructive" : ""}`}
-                              value={skills.soft}
-                              onChange={(e) => setSkills({...skills, soft: e.target.value})}
-                            />
-                            <FormValidator value={skills.soft} required showMessage={false} />
-                            <p className="text-sm text-muted-foreground">
-                              List interpersonal and character traits that make you stand out
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                  
-                  <TabsContent value="objectives" className="p-0">
-                    <Card className="border-0 shadow-none">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-xl">Career Objective</CardTitle>
-                        <CardDescription>
-                          State your professional goal and what you're looking for
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="objective" className="flex items-center">
-                            Career Objective <span className="text-destructive ml-1">*</span>
-                          </Label>
-                          <Textarea 
-                            id="objective" 
-                            placeholder="Seeking a challenging position in..."
-                            rows={4}
-                            className={`w-full ${formErrors.objective ? "border-destructive" : ""}`}
-                            value={objective}
-                            onChange={(e) => setObjective(e.target.value)}
-                          />
-                          <FormValidator value={objective} required showMessage={false} />
-                          <div className="flex items-center gap-2 mt-1">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="gap-1 text-sm"
-                              onClick={() => generateAIContent("objective")}
-                              disabled={generatingAI}
-                            >
-                              <Lightbulb className="h-3 w-3" />
-                              AI Suggestions
-                            </Button>
-                            <span className="text-sm text-muted-foreground">Let AI create a professional objective for you</span>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between mt-8 pt-4 border-t">
-                          <Button
-                            variant="outline"
-                            onClick={handlePrevious}
-                          >
-                            Back
-                          </Button>
-                          <Button
-                            onClick={handleGenerate}
-                            disabled={!formValid}
-                          >
-                            <Download className="mr-2 h-4 w-4" />
-                            Generate Resume
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                </Tabs>
-                
-                <div className="p-4 flex items-center justify-between border-t">
-                  <Button
-                    variant="outline"
-                    onClick={handlePrevious}
-                    disabled={activeTab === "personal"}
-                  >
-                    Back
-                  </Button>
-                  
-                  <div className="flex items-center gap-2">
-                    {!formValid && (
-                      <span className="text-sm text-destructive">
-                        Please fill all required fields
-                      </span>
-                    )}
-                    {activeTab !== "objectives" ? (
-                      <Button
-                        onClick={handleNext}
-                      >
-                        Next Step
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={handleGenerate}
-                        disabled={!formValid}
-                      >
-                        <Download className="mr-2 h-4 w-4" />
-                        Generate Resume
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {showLivePreview && (
-              <div className="hidden lg:block">
-                <div className="sticky top-4">
-                  <div className="bg-card shadow-sm rounded-lg border overflow-hidden">
-                    <div className="p-4 border-b">
-                      <h3 className="font-medium">Live Preview</h3>
-                    </div>
-                    
-                    <div className="p-0 max-h-[calc(100vh-200px)] overflow-y-auto">
-                      <div className="scale-[0.65] origin-top transform p-6">
-                        <ResumePreviewContent 
-                          data={getResumeData()}
-                          templateId={templateId}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </MainLayout>
-  );
-};
-
-export default ResumeBuilder;
+                                <Label htmlFor={`description-${exp.id}`}>
