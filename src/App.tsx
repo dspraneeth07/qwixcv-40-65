@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Templates from "./pages/Templates";
 import ResumeBuilder from "./pages/ResumeBuilder";
+import ResumePreview from "./pages/ResumePreview";
 import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/templates" element={<Templates />} />
           <Route path="/builder" element={<ResumeBuilder />} />
+          <Route path="/resume-preview" element={<ResumePreview />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />

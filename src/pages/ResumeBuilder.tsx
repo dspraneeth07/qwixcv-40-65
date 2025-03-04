@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,14 +14,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { FormValidator } from "@/components/ui/form-validator";
 import { 
   Download, 
   Plus, 
   Lightbulb, 
   Sparkles, 
   FileText, 
-  Eye,
   Trash2,
   Save,
   ListChecks,
@@ -35,11 +34,10 @@ import { toast } from "@/components/ui/use-toast";
 // Interface for education entries
 interface Education {
   id: string;
+  customName: string;
   school: string;
   degree: string;
-  fieldOfStudy: string;
   graduationDate: string;
-  description: string;
   score: string;
 }
 
@@ -47,7 +45,7 @@ interface Education {
 interface Experience {
   id: string;
   jobTitle: string;
-  employer: string;
+  companyName: string;
   startDate: string;
   endDate: string;
   description: string;
@@ -73,8 +71,11 @@ interface Skills {
 
 const ResumeBuilder = () => {
   const [searchParams] = useSearchParams();
-  const templateId = searchParams.get("template");
+  const navigate = useNavigate();
+  const templateId = searchParams.get("template") || "modern1"; // Default template
   const [activeTab, setActiveTab] = useState("personal");
+  const [formValid, setFormValid] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, boolean>>({});
   
   // Form data state
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
@@ -90,11 +91,10 @@ const ResumeBuilder = () => {
   const [education, setEducation] = useState<Education[]>([
     {
       id: "edu1",
+      customName: "Education #1",
       school: "",
       degree: "",
-      fieldOfStudy: "",
       graduationDate: "",
-      description: "",
       score: ""
     }
   ]);
@@ -103,7 +103,7 @@ const ResumeBuilder = () => {
     {
       id: "exp1",
       jobTitle: "",
-      employer: "",
+      companyName: "",
       startDate: "",
       endDate: "",
       description: ""
@@ -140,6 +140,69 @@ const ResumeBuilder = () => {
     
     detectCountryCode();
   }, []);
+
+  // Validate form fields
+  useEffect(() => {
+    // Check personal info section
+    const personalInfoValid = 
+      personalInfo.firstName.trim() !== "" && 
+      personalInfo.lastName.trim() !== "" && 
+      personalInfo.jobTitle.trim() !== "" && 
+      personalInfo.email.trim() !== "" && 
+      personalInfo.phone.trim() !== "" && 
+      personalInfo.location.trim() !== "" && 
+      personalInfo.summary.trim() !== "";
+    
+    // Check education section
+    const educationValid = education.every(edu => 
+      edu.school.trim() !== "" && 
+      edu.degree.trim() !== "" && 
+      edu.graduationDate.trim() !== "" && 
+      edu.score.trim() !== ""
+    );
+    
+    // Check skills section
+    const skillsValid = 
+      skills.professional.trim() !== "" && 
+      skills.technical.trim() !== "" && 
+      skills.soft.trim() !== "";
+    
+    // Check objective
+    const objectiveValid = objective.trim() !== "";
+    
+    // Work experience is optional
+    
+    // Collect specific errors
+    const errors: Record<string, boolean> = {};
+    
+    // Personal info fields
+    if (personalInfo.firstName.trim() === "") errors.firstName = true;
+    if (personalInfo.lastName.trim() === "") errors.lastName = true;
+    if (personalInfo.jobTitle.trim() === "") errors.jobTitle = true;
+    if (personalInfo.email.trim() === "") errors.email = true;
+    if (personalInfo.phone.trim() === "") errors.phone = true;
+    if (personalInfo.location.trim() === "") errors.location = true;
+    if (personalInfo.summary.trim() === "") errors.summary = true;
+    
+    // Education fields
+    education.forEach((edu, index) => {
+      if (edu.school.trim() === "") errors[`edu_${index}_school`] = true;
+      if (edu.degree.trim() === "") errors[`edu_${index}_degree`] = true;
+      if (edu.graduationDate.trim() === "") errors[`edu_${index}_graduationDate`] = true;
+      if (edu.score.trim() === "") errors[`edu_${index}_score`] = true;
+    });
+    
+    // Skills fields
+    if (skills.professional.trim() === "") errors.professional = true;
+    if (skills.technical.trim() === "") errors.technical = true;
+    if (skills.soft.trim() === "") errors.soft = true;
+    
+    // Objective
+    if (objective.trim() === "") errors.objective = true;
+    
+    setFormErrors(errors);
+    setFormValid(personalInfoValid && educationValid && skillsValid && objectiveValid);
+  }, [personalInfo, education, skills, objective]);
   
   const handleNext = () => {
     const tabs = ["personal", "education", "experience", "skills", "objectives"];
@@ -160,6 +223,56 @@ const ResumeBuilder = () => {
   };
   
   const handleGenerate = () => {
+    if (!formValid) {
+      // Show which tab has errors
+      if (formErrors.firstName || formErrors.lastName || formErrors.jobTitle || 
+          formErrors.email || formErrors.phone || formErrors.location || formErrors.summary) {
+        setActiveTab("personal");
+        toast({
+          title: "Missing Information",
+          description: "Please fill all required fields in the Personal tab.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Check education errors
+      const hasEducationErrors = Object.keys(formErrors).some(key => key.startsWith("edu_"));
+      if (hasEducationErrors) {
+        setActiveTab("education");
+        toast({
+          title: "Missing Information",
+          description: "Please fill all required fields in the Education tab.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Check skills errors
+      if (formErrors.professional || formErrors.technical || formErrors.soft) {
+        setActiveTab("skills");
+        toast({
+          title: "Missing Information",
+          description: "Please fill all required fields in the Skills tab.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Check objective error
+      if (formErrors.objective) {
+        setActiveTab("objectives");
+        toast({
+          title: "Missing Information",
+          description: "Please provide a career objective.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      return;
+    }
+    
     // Gather all resume data
     const resumeData = {
       personalInfo,
@@ -172,12 +285,19 @@ const ResumeBuilder = () => {
     
     console.log("Generating resume with data:", resumeData);
     
+    // In a real app, this would generate a PDF or redirect to a preview page
+    // For this demo, we'll simulate a PDF opening in a new tab
+    
     toast({
       title: "Resume Generated!",
       description: "Your professional resume has been created successfully.",
     });
     
-    // In a real app, you would send this data to a backend or generate a PDF here
+    // Simulate opening PDF in new tab
+    const resumeUrl = `/resume-preview?data=${encodeURIComponent(JSON.stringify(resumeData))}`;
+    
+    // Open in new tab
+    window.open(resumeUrl, "_blank");
   };
   
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -206,11 +326,10 @@ const ResumeBuilder = () => {
   const handleAddEducation = () => {
     const newEducation: Education = {
       id: `edu${education.length + 1}`,
+      customName: `Education #${education.length + 1}`,
       school: "",
       degree: "",
-      fieldOfStudy: "",
       graduationDate: "",
-      description: "",
       score: ""
     };
     
@@ -240,7 +359,7 @@ const ResumeBuilder = () => {
     const newExperience: Experience = {
       id: `exp${experience.length + 1}`,
       jobTitle: "",
-      employer: "",
+      companyName: "",
       startDate: "",
       endDate: "",
       description: ""
@@ -292,11 +411,10 @@ const ResumeBuilder = () => {
           ));
           break;
           
-        case "eduDescription":
-          generatedContent = `Relevant coursework included strategic management, data analysis, and organizational leadership. Participated in student organizations and received academic honors.`;
-          
+        case "score":
+          generatedContent = "GPA: 3.8/4.0";
           setEducation(education.map(edu => 
-            edu.id === context.id ? { ...edu, description: generatedContent } : edu
+            edu.id === context.id ? { ...edu, score: generatedContent } : edu
           ));
           break;
           
@@ -325,13 +443,6 @@ const ResumeBuilder = () => {
               soft: "Communication, Leadership, Problem-solving, Decision Making, Time Management"
             });
           }
-          break;
-          
-        case "score":
-          generatedContent = "GPA: 3.8/4.0";
-          setEducation(education.map(edu => 
-            edu.id === context.id ? { ...edu, score: generatedContent } : edu
-          ));
           break;
       }
       
@@ -386,115 +497,14 @@ const ResumeBuilder = () => {
                 <div className="p-4 flex items-center justify-between border-b">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">Resume Information</span>
-                    <span className="bg-muted text-xs px-2 py-0.5 rounded">Draft</span>
+                    <span className={`${formValid ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground"} text-xs px-2 py-0.5 rounded`}>
+                      {formValid ? "Ready to Generate" : "Draft"}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm">
                       <Save className="h-4 w-4 mr-1" /> Save
                     </Button>
-                    <Sheet>
-                      <SheetTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4 mr-1" /> Preview
-                        </Button>
-                      </SheetTrigger>
-                      <SheetContent side="right" className="w-[90%] sm:w-[540px] p-0">
-                        <div className="h-full overflow-auto bg-white">
-                          <div className="p-8">
-                            <h2 className="text-2xl font-bold text-center">
-                              {personalInfo.firstName || "John"} {personalInfo.lastName || "Doe"}
-                            </h2>
-                            <p className="text-muted-foreground text-center">
-                              {personalInfo.jobTitle || "Professional Title"}
-                            </p>
-                            
-                            <div className="flex justify-center space-x-4 text-sm text-muted-foreground my-4">
-                              <span>{personalInfo.email || "email@example.com"}</span>
-                              <span>•</span>
-                              <span>{personalInfo.phone || "(123) 456-7890"}</span>
-                              <span>•</span>
-                              <span>{personalInfo.location || "City, State"}</span>
-                            </div>
-                            
-                            <div className="space-y-6">
-                              <div>
-                                <h3 className="font-semibold border-b pb-1 mb-2">Professional Summary</h3>
-                                <p className="text-sm">{personalInfo.summary || "Add a professional summary..."}</p>
-                              </div>
-                              
-                              <div>
-                                <h3 className="font-semibold border-b pb-1 mb-2">Work Experience</h3>
-                                {experience.map((exp) => (
-                                  <div key={exp.id} className="mb-3">
-                                    <div className="flex justify-between">
-                                      <p className="font-medium">{exp.jobTitle || "Job Title"}</p>
-                                      <p className="text-sm">{exp.startDate || "Start Date"} - {exp.endDate || "Present"}</p>
-                                    </div>
-                                    <p className="text-sm font-medium text-muted-foreground">{exp.employer || "Company Name"}</p>
-                                    <div className="text-sm mt-1">
-                                      {exp.description ? (
-                                        <div dangerouslySetInnerHTML={{ __html: exp.description.replace(/\n/g, '<br/>') }} />
-                                      ) : (
-                                        <p>Add job description...</p>
-                                      )}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                              
-                              <div>
-                                <h3 className="font-semibold border-b pb-1 mb-2">Education</h3>
-                                {education.map((edu) => (
-                                  <div key={edu.id}>
-                                    <div className="flex justify-between">
-                                      <p className="font-medium">
-                                        {edu.degree || "Degree"} {edu.fieldOfStudy ? `in ${edu.fieldOfStudy}` : ""}
-                                      </p>
-                                      <p className="text-sm">{edu.graduationDate || "Graduation Date"}</p>
-                                    </div>
-                                    <p className="text-sm text-muted-foreground">{edu.school || "University Name"}</p>
-                                    {edu.score && <p className="text-sm text-muted-foreground">{edu.score}</p>}
-                                    {edu.description && <p className="text-sm mt-1">{edu.description}</p>}
-                                  </div>
-                                ))}
-                              </div>
-                              
-                              <div>
-                                <h3 className="font-semibold border-b pb-1 mb-2">Skills</h3>
-                                {skills.professional && (
-                                  <div className="mb-2">
-                                    <p className="text-sm font-medium">Professional Skills:</p>
-                                    <p className="text-sm">{skills.professional}</p>
-                                  </div>
-                                )}
-                                {skills.technical && (
-                                  <div className="mb-2">
-                                    <p className="text-sm font-medium">Technical Skills:</p>
-                                    <p className="text-sm">{skills.technical}</p>
-                                  </div>
-                                )}
-                                {skills.soft && (
-                                  <div>
-                                    <p className="text-sm font-medium">Soft Skills:</p>
-                                    <p className="text-sm">{skills.soft}</p>
-                                  </div>
-                                )}
-                                {!skills.professional && !skills.technical && !skills.soft && (
-                                  <p className="text-sm">Add your skills...</p>
-                                )}
-                              </div>
-                              
-                              {objective && (
-                                <div>
-                                  <h3 className="font-semibold border-b pb-1 mb-2">Career Objective</h3>
-                                  <p className="text-sm">{objective}</p>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </SheetContent>
-                    </Sheet>
                   </div>
                 </div>
                 
@@ -533,7 +543,9 @@ const ResumeBuilder = () => {
                       <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor="firstName">First Name</Label>
+                            <Label htmlFor="firstName" className="flex items-center">
+                              First Name <span className="text-destructive ml-1">*</span>
+                            </Label>
                             <Input 
                               id="firstName"
                               placeholder="John"
@@ -541,9 +553,12 @@ const ResumeBuilder = () => {
                               value={personalInfo.firstName}
                               onChange={(e) => setPersonalInfo({...personalInfo, firstName: e.target.value})}
                             />
+                            <FormValidator value={personalInfo.firstName} required />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="lastName">Last Name</Label>
+                            <Label htmlFor="lastName" className="flex items-center">
+                              Last Name <span className="text-destructive ml-1">*</span>
+                            </Label>
                             <Input 
                               id="lastName"
                               placeholder="Doe"
@@ -551,11 +566,14 @@ const ResumeBuilder = () => {
                               value={personalInfo.lastName}
                               onChange={(e) => setPersonalInfo({...personalInfo, lastName: e.target.value})}
                             />
+                            <FormValidator value={personalInfo.lastName} required />
                           </div>
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor="jobTitle">Professional Title</Label>
+                          <Label htmlFor="jobTitle" className="flex items-center">
+                            Professional Title <span className="text-destructive ml-1">*</span>
+                          </Label>
                           <Input 
                             id="jobTitle"
                             placeholder="Marketing Specialist"
@@ -563,6 +581,7 @@ const ResumeBuilder = () => {
                             value={personalInfo.jobTitle}
                             onChange={(e) => setPersonalInfo({...personalInfo, jobTitle: e.target.value})}
                           />
+                          <FormValidator value={personalInfo.jobTitle} required />
                           <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                             <Sparkles className="h-3 w-3 text-primary" />
                             <span>AI suggests titles that match your experience</span>
@@ -571,7 +590,9 @@ const ResumeBuilder = () => {
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email" className="flex items-center">
+                              Email <span className="text-destructive ml-1">*</span>
+                            </Label>
                             <Input 
                               id="email"
                               type="email"
@@ -580,9 +601,12 @@ const ResumeBuilder = () => {
                               value={personalInfo.email}
                               onChange={(e) => setPersonalInfo({...personalInfo, email: e.target.value})}
                             />
+                            <FormValidator value={personalInfo.email} required />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="phone">Phone</Label>
+                            <Label htmlFor="phone" className="flex items-center">
+                              Phone <span className="text-destructive ml-1">*</span>
+                            </Label>
                             <Input 
                               id="phone"
                               placeholder="(123) 456-7890"
@@ -591,6 +615,7 @@ const ResumeBuilder = () => {
                               onChange={handlePhoneChange}
                               ref={phoneInputRef}
                             />
+                            <FormValidator value={personalInfo.phone} required />
                             {personalInfo.phone && !/^\+\d+/.test(personalInfo.phone) && (
                               <p className="text-sm text-destructive">Phone number must include country code (e.g., +1)</p>
                             )}
@@ -598,7 +623,9 @@ const ResumeBuilder = () => {
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor="location">Location</Label>
+                          <Label htmlFor="location" className="flex items-center">
+                            Location <span className="text-destructive ml-1">*</span>
+                          </Label>
                           <Input 
                             id="location"
                             placeholder="New York, NY"
@@ -606,10 +633,13 @@ const ResumeBuilder = () => {
                             value={personalInfo.location}
                             onChange={(e) => setPersonalInfo({...personalInfo, location: e.target.value})}
                           />
+                          <FormValidator value={personalInfo.location} required />
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor="summary">Professional Summary</Label>
+                          <Label htmlFor="summary" className="flex items-center">
+                            Professional Summary <span className="text-destructive ml-1">*</span>
+                          </Label>
                           <Textarea 
                             id="summary" 
                             placeholder="Experienced marketing professional with 5+ years in digital strategy..."
@@ -618,6 +648,7 @@ const ResumeBuilder = () => {
                             value={personalInfo.summary}
                             onChange={(e) => setPersonalInfo({...personalInfo, summary: e.target.value})}
                           />
+                          <FormValidator value={personalInfo.summary} required />
                           <div className="flex items-center gap-2 mt-1">
                             <Button 
                               variant="outline" 
@@ -649,7 +680,17 @@ const ResumeBuilder = () => {
                           {education.map((edu, index) => (
                             <div key={edu.id} className="p-4 border rounded-md">
                               <div className="flex justify-between items-start mb-3">
-                                <h4 className="font-medium">Education #{index + 1}</h4>
+                                <div className="space-y-2 max-w-xs">
+                                  <Label htmlFor={`customName-${edu.id}`} className="flex items-center">
+                                    Entry Name <span className="text-destructive ml-1">*</span>
+                                  </Label>
+                                  <Input 
+                                    id={`customName-${edu.id}`}
+                                    placeholder="e.g., Graduation, Schooling"
+                                    value={edu.customName}
+                                    onChange={(e) => handleEducationChange(edu.id, "customName", e.target.value)}
+                                  />
+                                </div>
                                 <Button 
                                   variant="ghost" 
                                   size="sm" 
@@ -661,7 +702,9 @@ const ResumeBuilder = () => {
                               </div>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                  <Label htmlFor={`school-${edu.id}`}>School/University</Label>
+                                  <Label htmlFor={`school-${edu.id}`} className="flex items-center">
+                                    School/University <span className="text-destructive ml-1">*</span>
+                                  </Label>
                                   <Input 
                                     id={`school-${edu.id}`}
                                     placeholder="Harvard University"
@@ -669,9 +712,16 @@ const ResumeBuilder = () => {
                                     value={edu.school}
                                     onChange={(e) => handleEducationChange(edu.id, "school", e.target.value)}
                                   />
+                                  <FormValidator 
+                                    value={edu.school} 
+                                    required 
+                                    errorMessage="Institution name is required" 
+                                  />
                                 </div>
                                 <div className="space-y-2">
-                                  <Label htmlFor={`degree-${edu.id}`}>Degree</Label>
+                                  <Label htmlFor={`degree-${edu.id}`} className="flex items-center">
+                                    Degree <span className="text-destructive ml-1">*</span>
+                                  </Label>
                                   <Input 
                                     id={`degree-${edu.id}`}
                                     placeholder="Bachelor of Science"
@@ -679,22 +729,19 @@ const ResumeBuilder = () => {
                                     value={edu.degree}
                                     onChange={(e) => handleEducationChange(edu.id, "degree", e.target.value)}
                                   />
+                                  <FormValidator 
+                                    value={edu.degree} 
+                                    required 
+                                    errorMessage="Degree is required" 
+                                  />
                                 </div>
                               </div>
                               
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                 <div className="space-y-2">
-                                  <Label htmlFor={`fieldOfStudy-${edu.id}`}>Field of Study</Label>
-                                  <Input 
-                                    id={`fieldOfStudy-${edu.id}`}
-                                    placeholder="Computer Science"
-                                    className="max-w-md"
-                                    value={edu.fieldOfStudy}
-                                    onChange={(e) => handleEducationChange(edu.id, "fieldOfStudy", e.target.value)}
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor={`graduationDate-${edu.id}`}>Graduation Date</Label>
+                                  <Label htmlFor={`graduationDate-${edu.id}`} className="flex items-center">
+                                    Year of Completion <span className="text-destructive ml-1">*</span>
+                                  </Label>
                                   <Input 
                                     id={`graduationDate-${edu.id}`}
                                     placeholder="May 2020"
@@ -702,54 +749,41 @@ const ResumeBuilder = () => {
                                     value={edu.graduationDate}
                                     onChange={(e) => handleEducationChange(edu.id, "graduationDate", e.target.value)}
                                   />
+                                  <FormValidator 
+                                    value={edu.graduationDate} 
+                                    required 
+                                    errorMessage="Graduation date is required" 
+                                  />
                                 </div>
-                              </div>
-                              
-                              <div className="space-y-2 mt-4">
-                                <Label htmlFor={`score-${edu.id}`}>Score/GPA</Label>
-                                <Input 
-                                  id={`score-${edu.id}`}
-                                  placeholder="e.g., GPA 3.8/4.0"
-                                  className="max-w-md"
-                                  value={edu.score}
-                                  onChange={(e) => handleEducationChange(edu.id, "score", e.target.value)}
-                                />
-                                <div className="flex items-center gap-2 mt-1">
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    className="gap-1 text-sm"
-                                    onClick={() => generateAIContent("score", {id: edu.id})}
-                                    disabled={generatingAI}
-                                  >
-                                    <Sparkles className="h-3 w-3" />
-                                    AI Format
-                                  </Button>
-                                  <span className="text-sm text-muted-foreground">Format score professionally</span>
-                                </div>
-                              </div>
-                              
-                              <div className="space-y-2 mt-4">
-                                <Label htmlFor={`eduDescription-${edu.id}`}>Description</Label>
-                                <Textarea 
-                                  id={`eduDescription-${edu.id}`}
-                                  placeholder="Relevant coursework, honors, activities..."
-                                  rows={3}
-                                  className="w-full"
-                                  value={edu.description}
-                                  onChange={(e) => handleEducationChange(edu.id, "description", e.target.value)}
-                                />
-                                <div className="flex items-center gap-2 mt-1">
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    className="gap-1 text-sm"
-                                    onClick={() => generateAIContent("eduDescription", {id: edu.id})}
-                                    disabled={generatingAI}
-                                  >
-                                    <Lightbulb className="h-3 w-3" />
-                                    AI Suggestions
-                                  </Button>
+                                <div className="space-y-2">
+                                  <Label htmlFor={`score-${edu.id}`} className="flex items-center">
+                                    Score/GPA <span className="text-destructive ml-1">*</span>
+                                  </Label>
+                                  <Input 
+                                    id={`score-${edu.id}`}
+                                    placeholder="e.g., GPA 3.8/4.0"
+                                    className="max-w-md"
+                                    value={edu.score}
+                                    onChange={(e) => handleEducationChange(edu.id, "score", e.target.value)}
+                                  />
+                                  <FormValidator 
+                                    value={edu.score} 
+                                    required 
+                                    errorMessage="Score is required" 
+                                  />
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="gap-1 text-sm"
+                                      onClick={() => generateAIContent("score", {id: edu.id})}
+                                      disabled={generatingAI}
+                                    >
+                                      <Sparkles className="h-3 w-3" />
+                                      AI Format
+                                    </Button>
+                                    <span className="text-sm text-muted-foreground">Format score professionally</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -773,7 +807,7 @@ const ResumeBuilder = () => {
                       <CardHeader className="pb-2">
                         <CardTitle className="text-xl">Work Experience</CardTitle>
                         <CardDescription>
-                          Add your work history, starting with the most recent
+                          Add your work history, starting with the most recent (optional)
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -803,13 +837,13 @@ const ResumeBuilder = () => {
                                   />
                                 </div>
                                 <div className="space-y-2">
-                                  <Label htmlFor={`employer-${exp.id}`}>Employer</Label>
+                                  <Label htmlFor={`companyName-${exp.id}`}>Company Name</Label>
                                   <Input 
-                                    id={`employer-${exp.id}`}
+                                    id={`companyName-${exp.id}`}
                                     placeholder="Acme Inc."
                                     className="max-w-md"
-                                    value={exp.employer}
-                                    onChange={(e) => handleExperienceChange(exp.id, "employer", e.target.value)}
+                                    value={exp.companyName}
+                                    onChange={(e) => handleExperienceChange(exp.id, "companyName", e.target.value)}
                                   />
                                 </div>
                               </div>
@@ -888,7 +922,9 @@ const ResumeBuilder = () => {
                       <CardContent className="space-y-4">
                         <div className="space-y-4">
                           <div className="space-y-2">
-                            <Label htmlFor="professionalSkills">Professional Skills</Label>
+                            <Label htmlFor="professionalSkills" className="flex items-center">
+                              Professional Skills <span className="text-destructive ml-1">*</span>
+                            </Label>
                             <Textarea 
                               id="professionalSkills" 
                               placeholder="Social Media Marketing, Content Strategy, SEO/SEM, Google Analytics, Adobe Creative Suite..."
@@ -897,11 +933,14 @@ const ResumeBuilder = () => {
                               value={skills.professional}
                               onChange={(e) => setSkills({...skills, professional: e.target.value})}
                             />
+                            <FormValidator value={skills.professional} required />
                             <p className="text-xs text-muted-foreground mt-1">Separate skills with commas</p>
                           </div>
                           
                           <div className="space-y-2">
-                            <Label htmlFor="technicalSkills">Technical Skills</Label>
+                            <Label htmlFor="technicalSkills" className="flex items-center">
+                              Technical Skills <span className="text-destructive ml-1">*</span>
+                            </Label>
                             <Textarea 
                               id="technicalSkills" 
                               placeholder="JavaScript, React, Python, SQL, HTML/CSS..."
@@ -910,10 +949,13 @@ const ResumeBuilder = () => {
                               value={skills.technical}
                               onChange={(e) => setSkills({...skills, technical: e.target.value})}
                             />
+                            <FormValidator value={skills.technical} required />
                           </div>
                           
                           <div className="space-y-2">
-                            <Label htmlFor="softSkills">Soft Skills</Label>
+                            <Label htmlFor="softSkills" className="flex items-center">
+                              Soft Skills <span className="text-destructive ml-1">*</span>
+                            </Label>
                             <Textarea 
                               id="softSkills" 
                               placeholder="Leadership, Communication, Problem-solving, Teamwork..."
@@ -922,6 +964,7 @@ const ResumeBuilder = () => {
                               value={skills.soft}
                               onChange={(e) => setSkills({...skills, soft: e.target.value})}
                             />
+                            <FormValidator value={skills.soft} required />
                           </div>
                           
                           <div className="flex items-center gap-2 mt-4">
@@ -952,7 +995,9 @@ const ResumeBuilder = () => {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="objective">Career Objective</Label>
+                          <Label htmlFor="objective" className="flex items-center">
+                            Career Objective <span className="text-destructive ml-1">*</span>
+                          </Label>
                           <Textarea 
                             id="objective" 
                             placeholder="Seeking a challenging position in marketing that allows me to leverage my experience in digital strategies to drive business growth..."
@@ -961,6 +1006,7 @@ const ResumeBuilder = () => {
                             value={objective}
                             onChange={(e) => setObjective(e.target.value)}
                           />
+                          <FormValidator value={objective} required />
                           <div className="flex items-center gap-2 mt-1">
                             <Button 
                               variant="outline" 
@@ -990,7 +1036,11 @@ const ResumeBuilder = () => {
                   </Button>
                   
                   {activeTab === "objectives" ? (
-                    <Button onClick={handleGenerate} className="gap-2">
+                    <Button 
+                      onClick={handleGenerate} 
+                      className="gap-2"
+                      disabled={!formValid}
+                    >
                       <Download className="h-4 w-4" />
                       Generate Resume
                     </Button>

@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,13 +7,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, CheckCircle, Star, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
 
 const templates = [
   {
     id: "modern1",
     name: "Modern Professional",
     category: "modern",
-    image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
+    image: "/placeholder.svg",
     description: "Clean and professional design with a modern touch",
     featured: true,
   },
@@ -20,7 +22,7 @@ const templates = [
     id: "classic1",
     name: "Classic Elegant",
     category: "classic",
-    image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
+    image: "/placeholder.svg",
     description: "Timeless design suitable for all industries",
     featured: false,
   },
@@ -28,7 +30,7 @@ const templates = [
     id: "creative1",
     name: "Creative Bold",
     category: "creative",
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
+    image: "/placeholder.svg",
     description: "Stand out with a unique creative layout",
     featured: true,
   },
@@ -36,7 +38,7 @@ const templates = [
     id: "ats1",
     name: "ATS Optimized",
     category: "ats",
-    image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7",
+    image: "/placeholder.svg",
     description: "Designed specifically to pass ATS systems",
     featured: true,
   },
@@ -44,7 +46,7 @@ const templates = [
     id: "modern2",
     name: "Modern Minimal",
     category: "modern",
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
+    image: "/placeholder.svg",
     description: "Sleek and minimal with perfect whitespace balance",
     featured: false,
   },
@@ -52,7 +54,7 @@ const templates = [
     id: "classic2",
     name: "Classic Traditional",
     category: "classic",
-    image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=600",
+    image: "/placeholder.svg",
     description: "Traditional format respected in conservative fields",
     featured: false,
   },
@@ -60,7 +62,7 @@ const templates = [
     id: "creative2",
     name: "Vibrant Portfolio",
     category: "creative",
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600",
+    image: "/placeholder.svg",
     description: "Showcase your work with vibrant colors and layouts",
     featured: false,
   },
@@ -68,7 +70,7 @@ const templates = [
     id: "ats2",
     name: "ATS Professional",
     category: "ats",
-    image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=600",
+    image: "/placeholder.svg",
     description: "Professional design with optimal ATS compatibility",
     featured: false,
   },
@@ -76,7 +78,7 @@ const templates = [
     id: "modern3",
     name: "Executive Modern",
     category: "modern",
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600",
+    image: "/placeholder.svg",
     description: "Sophisticated design for executive positions",
     featured: false,
   },
@@ -85,6 +87,17 @@ const templates = [
 const Templates = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Set default template on component mount
+  useEffect(() => {
+    if (!selectedTemplate && templates.length > 0) {
+      setSelectedTemplate(templates[0].id);
+      toast({
+        title: "Default Template Selected",
+        description: `We've selected "${templates[0].name}" as your default template.`
+      });
+    }
+  }, []);
 
   const filteredTemplates = templates.filter(template => 
     template.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -173,25 +186,18 @@ const Templates = () => {
           <Button 
             asChild 
             size="lg" 
-            disabled={!selectedTemplate}
             className="w-full max-w-md"
           >
-            <Link to={selectedTemplate ? `/builder?template=${selectedTemplate}` : "#"}>
+            <Link to={`/builder?template=${selectedTemplate || templates[0]?.id || 'modern1'}`}>
               Use Selected Template
             </Link>
           </Button>
           
-          {!selectedTemplate && (
-            <p className="text-muted-foreground text-center">
-              Select a template to continue to the resume builder
-            </p>
-          )}
-          
-          {selectedTemplate && (
-            <p className="text-muted-foreground text-center">
-              Continue to customize your selected template
-            </p>
-          )}
+          <p className="text-muted-foreground text-center">
+            {selectedTemplate ? 
+              "Continue to customize your selected template" :
+              "A default template has been selected for you"}
+          </p>
         </div>
       </div>
     </MainLayout>
