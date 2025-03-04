@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -34,9 +33,123 @@ const ResumePreview = () => {
   }, [searchParams]);
 
   const handleDownload = () => {
-    // In a real application, this would generate and download a PDF
-    // For now, we'll just simulate the download
     window.print();
+  };
+
+  const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boolean }) => {
+    if (!data) return null;
+    
+    const { personalInfo, education, experience, skills, objective } = data;
+    
+    return (
+      <Card className={`p-8 bg-white shadow-lg print:shadow-none ${isPreview ? 'max-h-full overflow-auto' : 'max-w-3xl w-full'}`}>
+        <div className="border-b pb-4 mb-4 text-center">
+          <h2 className="text-2xl font-bold">
+            {personalInfo?.firstName || ""} {personalInfo?.lastName || ""}
+          </h2>
+          <p className="text-primary font-medium">{personalInfo?.jobTitle || ""}</p>
+          
+          <div className="flex flex-wrap justify-center space-x-3 text-sm text-muted-foreground mt-2">
+            {personalInfo?.email && <span>{personalInfo.email}</span>}
+            {personalInfo?.phone && <span>• {personalInfo.phone}</span>}
+            {personalInfo?.location && <span>• {personalInfo.location}</span>}
+          </div>
+        </div>
+        
+        {objective && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold border-b pb-1 mb-2">Career Objective</h3>
+            <p className="text-sm">{objective}</p>
+          </div>
+        )}
+        
+        {personalInfo?.summary && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold border-b pb-1 mb-2">Professional Summary</h3>
+            <p className="text-sm">{personalInfo.summary}</p>
+          </div>
+        )}
+        
+        {education && education.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold border-b pb-1 mb-2">Education</h3>
+            <div className="space-y-4">
+              {education.map((edu: any) => (
+                <div key={edu.id}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium">{edu.school}</p>
+                      <p className="text-sm">{edu.degree}</p>
+                    </div>
+                    <p className="text-sm text-right">{edu.graduationDate}</p>
+                  </div>
+                  {edu.score && <p className="text-sm text-muted-foreground mt-1">{edu.score}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {experience && experience.length > 0 && experience[0].jobTitle && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold border-b pb-1 mb-2">Work Experience</h3>
+            <div className="space-y-4">
+              {experience
+                .filter((exp: any) => exp.jobTitle.trim() !== "")
+                .map((exp: any) => (
+                <div key={exp.id}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium">{exp.jobTitle}</p>
+                      <p className="text-sm text-muted-foreground">{exp.companyName}</p>
+                    </div>
+                    <p className="text-sm text-right">
+                      {exp.startDate} - {exp.endDate || "Present"}
+                    </p>
+                  </div>
+                  {exp.description && (
+                    <div className="text-sm mt-1" 
+                         dangerouslySetInnerHTML={{ __html: exp.description.replace(/\n/g, '<br/>') }} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {skills && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold border-b pb-1 mb-2">Skills</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {skills.professional && (
+                <div>
+                  <p className="font-medium text-sm">Professional</p>
+                  <p className="text-sm">{skills.professional}</p>
+                </div>
+              )}
+              {skills.technical && (
+                <div>
+                  <p className="font-medium text-sm">Technical</p>
+                  <p className="text-sm">{skills.technical}</p>
+                </div>
+              )}
+              {skills.soft && (
+                <div>
+                  <p className="font-medium text-sm">Soft Skills</p>
+                  <p className="text-sm">{skills.soft}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {!isPreview && data.templateId && (
+          <div className="text-center text-xs text-muted-foreground print:hidden mt-8">
+            <p>Template: {data.templateId}</p>
+          </div>
+        )}
+      </Card>
+    );
   };
 
   if (loading) {
@@ -64,8 +177,6 @@ const ResumePreview = () => {
     );
   }
 
-  const { personalInfo, education, experience, skills, objective, templateId } = resumeData || {};
-
   return (
     <MainLayout>
       <div className="container py-12">
@@ -87,114 +198,131 @@ const ResumePreview = () => {
         </div>
 
         <div className="flex justify-center">
-          <Card className="p-8 max-w-3xl w-full bg-white shadow-lg print:shadow-none">
-            <div className="border-b pb-4 mb-4 text-center">
-              <h2 className="text-2xl font-bold">
-                {personalInfo?.firstName || ""} {personalInfo?.lastName || ""}
-              </h2>
-              <p className="text-primary font-medium">{personalInfo?.jobTitle || ""}</p>
-              
-              <div className="flex flex-wrap justify-center space-x-3 text-sm text-muted-foreground mt-2">
-                {personalInfo?.email && <span>{personalInfo.email}</span>}
-                {personalInfo?.phone && <span>• {personalInfo.phone}</span>}
-                {personalInfo?.location && <span>• {personalInfo.location}</span>}
-              </div>
-            </div>
-            
-            {objective && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold border-b pb-1 mb-2">Career Objective</h3>
-                <p className="text-sm">{objective}</p>
-              </div>
-            )}
-            
-            {personalInfo?.summary && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold border-b pb-1 mb-2">Professional Summary</h3>
-                <p className="text-sm">{personalInfo.summary}</p>
-              </div>
-            )}
-            
-            {education && education.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold border-b pb-1 mb-2">Education</h3>
-                <div className="space-y-4">
-                  {education.map((edu: any) => (
-                    <div key={edu.id}>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-medium">{edu.school}</p>
-                          <p className="text-sm">{edu.degree}</p>
-                        </div>
-                        <p className="text-sm text-right">{edu.graduationDate}</p>
-                      </div>
-                      {edu.score && <p className="text-sm text-muted-foreground mt-1">{edu.score}</p>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {experience && experience.length > 0 && experience[0].jobTitle && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold border-b pb-1 mb-2">Work Experience</h3>
-                <div className="space-y-4">
-                  {experience
-                    .filter((exp: any) => exp.jobTitle.trim() !== "")
-                    .map((exp: any) => (
-                    <div key={exp.id}>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-medium">{exp.jobTitle}</p>
-                          <p className="text-sm text-muted-foreground">{exp.companyName}</p>
-                        </div>
-                        <p className="text-sm text-right">
-                          {exp.startDate} - {exp.endDate || "Present"}
-                        </p>
-                      </div>
-                      {exp.description && (
-                        <div className="text-sm mt-1" 
-                             dangerouslySetInnerHTML={{ __html: exp.description.replace(/\n/g, '<br/>') }} />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {skills && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold border-b pb-1 mb-2">Skills</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {skills.professional && (
-                    <div>
-                      <p className="font-medium text-sm">Professional</p>
-                      <p className="text-sm">{skills.professional}</p>
-                    </div>
-                  )}
-                  {skills.technical && (
-                    <div>
-                      <p className="font-medium text-sm">Technical</p>
-                      <p className="text-sm">{skills.technical}</p>
-                    </div>
-                  )}
-                  {skills.soft && (
-                    <div>
-                      <p className="font-medium text-sm">Soft Skills</p>
-                      <p className="text-sm">{skills.soft}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-            
-            <div className="text-center text-xs text-muted-foreground print:hidden mt-8">
-              <p>Template: {templateId}</p>
-            </div>
-          </Card>
+          <ResumeContent data={resumeData} />
         </div>
       </div>
     </MainLayout>
+  );
+};
+
+export { ResumePreview };
+
+export const ResumePreviewContent = ({ data }: { data: any }) => {
+  const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boolean }) => {
+    if (!data) return null;
+    
+    const { personalInfo, education, experience, skills, objective } = data;
+    
+    return (
+      <Card className={`p-4 bg-white shadow-lg print:shadow-none ${isPreview ? 'max-h-full overflow-auto' : 'max-w-3xl w-full'}`}>
+        <div className="border-b pb-2 mb-3 text-center">
+          <h2 className="text-xl font-bold">
+            {personalInfo?.firstName || ""} {personalInfo?.lastName || ""}
+          </h2>
+          <p className="text-primary font-medium text-sm">{personalInfo?.jobTitle || ""}</p>
+          
+          <div className="flex flex-wrap justify-center space-x-2 text-xs text-muted-foreground mt-1">
+            {personalInfo?.email && <span>{personalInfo.email}</span>}
+            {personalInfo?.phone && <span>• {personalInfo.phone}</span>}
+            {personalInfo?.location && <span>• {personalInfo.location}</span>}
+          </div>
+        </div>
+        
+        {objective && (
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold border-b pb-1 mb-1">Career Objective</h3>
+            <p className="text-xs">{objective}</p>
+          </div>
+        )}
+        
+        {personalInfo?.summary && (
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold border-b pb-1 mb-1">Professional Summary</h3>
+            <p className="text-xs">{personalInfo.summary}</p>
+          </div>
+        )}
+        
+        {education && education.length > 0 && (
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold border-b pb-1 mb-1">Education</h3>
+            <div className="space-y-2">
+              {education.map((edu: any) => (
+                <div key={edu.id}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium text-xs">{edu.school}</p>
+                      <p className="text-xs">{edu.degree}</p>
+                    </div>
+                    <p className="text-xs text-right">{edu.graduationDate}</p>
+                  </div>
+                  {edu.score && <p className="text-xs text-muted-foreground mt-1">{edu.score}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {experience && experience.length > 0 && experience[0].jobTitle && (
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold border-b pb-1 mb-1">Work Experience</h3>
+            <div className="space-y-2">
+              {experience
+                .filter((exp: any) => exp.jobTitle.trim() !== "")
+                .map((exp: any) => (
+                <div key={exp.id}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium text-xs">{exp.jobTitle}</p>
+                      <p className="text-xs text-muted-foreground">{exp.companyName}</p>
+                    </div>
+                    <p className="text-xs text-right">
+                      {exp.startDate} - {exp.endDate || "Present"}
+                    </p>
+                  </div>
+                  {exp.description && (
+                    <div className="text-xs mt-1" 
+                         dangerouslySetInnerHTML={{ __html: exp.description.replace(/\n/g, '<br/>') }} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {skills && (
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold border-b pb-1 mb-1">Skills</h3>
+            <div className="grid grid-cols-1 gap-2">
+              {skills.professional && (
+                <div>
+                  <p className="font-medium text-xs">Professional</p>
+                  <p className="text-xs">{skills.professional}</p>
+                </div>
+              )}
+              {skills.technical && (
+                <div>
+                  <p className="font-medium text-xs">Technical</p>
+                  <p className="text-xs">{skills.technical}</p>
+                </div>
+              )}
+              {skills.soft && (
+                <div>
+                  <p className="font-medium text-xs">Soft Skills</p>
+                  <p className="text-xs">{skills.soft}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </Card>
+    );
+  };
+  
+  return (
+    <div className="h-full overflow-auto p-4 bg-muted border-l">
+      <h3 className="text-sm font-medium mb-3">Live Preview</h3>
+      <ResumeContent data={data} isPreview={true} />
+    </div>
   );
 };
 
