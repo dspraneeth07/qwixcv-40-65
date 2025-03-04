@@ -992,7 +992,10 @@ const ResumeBuilder = () => {
                     </CardHeader>
                     <CardContent className="p-0">
                       <div className="h-[600px] overflow-auto border-t">
-                        <ResumePreviewContent />
+                        <ResumePreviewContent 
+                          data={getResumeData()}
+                          templateId={templateId}
+                        />
                       </div>
                     </CardContent>
                   </Card>
