@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
@@ -91,7 +90,6 @@ const Templates = () => {
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Set default template on component mount
   useEffect(() => {
     if (!selectedTemplate && templates.length > 0) {
       setSelectedTemplate(templates[0].id);
@@ -107,16 +105,9 @@ const Templates = () => {
     template.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleSelectTemplate = () => {
-    if (selectedTemplate) {
-      navigate(`/builder?template=${selectedTemplate}`);
-    } else {
-      toast({
-        title: "No Template Selected",
-        description: "Please select a template before continuing",
-        variant: "destructive"
-      });
-    }
+  const handleSelectTemplate = (templateId: string) => {
+    setSelectedTemplate(templateId);
+    navigate(`/builder?template=${templateId}`);
   };
 
   return (
@@ -158,7 +149,7 @@ const Templates = () => {
                   key={template.id}
                   template={template}
                   isSelected={selectedTemplate === template.id}
-                  onSelect={() => setSelectedTemplate(template.id)}
+                  onSelect={() => handleSelectTemplate(template.id)}
                   onPreview={() => setPreviewTemplate(template.id)}
                 />
               ))}
@@ -174,7 +165,7 @@ const Templates = () => {
                     key={template.id}
                     template={template}
                     isSelected={selectedTemplate === template.id}
-                    onSelect={() => setSelectedTemplate(template.id)}
+                    onSelect={() => handleSelectTemplate(template.id)}
                     onPreview={() => setPreviewTemplate(template.id)}
                   />
                 ))}
@@ -191,7 +182,7 @@ const Templates = () => {
                       key={template.id}
                       template={template}
                       isSelected={selectedTemplate === template.id}
-                      onSelect={() => setSelectedTemplate(template.id)}
+                      onSelect={() => handleSelectTemplate(template.id)}
                       onPreview={() => setPreviewTemplate(template.id)}
                     />
                   ))}
@@ -199,24 +190,7 @@ const Templates = () => {
             </TabsContent>
           ))}
         </Tabs>
-        
-        <div className="flex flex-col items-center mt-8 space-y-4">
-          <Button 
-            size="lg" 
-            className="w-full max-w-md"
-            onClick={handleSelectTemplate}
-          >
-            Use Selected Template
-          </Button>
-          
-          <p className="text-muted-foreground text-center">
-            {selectedTemplate ? 
-              "Continue to customize your selected template" :
-              "A default template has been selected for you"}
-          </p>
-        </div>
 
-        {/* Template Preview Dialog */}
         <Dialog open={previewTemplate !== null} onOpenChange={(open) => !open && setPreviewTemplate(null)}>
           <DialogContent className="max-w-4xl">
             {previewTemplate && (
@@ -229,6 +203,10 @@ const Templates = () => {
                     src={templates.find(t => t.id === previewTemplate)?.image || "/placeholder.svg"} 
                     alt={templates.find(t => t.id === previewTemplate)?.name} 
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder.svg";
+                    }}
                   />
                 </div>
                 <div className="flex justify-end mt-6 space-x-4">
@@ -236,10 +214,11 @@ const Templates = () => {
                     Close
                   </Button>
                   <Button onClick={() => {
-                    setSelectedTemplate(previewTemplate);
+                    const selectedId = previewTemplate;
                     setPreviewTemplate(null);
+                    handleSelectTemplate(selectedId);
                   }}>
-                    Select This Template
+                    Use This Template
                   </Button>
                 </div>
               </div>
@@ -271,7 +250,7 @@ const TemplateCard = ({ template, isSelected, onSelect, onPreview }: TemplateCar
       className={`overflow-hidden cursor-pointer transition-all hover:shadow-lg relative ${
         isSelected ? "ring-2 ring-primary" : ""
       }`}
-      onClick={onSelect}
+      onClick={() => {}}
     >
       {isSelected && (
         <div className="absolute top-3 right-3 z-10 bg-primary rounded-full p-1">
@@ -304,7 +283,10 @@ const TemplateCard = ({ template, isSelected, onSelect, onPreview }: TemplateCar
             <Eye className="h-4 w-4 mr-1" />
             Preview
           </Button>
-          <Button size="sm" onClick={onSelect}>
+          <Button size="sm" onClick={(e) => {
+            e.stopPropagation();
+            onSelect();
+          }}>
             Select
           </Button>
         </div>

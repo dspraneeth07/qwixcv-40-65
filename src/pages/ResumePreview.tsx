@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -140,12 +141,6 @@ const ResumePreview = () => {
                 </div>
               )}
             </div>
-          </div>
-        )}
-        
-        {!isPreview && data.templateId && (
-          <div className="text-center text-xs text-muted-foreground print:hidden mt-8">
-            <p>Template: {data.templateId}</p>
           </div>
         )}
       </Card>

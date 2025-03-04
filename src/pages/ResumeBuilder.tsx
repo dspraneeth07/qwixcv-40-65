@@ -1,4 +1,4 @@
-
+<lov-code>
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -26,10 +26,13 @@ import {
   ListChecks,
   GraduationCap,
   Briefcase,
-  User
+  User,
+  Eye
 } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
+import { ResumePreviewContent } from "./ResumePreview";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Interface for education entries
 interface Education {
@@ -58,6 +61,7 @@ interface PersonalInfo {
   jobTitle: string;
   email: string;
   phone: string;
+  countryCode: string;
   location: string;
   summary: string;
 }
@@ -68,6 +72,23 @@ interface Skills {
   technical: string;
   soft: string;
 }
+
+// Country codes for the dropdown
+const countryCodes = [
+  { value: "+1", label: "United States (+1)" },
+  { value: "+44", label: "United Kingdom (+44)" },
+  { value: "+91", label: "India (+91)" },
+  { value: "+61", label: "Australia (+61)" },
+  { value: "+86", label: "China (+86)" },
+  { value: "+49", label: "Germany (+49)" },
+  { value: "+33", label: "France (+33)" },
+  { value: "+81", label: "Japan (+81)" },
+  { value: "+7", label: "Russia (+7)" },
+  { value: "+55", label: "Brazil (+55)" },
+  { value: "+34", label: "Spain (+34)" },
+  { value: "+39", label: "Italy (+39)" },
+  { value: "+1", label: "Canada (+1)" },
+];
 
 const ResumeBuilder = () => {
   const [searchParams] = useSearchParams();
@@ -84,6 +105,7 @@ const ResumeBuilder = () => {
     jobTitle: "",
     email: "",
     phone: "",
+    countryCode: "+1", // Default to US country code
     location: "",
     summary: ""
   });
@@ -118,10 +140,10 @@ const ResumeBuilder = () => {
   
   const [objective, setObjective] = useState("");
   const [generatingAI, setGeneratingAI] = useState(false);
+  const [showLivePreview, setShowLivePreview] = useState(true);
   
   // Ref for country code detection
   const phoneInputRef = useRef<HTMLInputElement>(null);
-  const countryCodeRef = useRef<string>("+1"); // Default to US country code
   
   useEffect(() => {
     // Detect country code based on user's location (simplified example)
@@ -130,16 +152,37 @@ const ResumeBuilder = () => {
       try {
         // This is a placeholder - in a real app you'd use a geolocation service
         // For demo purposes, we'll stick with +1 (US)
-        countryCodeRef.current = "+1";
+        setPersonalInfo(prev => ({
+          ...prev,
+          countryCode: "+1"
+        }));
       } catch (error) {
         console.error("Error detecting country code:", error);
         // Default to +1 if detection fails
-        countryCodeRef.current = "+1";
+        setPersonalInfo(prev => ({
+          ...prev,
+          countryCode: "+1"
+        }));
       }
     };
     
     detectCountryCode();
   }, []);
+
+  // Prepare resume data for preview
+  const getResumeData = () => {
+    return {
+      personalInfo: {
+        ...personalInfo,
+        phone: `${personalInfo.countryCode} ${personalInfo.phone}`
+      },
+      education,
+      experience,
+      skills,
+      objective,
+      templateId
+    };
+  };
 
   // Validate form fields
   useEffect(() => {
@@ -274,52 +317,35 @@ const ResumeBuilder = () => {
     }
     
     // Gather all resume data
-    const resumeData = {
-      personalInfo,
-      education,
-      experience,
-      skills,
-      objective,
-      templateId
-    };
+    const resumeData = getResumeData();
     
     console.log("Generating resume with data:", resumeData);
-    
-    // In a real app, this would generate a PDF or redirect to a preview page
-    // For this demo, we'll simulate a PDF opening in a new tab
     
     toast({
       title: "Resume Generated!",
       description: "Your professional resume has been created successfully.",
     });
     
-    // Simulate opening PDF in new tab
+    // Open resume preview in new tab
     const resumeUrl = `/resume-preview?data=${encodeURIComponent(JSON.stringify(resumeData))}`;
-    
-    // Open in new tab
     window.open(resumeUrl, "_blank");
   };
   
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Only allow numbers
     const value = e.target.value;
-    const numericValue = value.replace(/[^0-9+]/g, "");
-    
-    // Ensure country code is preserved
-    let formattedPhone = numericValue;
-    if (!numericValue.startsWith("+")) {
-      formattedPhone = countryCodeRef.current + numericValue;
-    } else {
-      // If user is modifying the country code, update the ref
-      const parts = numericValue.split(" ");
-      if (parts[0]?.startsWith("+")) {
-        countryCodeRef.current = parts[0];
-      }
-    }
+    const numericValue = value.replace(/[^0-9]/g, "");
     
     setPersonalInfo({
       ...personalInfo,
-      phone: formattedPhone
+      phone: numericValue
+    });
+  };
+
+  const handleCountryCodeChange = (value: string) => {
+    setPersonalInfo({
+      ...personalInfo,
+      countryCode: value
     });
   };
   
@@ -491,8 +517,8 @@ const ResumeBuilder = () => {
             </div>
           )}
           
-          <div className="grid grid-cols-1 gap-8">
-            <div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
               <div className="bg-card shadow-sm rounded-lg border mb-6">
                 <div className="p-4 flex items-center justify-between border-b">
                   <div className="flex items-center gap-2">
@@ -502,6 +528,14 @@ const ResumeBuilder = () => {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowLivePreview(!showLivePreview)}
+                    >
+                      <Eye className="h-4 w-4 mr-1" /> 
+                      {showLivePreview ? "Hide Preview" : "Show Preview"}
+                    </Button>
                     <Button variant="outline" size="sm">
                       <Save className="h-4 w-4 mr-1" /> Save
                     </Button>
@@ -549,7 +583,7 @@ const ResumeBuilder = () => {
                             <Input 
                               id="firstName"
                               placeholder="John"
-                              className="max-w-md"
+                              className={`max-w-md ${formErrors.firstName ? "border-destructive" : ""}`}
                               value={personalInfo.firstName}
                               onChange={(e) => setPersonalInfo({...personalInfo, firstName: e.target.value})}
                             />
@@ -562,7 +596,7 @@ const ResumeBuilder = () => {
                             <Input 
                               id="lastName"
                               placeholder="Doe"
-                              className="max-w-md"
+                              className={`max-w-md ${formErrors.lastName ? "border-destructive" : ""}`}
                               value={personalInfo.lastName}
                               onChange={(e) => setPersonalInfo({...personalInfo, lastName: e.target.value})}
                             />
@@ -577,7 +611,7 @@ const ResumeBuilder = () => {
                           <Input 
                             id="jobTitle"
                             placeholder="Marketing Specialist"
-                            className="max-w-md"
+                            className={`max-w-md ${formErrors.jobTitle ? "border-destructive" : ""}`}
                             value={personalInfo.jobTitle}
                             onChange={(e) => setPersonalInfo({...personalInfo, jobTitle: e.target.value})}
                           />
@@ -597,7 +631,7 @@ const ResumeBuilder = () => {
                               id="email"
                               type="email"
                               placeholder="john.doe@example.com"
-                              className="max-w-md"
+                              className={`max-w-md ${formErrors.email ? "border-destructive" : ""}`}
                               value={personalInfo.email}
                               onChange={(e) => setPersonalInfo({...personalInfo, email: e.target.value})}
                             />
@@ -607,18 +641,32 @@ const ResumeBuilder = () => {
                             <Label htmlFor="phone" className="flex items-center">
                               Phone <span className="text-destructive ml-1">*</span>
                             </Label>
-                            <Input 
-                              id="phone"
-                              placeholder="(123) 456-7890"
-                              className="max-w-md"
-                              value={personalInfo.phone}
-                              onChange={handlePhoneChange}
-                              ref={phoneInputRef}
-                            />
+                            <div className="flex max-w-md gap-2">
+                              <Select 
+                                value={personalInfo.countryCode} 
+                                onValueChange={handleCountryCodeChange}
+                              >
+                                <SelectTrigger className="w-[120px]">
+                                  <SelectValue placeholder="+1" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {countryCodes.map(code => (
+                                    <SelectItem key={code.value} value={code.value}>
+                                      {code.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Input 
+                                id="phone"
+                                placeholder="1234567890"
+                                className={`flex-1 ${formErrors.phone ? "border-destructive" : ""}`}
+                                value={personalInfo.phone}
+                                onChange={handlePhoneChange}
+                                ref={phoneInputRef}
+                              />
+                            </div>
                             <FormValidator value={personalInfo.phone} required />
-                            {personalInfo.phone && !/^\+\d+/.test(personalInfo.phone) && (
-                              <p className="text-sm text-destructive">Phone number must include country code (e.g., +1)</p>
-                            )}
                           </div>
                         </div>
                         
@@ -629,7 +677,7 @@ const ResumeBuilder = () => {
                           <Input 
                             id="location"
                             placeholder="New York, NY"
-                            className="max-w-md"
+                            className={`max-w-md ${formErrors.location ? "border-destructive" : ""}`}
                             value={personalInfo.location}
                             onChange={(e) => setPersonalInfo({...personalInfo, location: e.target.value})}
                           />
@@ -644,7 +692,7 @@ const ResumeBuilder = () => {
                             id="summary" 
                             placeholder="Experienced marketing professional with 5+ years in digital strategy..."
                             rows={4}
-                            className="w-full"
+                            className={`w-full ${formErrors.summary ? "border-destructive" : ""}`}
                             value={personalInfo.summary}
                             onChange={(e) => setPersonalInfo({...personalInfo, summary: e.target.value})}
                           />
@@ -827,234 +875,4 @@ const ResumeBuilder = () => {
                               </div>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                  <Label htmlFor={`jobTitle-${exp.id}`}>Job Title</Label>
-                                  <Input 
-                                    id={`jobTitle-${exp.id}`}
-                                    placeholder="Marketing Manager"
-                                    className="max-w-md"
-                                    value={exp.jobTitle}
-                                    onChange={(e) => handleExperienceChange(exp.id, "jobTitle", e.target.value)}
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor={`companyName-${exp.id}`}>Company Name</Label>
-                                  <Input 
-                                    id={`companyName-${exp.id}`}
-                                    placeholder="Acme Inc."
-                                    className="max-w-md"
-                                    value={exp.companyName}
-                                    onChange={(e) => handleExperienceChange(exp.id, "companyName", e.target.value)}
-                                  />
-                                </div>
-                              </div>
-                              
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                <div className="space-y-2">
-                                  <Label htmlFor={`startDate-${exp.id}`}>Start Date</Label>
-                                  <Input 
-                                    id={`startDate-${exp.id}`}
-                                    placeholder="June 2018"
-                                    className="max-w-md"
-                                    value={exp.startDate}
-                                    onChange={(e) => handleExperienceChange(exp.id, "startDate", e.target.value)}
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor={`endDate-${exp.id}`}>End Date</Label>
-                                  <Input 
-                                    id={`endDate-${exp.id}`}
-                                    placeholder="Present"
-                                    className="max-w-md"
-                                    value={exp.endDate}
-                                    onChange={(e) => handleExperienceChange(exp.id, "endDate", e.target.value)}
-                                  />
-                                </div>
-                              </div>
-                              
-                              <div className="space-y-2 mt-4">
-                                <Label htmlFor={`jobDescription-${exp.id}`}>Description</Label>
-                                <Textarea 
-                                  id={`jobDescription-${exp.id}`}
-                                  placeholder="• Increased sales by 20% through strategic digital marketing initiatives..."
-                                  rows={4}
-                                  className="w-full"
-                                  value={exp.description}
-                                  onChange={(e) => handleExperienceChange(exp.id, "description", e.target.value)}
-                                />
-                                <div className="flex items-center gap-2 mt-1">
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    className="gap-1 text-sm"
-                                    onClick={() => generateAIContent("jobDescription", {id: exp.id})}
-                                    disabled={generatingAI}
-                                  >
-                                    <Lightbulb className="h-3 w-3" />
-                                    AI Enhancement
-                                  </Button>
-                                  <span className="text-sm text-muted-foreground">Let AI improve your bullet points</span>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                          
-                          <Button 
-                            variant="outline" 
-                            className="gap-2 w-full"
-                            onClick={handleAddExperience}
-                          >
-                            <Plus className="h-4 w-4" />
-                            Add Another Experience
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                  
-                  <TabsContent value="skills" className="p-0">
-                    <Card className="border-0 shadow-none">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-xl">Skills</CardTitle>
-                        <CardDescription>
-                          Add your key skills and competencies
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="professionalSkills" className="flex items-center">
-                              Professional Skills <span className="text-destructive ml-1">*</span>
-                            </Label>
-                            <Textarea 
-                              id="professionalSkills" 
-                              placeholder="Social Media Marketing, Content Strategy, SEO/SEM, Google Analytics, Adobe Creative Suite..."
-                              rows={3}
-                              className="w-full"
-                              value={skills.professional}
-                              onChange={(e) => setSkills({...skills, professional: e.target.value})}
-                            />
-                            <FormValidator value={skills.professional} required />
-                            <p className="text-xs text-muted-foreground mt-1">Separate skills with commas</p>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label htmlFor="technicalSkills" className="flex items-center">
-                              Technical Skills <span className="text-destructive ml-1">*</span>
-                            </Label>
-                            <Textarea 
-                              id="technicalSkills" 
-                              placeholder="JavaScript, React, Python, SQL, HTML/CSS..."
-                              rows={2}
-                              className="w-full"
-                              value={skills.technical}
-                              onChange={(e) => setSkills({...skills, technical: e.target.value})}
-                            />
-                            <FormValidator value={skills.technical} required />
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label htmlFor="softSkills" className="flex items-center">
-                              Soft Skills <span className="text-destructive ml-1">*</span>
-                            </Label>
-                            <Textarea 
-                              id="softSkills" 
-                              placeholder="Leadership, Communication, Problem-solving, Teamwork..."
-                              rows={2}
-                              className="w-full"
-                              value={skills.soft}
-                              onChange={(e) => setSkills({...skills, soft: e.target.value})}
-                            />
-                            <FormValidator value={skills.soft} required />
-                          </div>
-                          
-                          <div className="flex items-center gap-2 mt-4">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="gap-1"
-                              onClick={() => generateAIContent("skillSuggestions")}
-                              disabled={generatingAI}
-                            >
-                              <Sparkles className="h-4 w-4" />
-                              AI Skill Suggestions
-                            </Button>
-                            <span className="text-sm text-muted-foreground">Get suggestions based on your job title</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                  
-                  <TabsContent value="objectives" className="p-0">
-                    <Card className="border-0 shadow-none">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-xl">Career Objectives</CardTitle>
-                        <CardDescription>
-                          Define your career goals and objectives
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="objective" className="flex items-center">
-                            Career Objective <span className="text-destructive ml-1">*</span>
-                          </Label>
-                          <Textarea 
-                            id="objective" 
-                            placeholder="Seeking a challenging position in marketing that allows me to leverage my experience in digital strategies to drive business growth..."
-                            rows={4}
-                            className="w-full"
-                            value={objective}
-                            onChange={(e) => setObjective(e.target.value)}
-                          />
-                          <FormValidator value={objective} required />
-                          <div className="flex items-center gap-2 mt-1">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="gap-1 text-sm"
-                              onClick={() => generateAIContent("objective")}
-                              disabled={generatingAI}
-                            >
-                              <Lightbulb className="h-3 w-3" />
-                              AI Writer
-                            </Button>
-                            <span className="text-sm text-muted-foreground">Get AI to write a powerful objective statement</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                </Tabs>
-                
-                <div className="flex justify-between p-4 border-t">
-                  <Button
-                    variant="outline"
-                    onClick={handlePrevious}
-                    disabled={activeTab === "personal"}
-                  >
-                    Previous
-                  </Button>
-                  
-                  {activeTab === "objectives" ? (
-                    <Button 
-                      onClick={handleGenerate} 
-                      className="gap-2"
-                      disabled={!formValid}
-                    >
-                      <Download className="h-4 w-4" />
-                      Generate Resume
-                    </Button>
-                  ) : (
-                    <Button onClick={handleNext}>Next</Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </MainLayout>
-  );
-};
-
-export default ResumeBuilder;
+                                  <Label htmlFor={`
