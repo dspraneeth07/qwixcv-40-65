@@ -444,6 +444,14 @@ const ResumeBuilder = () => {
             });
           }
           break;
+        
+        case "personalSummary":
+          generatedContent = `Dedicated ${personalInfo.jobTitle || "professional"} with a passion for excellence and a track record of achieving results. Based in ${personalInfo.location || "my current location"}, I offer a unique combination of expertise and soft skills that enable me to excel in dynamic environments.`;
+          setPersonalInfo({
+            ...personalInfo,
+            summary: generatedContent
+          });
+          break;
       }
       
       setGeneratingAI(false);
@@ -656,6 +664,29 @@ const ResumeBuilder = () => {
                             onChange={(e) => setPersonalInfo({...personalInfo, location: e.target.value})}
                           />
                           <FormValidator value={personalInfo.location} required showMessage={false} />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="summary">Professional Summary</Label>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="gap-1 text-xs"
+                              onClick={() => generateAIContent("personalSummary")}
+                              disabled={generatingAI}
+                            >
+                              <Sparkles className="h-3 w-3" />
+                              Generate with AI
+                            </Button>
+                          </div>
+                          <Textarea 
+                            id="summary"
+                            placeholder="Brief overview of your professional background and goals"
+                            className="min-h-[100px]"
+                            value={personalInfo.summary}
+                            onChange={(e) => setPersonalInfo({...personalInfo, summary: e.target.value})}
+                          />
                         </div>
                       </CardContent>
                     </Card>
@@ -874,9 +905,21 @@ const ResumeBuilder = () => {
                               </div>
                               
                               <div className="space-y-2 mt-4">
-                                <Label htmlFor={`description-${exp.id}`}>
-                                  Description
-                                </Label>
+                                <div className="flex items-center justify-between">
+                                  <Label htmlFor={`description-${exp.id}`}>
+                                    Description
+                                  </Label>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="gap-1 text-xs"
+                                    onClick={() => generateAIContent("jobDescription", {id: exp.id})}
+                                    disabled={generatingAI}
+                                  >
+                                    <Sparkles className="h-3 w-3" />
+                                    Generate with AI
+                                  </Button>
+                                </div>
                                 <Textarea 
                                   id={`description-${exp.id}`}
                                   placeholder="Describe your role and responsibilities"
@@ -902,11 +945,23 @@ const ResumeBuilder = () => {
                   
                   <TabsContent value="skills" className="p-0">
                     <Card className="border-0 shadow-none">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-xl">Skills</CardTitle>
-                        <CardDescription>
-                          List your skills and expertise
-                        </CardDescription>
+                      <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                        <div>
+                          <CardTitle className="text-xl">Skills</CardTitle>
+                          <CardDescription>
+                            List your skills and expertise
+                          </CardDescription>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="gap-1 whitespace-nowrap"
+                          onClick={() => generateAIContent("skillSuggestions")}
+                          disabled={generatingAI}
+                        >
+                          <Sparkles className="h-3 w-3" />
+                          Suggest Skills
+                        </Button>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="space-y-4">
@@ -963,18 +1018,28 @@ const ResumeBuilder = () => {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="space-y-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
                               <Label htmlFor="objective">
                                 Objective
                               </Label>
-                              <Input 
-                                id="objective"
-                                placeholder="e.g., Seeking a challenging marketing position"
-                                value={objective}
-                                onChange={(e) => setObjective(e.target.value)}
-                              />
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="gap-1 text-xs"
+                                onClick={() => generateAIContent("objective")}
+                                disabled={generatingAI}
+                              >
+                                <Sparkles className="h-3 w-3" />
+                                Generate with AI
+                              </Button>
                             </div>
+                            <Textarea 
+                              id="objective"
+                              placeholder="e.g., Seeking a challenging marketing position"
+                              value={objective}
+                              onChange={(e) => setObjective(e.target.value)}
+                            />
                           </div>
                         </div>
                       </CardContent>
