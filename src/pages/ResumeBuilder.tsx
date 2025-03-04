@@ -612,13 +612,19 @@ const ResumeBuilder = () => {
 
   useEffect(() => {
     if (activeTab === "skills" && skills.professional === "" && skills.technical === "" && skills.soft === "") {
-      generateAIContent("skillSuggestions");
+      toast({
+        title: "Skills Section",
+        description: "Click the 'AI Suggest' button to get skill suggestions based on your job title."
+      });
     }
-  }, [activeTab, skills.professional, skills.technical, skills.soft]);
+  }, [activeTab]);
 
   useEffect(() => {
     if (activeTab === "objectives" && objective === "") {
-      generateAIContent("objective");
+      toast({
+        title: "Career Objective",
+        description: "Click the 'AI Suggest' button to generate a career objective based on your information."
+      });
     }
   }, [activeTab, objective]);
 
@@ -1104,10 +1110,24 @@ const ResumeBuilder = () => {
                       <CardHeader className="pb-2">
                         <CardTitle className="text-xl">Skills</CardTitle>
                         <CardDescription>
-                          Enter your skills
+                          Enter your skills or use AI to suggest skills based on your job title
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
+                        <div className="mb-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => generateAIContent("skillSuggestions")}
+                            disabled={generatingAI}
+                            className="flex items-center gap-1"
+                          >
+                            <Sparkles className="h-4 w-4" />
+                            {generatingAI ? "Generating..." : "AI Suggest"}
+                          </Button>
+                        </div>
+                        
                         <div className="space-y-2">
                           <Label htmlFor="professional" className="flex items-center">
                             Professional Skills <span className="text-red-500 ml-1">*</span>
@@ -1156,10 +1176,24 @@ const ResumeBuilder = () => {
                       <CardHeader className="pb-2">
                         <CardTitle className="text-xl">Objectives</CardTitle>
                         <CardDescription>
-                          Enter your career objective
+                          Enter your career objective or use AI to generate one
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-4">
+                        <div className="mb-4">
+                          <Button 
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => generateAIContent("objective")}
+                            disabled={generatingAI}
+                            className="flex items-center gap-1"
+                          >
+                            <Sparkles className="h-4 w-4" />
+                            {generatingAI ? "Generating..." : "AI Suggest"}
+                          </Button>
+                        </div>
+                        
                         <div className="space-y-2">
                           <Label htmlFor="objective" className="flex items-center">
                             Career Objective <span className="text-red-500 ml-1">*</span>
