@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { MailIcon, Lock, GitHub, Linkedin, Eye, EyeOff } from "lucide-react";
+import { MailIcon, Lock, Github, Linkedin, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 
@@ -112,7 +111,7 @@ const Login = () => {
                   
                   <div className="grid grid-cols-2 gap-4">
                     <Button variant="outline" className="w-full">
-                      <GitHub className="mr-2 h-4 w-4" />
+                      <Github className="mr-2 h-4 w-4" />
                       GitHub
                     </Button>
                     <Button variant="outline" className="w-full">
@@ -202,7 +201,7 @@ const Login = () => {
                   
                   <div className="grid grid-cols-2 gap-4">
                     <Button variant="outline" className="w-full">
-                      <GitHub className="mr-2 h-4 w-4" />
+                      <Github className="mr-2 h-4 w-4" />
                       GitHub
                     </Button>
                     <Button variant="outline" className="w-full">
