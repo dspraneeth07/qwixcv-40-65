@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -229,7 +228,15 @@ const ResumePreview = () => {
 
 export { ResumePreview };
 
-export const ResumePreviewContent = ({ data, templateId }: { data: any, templateId?: string }) => {
+export const ResumePreviewContent = ({ 
+  data, 
+  templateId,
+  isPreview = false 
+}: { 
+  data: any; 
+  templateId?: string;
+  isPreview?: boolean;
+}) => {
   const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boolean }) => {
     if (!data) return null;
     
@@ -363,7 +370,7 @@ export const ResumePreviewContent = ({ data, templateId }: { data: any, template
   return (
     <div className="h-full overflow-auto p-4 bg-muted border-l">
       <h3 className="text-sm font-medium mb-3">Live Preview</h3>
-      <ResumeContent data={data} isPreview={true} />
+      <ResumeContent data={data} isPreview={isPreview} />
     </div>
   );
 };
