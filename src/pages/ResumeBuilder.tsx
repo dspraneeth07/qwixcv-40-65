@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -276,7 +275,6 @@ const ResumeBuilder = () => {
     if (personalInfo.location.trim() === "") errors.location = true;
     
     education.forEach((edu, index) => {
-      // Remove customName from validation
       if (edu.school.trim() === "") errors[`edu_${index}_school`] = true;
       if (edu.degree.trim() === "") errors[`edu_${index}_degree`] = true;
       if (edu.graduationDate.trim() === "") errors[`edu_${index}_graduationDate`] = true;
@@ -503,17 +501,17 @@ const ResumeBuilder = () => {
       
       switch (type) {
         case "jobDescription":
-          const jobTitle = experience.find(exp => exp.id === context.id)?.jobTitle || "";
+          const expJobTitle = experience.find(exp => exp.id === context.id)?.jobTitle || "";
           
-          if (jobTitle.toLowerCase().includes("marketing")) {
+          if (expJobTitle.toLowerCase().includes("marketing")) {
             generatedContent = `• Developed and executed comprehensive marketing campaigns across digital and traditional channels\n• Increased brand visibility by 30% through strategic social media management\n• Conducted market research to identify customer needs and competitive positioning\n• Collaborated with creative teams to develop compelling marketing materials\n• Tracked campaign performance using analytics tools and presented results to leadership`;
-          } else if (jobTitle.toLowerCase().includes("developer") || jobTitle.toLowerCase().includes("engineer")) {
+          } else if (expJobTitle.toLowerCase().includes("developer") || expJobTitle.toLowerCase().includes("engineer")) {
             generatedContent = `• Designed and developed scalable application features using modern frameworks and best practices\n• Collaborated with cross-functional teams to implement new product capabilities\n• Reduced application load time by 40% through performance optimization\n• Implemented automated testing, resulting in a 25% decrease in production bugs\n• Participated in code reviews and mentored junior developers`;
-          } else if (jobTitle.toLowerCase().includes("manager")) {
+          } else if (expJobTitle.toLowerCase().includes("manager")) {
             generatedContent = `• Led a team of 10+ professionals, providing mentorship and performance evaluations\n• Increased department efficiency by 20% through process improvements and tool adoption\n• Managed project budgets exceeding $500,000 with consistent on-time delivery\n• Developed strategic plans aligned with company objectives and market trends\n• Built strong relationships with key stakeholders and clients`;
-          } else if (jobTitle.toLowerCase().includes("sales")) {
+          } else if (expJobTitle.toLowerCase().includes("sales")) {
             generatedContent = `• Consistently exceeded quarterly sales targets by 15-20%\n• Built and maintained a portfolio of 50+ enterprise clients\n• Developed and implemented successful sales strategies for new market segments\n• Conducted product demonstrations and negotiations with potential clients\n• Collaborated with marketing team to develop targeted outreach campaigns`;
-          } else if (jobTitle.toLowerCase().includes("design")) {
+          } else if (expJobTitle.toLowerCase().includes("design")) {
             generatedContent = `• Created user-centered designs for web and mobile applications\n• Developed brand identity systems including logos, color palettes, and style guides\n• Conducted user research and usability testing to inform design decisions\n• Collaborated with development team to ensure design implementation accuracy\n• Maintained design system documentation and component libraries`;
           } else {
             generatedContent = `• Implemented key initiatives that resulted in significant improvements to company operations\n• Collaborated with cross-functional teams to achieve project objectives and business goals\n• Increased efficiency by 20% through implementation of streamlined processes\n• Developed and maintained positive relationships with key stakeholders\n• Recognized for exceptional performance and problem-solving abilities`;
@@ -552,11 +550,11 @@ const ResumeBuilder = () => {
           break;
           
         case "objective":
-          const jobTitle = personalInfo.jobTitle || "professional";
+          const userJobTitle = personalInfo.jobTitle || "professional";
           const professionalSkills = skills.professional || "relevant areas";
           const technicalSkills = skills.technical || "technical skills";
           
-          generatedContent = `Seeking a challenging ${jobTitle} position where I can utilize my skills in ${professionalSkills} to contribute to organizational growth while expanding my expertise in ${technicalSkills}.`;
+          generatedContent = `Seeking a challenging ${userJobTitle} position where I can utilize my skills in ${professionalSkills} to contribute to organizational growth while expanding my expertise in ${technicalSkills}.`;
           setObjective(generatedContent);
           break;
           
@@ -842,6 +840,342 @@ const ResumeBuilder = () => {
                       </CardContent>
                     </Card>
                   </TabsContent>
+                  
+                  <TabsContent value="education" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Education</CardTitle>
+                        <CardDescription>
+                          Enter your education details
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {education.map((edu, index) => (
+                          <div key={edu.id} className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{edu.customName}</span>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleRemoveEducation(edu.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`edu_${index}_school`} className="flex items-center">
+                                School <span className="text-red-500 ml-1">*</span>
+                              </Label>
+                              <Input 
+                                id={`edu_${index}_school`}
+                                placeholder="University Name"
+                                className="max-w-md"
+                                value={edu.school}
+                                onChange={(e) => handleEducationChange(edu.id, "school", e.target.value)}
+                              />
+                              <FormValidator value={edu.school} required showMessage={false} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`edu_${index}_degree`} className="flex items-center">
+                                Degree <span className="text-red-500 ml-1">*</span>
+                              </Label>
+                              <Input 
+                                id={`edu_${index}_degree`}
+                                placeholder="Degree Name"
+                                className="max-w-md"
+                                value={edu.degree}
+                                onChange={(e) => handleEducationChange(edu.id, "degree", e.target.value)}
+                              />
+                              <FormValidator value={edu.degree} required showMessage={false} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`edu_${index}_graduationDate`} className="flex items-center">
+                                Graduation Date <span className="text-red-500 ml-1">*</span>
+                              </Label>
+                              <Input 
+                                id={`edu_${index}_graduationDate`}
+                                type="date"
+                                className="max-w-md"
+                                value={edu.graduationDate}
+                                onChange={(e) => handleEducationChange(edu.id, "graduationDate", e.target.value)}
+                              />
+                              <FormValidator value={edu.graduationDate} required showMessage={false} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`edu_${index}_score`} className="flex items-center">
+                                Score
+                              </Label>
+                              <Input 
+                                id={`edu_${index}_score`}
+                                placeholder="GPA"
+                                className="max-w-md"
+                                value={edu.score}
+                                onChange={(e) => handleEducationChange(edu.id, "score", e.target.value)}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                        
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={handleAddEducation}
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add Education
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="experience" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Experience</CardTitle>
+                        <CardDescription>
+                          Enter your work experience details
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {experience.map((exp, index) => (
+                          <div key={exp.id} className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{exp.jobTitle}</span>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleRemoveExperience(exp.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`exp_${index}_companyName`} className="flex items-center">
+                                Company Name <span className="text-red-500 ml-1">*</span>
+                              </Label>
+                              <Input 
+                                id={`exp_${index}_companyName`}
+                                placeholder="Company Name"
+                                className="max-w-md"
+                                value={exp.companyName}
+                                onChange={(e) => handleExperienceChange(exp.id, "companyName", e.target.value)}
+                              />
+                              <FormValidator value={exp.companyName} required showMessage={false} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`exp_${index}_startDate`} className="flex items-center">
+                                Start Date <span className="text-red-500 ml-1">*</span>
+                              </Label>
+                              <Input 
+                                id={`exp_${index}_startDate`}
+                                type="date"
+                                className="max-w-md"
+                                value={exp.startDate}
+                                onChange={(e) => handleExperienceChange(exp.id, "startDate", e.target.value)}
+                              />
+                              <FormValidator value={exp.startDate} required showMessage={false} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`exp_${index}_endDate`} className="flex items-center">
+                                End Date
+                              </Label>
+                              <Input 
+                                id={`exp_${index}_endDate`}
+                                type="date"
+                                className="max-w-md"
+                                value={exp.endDate}
+                                onChange={(e) => handleExperienceChange(exp.id, "endDate", e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`exp_${index}_description`} className="flex items-center">
+                                Description
+                              </Label>
+                              <Textarea 
+                                id={`exp_${index}_description`}
+                                placeholder="Description"
+                                className="max-w-md"
+                                value={exp.description}
+                                onChange={(e) => handleExperienceChange(exp.id, "description", e.target.value)}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                        
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={handleAddExperience}
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add Experience
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="projects" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Projects</CardTitle>
+                        <CardDescription>
+                          Enter your project details
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {projects.map((proj, index) => (
+                          <div key={proj.id} className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{proj.title}</span>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleRemoveProject(proj.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`proj_${index}_title`} className="flex items-center">
+                                Title <span className="text-red-500 ml-1">*</span>
+                              </Label>
+                              <Input 
+                                id={`proj_${index}_title`}
+                                placeholder="Project Title"
+                                className="max-w-md"
+                                value={proj.title}
+                                onChange={(e) => handleProjectChange(proj.id, "title", e.target.value)}
+                              />
+                              <FormValidator value={proj.title} required showMessage={false} />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`proj_${index}_description`} className="flex items-center">
+                                Description
+                              </Label>
+                              <Textarea 
+                                id={`proj_${index}_description`}
+                                placeholder="Description"
+                                className="max-w-md"
+                                value={proj.description}
+                                onChange={(e) => handleProjectChange(proj.id, "description", e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`proj_${index}_technologies`} className="flex items-center">
+                                Technologies
+                              </Label>
+                              <Input 
+                                id={`proj_${index}_technologies`}
+                                placeholder="Technologies"
+                                className="max-w-md"
+                                value={proj.technologies}
+                                onChange={(e) => handleProjectChange(proj.id, "technologies", e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`proj_${index}_link`} className="flex items-center">
+                                Link
+                              </Label>
+                              <Input 
+                                id={`proj_${index}_link`}
+                                placeholder="Link"
+                                className="max-w-md"
+                                value={proj.link}
+                                onChange={(e) => handleProjectChange(proj.id, "link", e.target.value)}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                        
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={handleAddProject}
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add Project
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="skills" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Skills</CardTitle>
+                        <CardDescription>
+                          Enter your skills
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="professional" className="flex items-center">
+                            Professional Skills <span className="text-red-500 ml-1">*</span>
+                          </Label>
+                          <Input 
+                            id="professional"
+                            placeholder="Professional Skills"
+                            className="max-w-md"
+                            value={skills.professional}
+                            onChange={(e) => setSkills({...skills, professional: e.target.value})}
+                          />
+                          <FormValidator value={skills.professional} required showMessage={false} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="technical" className="flex items-center">
+                            Technical Skills <span className="text-red-500 ml-1">*</span>
+                          </Label>
+                          <Input 
+                            id="technical"
+                            placeholder="Technical Skills"
+                            className="max-w-md"
+                            value={skills.technical}
+                            onChange={(e) => setSkills({...skills, technical: e.target.value})}
+                          />
+                          <FormValidator value={skills.technical} required showMessage={false} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="soft" className="flex items-center">
+                            Soft Skills <span className="text-red-500 ml-1">*</span>
+                          </Label>
+                          <Input 
+                            id="soft"
+                            placeholder="Soft Skills"
+                            className="max-w-md"
+                            value={skills.soft}
+                            onChange={(e) => setSkills({...skills, soft: e.target.value})}
+                          />
+                          <FormValidator value={skills.soft} required showMessage={false} />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="objectives" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Objectives</CardTitle>
+                        <CardDescription>
+                          Enter your career objective
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="objective" className="flex items-center">
+                            Career Objective <span className="text-red-500 ml-1">*</span>
+                          </Label>
+                          <Textarea 
+                            id="objective"
+                            placeholder="Career Objective"
+                            className="max-w-md"
+                            value={objective}
+                            onChange={(e) => setObjective(e.target.value)}
+                          />
+                          <FormValidator value={objective} required showMessage={false} />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
                 </Tabs>
               </div>
               
@@ -881,7 +1215,7 @@ const ResumeBuilder = () => {
                       <div className="border rounded-md overflow-hidden">
                         <ResumePreviewContent
                           data={getResumeData()}
-                          previewMode
+                          isPreview={true}
                         />
                       </div>
                     </CardContent>
