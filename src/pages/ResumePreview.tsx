@@ -150,11 +150,11 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
   
   return (
     <Card id="resume-content" className={`p-8 bg-white shadow-lg print:shadow-none ${isPreview ? 'max-h-full overflow-auto' : 'max-w-3xl w-full'}`}>
-      <div className="border-b pb-4 mb-4 text-center">
-        <h2 className="text-2xl font-bold">
+      <div className="border-b pb-4 mb-4">
+        <h2 className="text-2xl font-bold text-center">
           {personalInfo?.firstName || ""} {personalInfo?.lastName || ""}
         </h2>
-        <p className="text-primary font-medium">{personalInfo?.jobTitle || ""}</p>
+        <p className="text-primary font-medium text-center">{personalInfo?.jobTitle || ""}</p>
         
         <div className="flex flex-wrap justify-center gap-3 text-sm text-muted-foreground mt-2">
           {personalInfo?.email && (
@@ -175,9 +175,6 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
               {personalInfo.location}
             </span>
           )}
-        </div>
-        
-        <div className="flex justify-center gap-4 mt-2">
           {personalInfo?.githubUrl && personalInfo.githubUrl.trim() !== "" && (
             <a 
               href={personalInfo.githubUrl} 
@@ -186,7 +183,7 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
               className="inline-flex items-center text-sm text-primary hover:underline"
             >
               <Github className="h-3.5 w-3.5 mr-1" />
-              GitHub
+              {personalInfo.githubUrl}
             </a>
           )}
           {personalInfo?.linkedinUrl && personalInfo.linkedinUrl.trim() !== "" && (
@@ -197,7 +194,7 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
               className="inline-flex items-center text-sm text-primary hover:underline"
             >
               <Linkedin className="h-3.5 w-3.5 mr-1" />
-              LinkedIn
+              {personalInfo.linkedinUrl}
             </a>
           )}
         </div>
@@ -372,18 +369,15 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?:
               {personalInfo.location}
             </span>
           )}
-        </div>
-        
-        <div className="flex justify-center gap-3 mt-1">
           {personalInfo?.githubUrl && personalInfo.githubUrl.trim() !== "" && (
             <a 
               href={personalInfo.githubUrl} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center text-xs text-primary hover:underline truncate max-w-[45%]"
+              className="inline-flex items-center text-xs text-primary hover:underline truncate"
             >
               <Github className="h-3 w-3 mr-1" />
-              <span className="truncate">GitHub</span>
+              <span className="truncate">{personalInfo.githubUrl}</span>
             </a>
           )}
           {personalInfo?.linkedinUrl && personalInfo.linkedinUrl.trim() !== "" && (
@@ -391,10 +385,10 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?:
               href={personalInfo.linkedinUrl} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center text-xs text-primary hover:underline truncate max-w-[45%]"
+              className="inline-flex items-center text-xs text-primary hover:underline truncate"
             >
               <Linkedin className="h-3 w-3 mr-1" />
-              <span className="truncate">LinkedIn</span>
+              <span className="truncate">{personalInfo.linkedinUrl}</span>
             </a>
           )}
         </div>
