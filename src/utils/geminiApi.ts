@@ -1,3 +1,4 @@
+
 // This file contains API functions to interact with Google's Gemini API
 
 const API_KEY = "AIzaSyDRuULswOC1iFSJr83VqRaeP1g8p0Vn4Lc";
@@ -78,12 +79,13 @@ export const getAIObjectiveSuggestion = async (jobTitle: string, firstName: stri
     You're a professional resume writer. Generate a compelling career objective for ${name}'s resume.
     The objective is for a ${jobTitle} position.
     
-    Write a concise, professional paragraph (3-4 sentences) that:
+    Write a concise, professional paragraph that:
     1. Mentions years of experience (use 5+ if no context given)
     2. Highlights key skills and strengths
     3. States career goals and value proposition
-    4. Includes relevant keywords for ATS systems
     
+    IMPORTANT: Keep the response to 4 lines MAXIMUM when viewed on a resume.
+    Be direct and concise. Avoid unnecessary adjectives and filler phrases.
     DO NOT use bullet points.
     DO NOT include a title or any formatting.
     Return only the career objective text.
@@ -110,8 +112,8 @@ export const getAIObjectiveSuggestion = async (jobTitle: string, firstName: stri
     const data = await response.json();
     const textResponse = data.candidates[0].content.parts[0].text.trim();
     
-    // Return the text directly, or a fallback if it's empty
-    return textResponse || `Results-driven ${jobTitle} with 5+ years of experience delivering innovative solutions in fast-paced environments. Adept at leveraging technical expertise and collaborative skills to exceed project objectives and drive business growth. Seeking to contribute my knowledge and passion to a forward-thinking organization while continuing to expand my skillset and take on new challenges.`;
+    // Return the text directly, or a fallback if it's empty (now shorter)
+    return textResponse || `Results-driven ${jobTitle} with 5+ years of experience delivering innovative solutions. Skilled in problem-solving and collaboration, consistently exceeding targets while adapting to evolving requirements. Seeking to leverage my expertise in a challenging role that offers growth opportunities.`;
   } catch (error) {
     console.error("Error getting AI objective suggestion:", error);
     throw error;
