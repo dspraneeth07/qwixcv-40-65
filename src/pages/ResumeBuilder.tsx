@@ -99,21 +99,27 @@ const ResumeBuilder = () => {
   const [objective, setObjective] = useState("");
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [selectedTemplate, setSelectedTemplate] = useState("default");
+  const [countryCode, setCountryCode] = useState("+1");
 
   useEffect(() => {
     const storedData = localStorage.getItem(STORAGE_KEY);
     if (storedData) {
-      const parsedData = JSON.parse(storedData);
-      setPersonalInfo(parsedData.personalInfo || personalInfo);
-      setEducation(parsedData.education || education);
-      setExperience(parsedData.experience || experience);
-      setSkills(parsedData.skills || skills);
-      setObjective(parsedData.objective || objective);
-      setProjects(parsedData.projects || projects);
+      try {
+        const parsedData = JSON.parse(storedData);
+        setPersonalInfo(parsedData.personalInfo || personalInfo);
+        setEducation(parsedData.education || education);
+        setExperience(parsedData.experience || experience);
+        setSkills(parsedData.skills || skills);
+        setObjective(parsedData.objective || objective);
+        setProjects(parsedData.projects || projects);
+      } catch (error) {
+        console.error("Error parsing stored resume data:", error);
+        localStorage.removeItem(STORAGE_KEY);
+      }
     }
   }, []);
 
-  const saveData = () => {
+  const saveData = useCallback(() => {
     const data = {
       personalInfo,
       education,
@@ -123,16 +129,16 @@ const ResumeBuilder = () => {
       projects
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  };
+  }, [personalInfo, education, experience, skills, objective, projects]);
 
-  const getResumeData = () => ({
+  const getResumeData = useCallback(() => ({
     personalInfo,
     education,
     experience,
     skills,
     objective,
     projects
-  });
+  }), [personalInfo, education, experience, skills, objective, projects]);
 
   const validateField = useCallback((fieldName: string, value: string) => {
     if (!value && (fieldName === 'firstName' || fieldName === 'lastName' || fieldName === 'jobTitle' || fieldName === 'email' || fieldName === 'phone' || fieldName === 'location')) {
@@ -178,9 +184,9 @@ const ResumeBuilder = () => {
     return Object.keys(errors).length === 0;
   }, [personalInfo, education, experience, skills, objective, validateField]);
 
-  const formValid = validateForm();
-
   const handleGenerate = () => {
+    const formValid = validateForm();
+    
     if (!formValid) {
       if (formErrors.firstName || formErrors.lastName || formErrors.jobTitle || 
           formErrors.email || formErrors.phone || formErrors.location) {
@@ -448,7 +454,7 @@ const ResumeBuilder = () => {
                       <div className="space-y-2">
                         <Label htmlFor="phone">Phone Number</Label>
                         <div className="flex">
-                          <Select>
+                          <Select value={countryCode} onValueChange={setCountryCode}>
                             <SelectTrigger className="w-[120px]">
                               <SelectValue placeholder="+1" />
                             </SelectTrigger>
