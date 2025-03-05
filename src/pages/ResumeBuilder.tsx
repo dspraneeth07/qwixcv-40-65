@@ -1,4 +1,4 @@
-<lov-code>
+
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -862,4 +862,597 @@ const ResumeBuilder = () => {
                       <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor="firstName" className
+                            <Label htmlFor="firstName" className={formErrors.firstName ? "text-destructive" : ""}>
+                              First Name *
+                            </Label>
+                            <Input
+                              id="firstName"
+                              value={personalInfo.firstName}
+                              onChange={(e) => setPersonalInfo({ ...personalInfo, firstName: e.target.value })}
+                              className={formErrors.firstName ? "border-destructive" : ""}
+                            />
+                            {formErrors.firstName && (
+                              <p className="text-xs text-destructive mt-1">First name is required</p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="lastName" className={formErrors.lastName ? "text-destructive" : ""}>
+                              Last Name *
+                            </Label>
+                            <Input
+                              id="lastName"
+                              value={personalInfo.lastName}
+                              onChange={(e) => setPersonalInfo({ ...personalInfo, lastName: e.target.value })}
+                              className={formErrors.lastName ? "border-destructive" : ""}
+                            />
+                            {formErrors.lastName && (
+                              <p className="text-xs text-destructive mt-1">Last name is required</p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="jobTitle" className={formErrors.jobTitle ? "text-destructive" : ""}>
+                            Job Title *
+                          </Label>
+                          <Input
+                            id="jobTitle"
+                            placeholder="e.g. Frontend Developer"
+                            value={personalInfo.jobTitle}
+                            onChange={(e) => setPersonalInfo({ ...personalInfo, jobTitle: e.target.value })}
+                            className={formErrors.jobTitle ? "border-destructive" : ""}
+                          />
+                          {formErrors.jobTitle && (
+                            <p className="text-xs text-destructive mt-1">Job title is required</p>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="email" className={formErrors.email ? "text-destructive" : ""}>
+                            Email *
+                          </Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            placeholder="your.email@example.com"
+                            value={personalInfo.email}
+                            onChange={(e) => setPersonalInfo({ ...personalInfo, email: e.target.value })}
+                            className={formErrors.email ? "border-destructive" : ""}
+                          />
+                          {formErrors.email && (
+                            <p className="text-xs text-destructive mt-1">Email is required</p>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="phone" className={formErrors.phone ? "text-destructive" : ""}>
+                            Phone *
+                          </Label>
+                          <div className="flex space-x-2">
+                            <div className="w-1/3">
+                              <Select value={personalInfo.countryCode} onValueChange={handleCountryCodeChange}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Code" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {countryCodes.map((code) => (
+                                    <SelectItem key={code.value + code.label} value={code.value}>
+                                      {code.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="flex-1">
+                              <Input
+                                id="phone"
+                                placeholder="Phone number"
+                                value={personalInfo.phone}
+                                onChange={handlePhoneChange}
+                                className={formErrors.phone ? "border-destructive" : ""}
+                                ref={phoneInputRef}
+                              />
+                            </div>
+                          </div>
+                          {formErrors.phone && (
+                            <p className="text-xs text-destructive mt-1">Phone number is required</p>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="location" className={formErrors.location ? "text-destructive" : ""}>
+                            Location *
+                          </Label>
+                          <Input
+                            id="location"
+                            placeholder="e.g. New York, NY"
+                            value={personalInfo.location}
+                            onChange={(e) => setPersonalInfo({ ...personalInfo, location: e.target.value })}
+                            className={formErrors.location ? "border-destructive" : ""}
+                          />
+                          {formErrors.location && (
+                            <p className="text-xs text-destructive mt-1">Location is required</p>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="githubUrl">
+                            GitHub URL <span className="text-muted-foreground">(optional)</span>
+                          </Label>
+                          <Input
+                            id="githubUrl"
+                            placeholder="https://github.com/username"
+                            value={personalInfo.githubUrl}
+                            onChange={(e) => setPersonalInfo({ ...personalInfo, githubUrl: e.target.value })}
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="linkedinUrl">
+                            LinkedIn URL <span className="text-muted-foreground">(optional)</span>
+                          </Label>
+                          <Input
+                            id="linkedinUrl"
+                            placeholder="https://linkedin.com/in/username"
+                            value={personalInfo.linkedinUrl}
+                            onChange={(e) => setPersonalInfo({ ...personalInfo, linkedinUrl: e.target.value })}
+                          />
+                        </div>
+                        
+                        {renderNavigationButtons()}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="education" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Education</CardTitle>
+                        <CardDescription>
+                          Add your educational background
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        {education.map((edu, index) => (
+                          <div key={edu.id} className="space-y-4 border rounded-lg p-4 relative">
+                            <div className="flex justify-between items-center mb-2">
+                              <h3 className="font-medium">{edu.customName}</h3>
+                              {education.length > 1 && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => handleRemoveEducation(edu.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              )}
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor={`edu-school-${edu.id}`} className={formErrors[`edu_${index}_school`] ? "text-destructive" : ""}>
+                                  School/University *
+                                </Label>
+                                <Input 
+                                  id={`edu-school-${edu.id}`}
+                                  value={edu.school}
+                                  onChange={(e) => handleEducationChange(edu.id, "school", e.target.value)}
+                                  className={formErrors[`edu_${index}_school`] ? "border-destructive" : ""}
+                                />
+                                {formErrors[`edu_${index}_school`] && (
+                                  <p className="text-xs text-destructive mt-1">School name is required</p>
+                                )}
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label htmlFor={`edu-degree-${edu.id}`} className={formErrors[`edu_${index}_degree`] ? "text-destructive" : ""}>
+                                  Degree/Certificate *
+                                </Label>
+                                <Input 
+                                  id={`edu-degree-${edu.id}`}
+                                  value={edu.degree}
+                                  onChange={(e) => handleEducationChange(edu.id, "degree", e.target.value)}
+                                  className={formErrors[`edu_${index}_degree`] ? "border-destructive" : ""}
+                                />
+                                {formErrors[`edu_${index}_degree`] && (
+                                  <p className="text-xs text-destructive mt-1">Degree is required</p>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor={`edu-year-${edu.id}`} className={formErrors[`edu_${index}_graduationYear`] ? "text-destructive" : ""}>
+                                  Graduation Year *
+                                </Label>
+                                <Input 
+                                  id={`edu-year-${edu.id}`}
+                                  value={edu.graduationYear}
+                                  onChange={(e) => handleEducationChange(edu.id, "graduationYear", e.target.value)}
+                                  className={formErrors[`edu_${index}_graduationYear`] ? "border-destructive" : ""}
+                                  maxLength={4}
+                                />
+                                {formErrors[`edu_${index}_graduationYear`] && (
+                                  <p className="text-xs text-destructive mt-1">Graduation year is required</p>
+                                )}
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label htmlFor={`edu-score-${edu.id}`} className={formErrors[`edu_${index}_score`] ? "text-destructive" : ""}>
+                                  GPA/Grade *
+                                </Label>
+                                <Input 
+                                  id={`edu-score-${edu.id}`}
+                                  value={edu.score}
+                                  onChange={(e) => handleEducationChange(edu.id, "score", e.target.value)}
+                                  className={formErrors[`edu_${index}_score`] ? "border-destructive" : ""}
+                                />
+                                {formErrors[`edu_${index}_score`] && (
+                                  <p className="text-xs text-destructive mt-1">Score/GPA is required</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        
+                        <Button 
+                          variant="outline" 
+                          className="w-full flex items-center gap-1"
+                          onClick={handleAddEducation}
+                        >
+                          <Plus className="h-4 w-4" /> Add Another Education
+                        </Button>
+                        
+                        {renderNavigationButtons()}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="experience" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Work Experience</CardTitle>
+                        <CardDescription>
+                          Add your professional experience
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        {experience.map((exp, index) => (
+                          <div key={exp.id} className="space-y-4 border rounded-lg p-4 relative">
+                            <div className="flex justify-between items-center mb-2">
+                              <h3 className="font-medium">
+                                {exp.companyName || exp.jobTitle ? 
+                                  (exp.jobTitle || "Role") + (exp.companyName ? ` at ${exp.companyName}` : "") : 
+                                  `Experience #${index + 1}`}
+                              </h3>
+                              {experience.length > 1 && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => handleRemoveExperience(exp.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              )}
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor={`exp-company-${exp.id}`} className={formErrors[`exp_${index}_companyName`] ? "text-destructive" : ""}>
+                                  Company Name *
+                                </Label>
+                                <Input 
+                                  id={`exp-company-${exp.id}`}
+                                  value={exp.companyName}
+                                  onChange={(e) => handleExperienceChange(exp.id, "companyName", e.target.value)}
+                                  className={formErrors[`exp_${index}_companyName`] ? "border-destructive" : ""}
+                                />
+                                {formErrors[`exp_${index}_companyName`] && (
+                                  <p className="text-xs text-destructive mt-1">Company name is required</p>
+                                )}
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label htmlFor={`exp-job-${exp.id}`} className={formErrors[`exp_${index}_jobTitle`] ? "text-destructive" : ""}>
+                                  Job Title *
+                                </Label>
+                                <Input 
+                                  id={`exp-job-${exp.id}`}
+                                  value={exp.jobTitle}
+                                  onChange={(e) => handleExperienceChange(exp.id, "jobTitle", e.target.value)}
+                                  className={formErrors[`exp_${index}_jobTitle`] ? "border-destructive" : ""}
+                                />
+                                {formErrors[`exp_${index}_jobTitle`] && (
+                                  <p className="text-xs text-destructive mt-1">Job title is required</p>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor={`exp-role-${exp.id}`} className={formErrors[`exp_${index}_role`] ? "text-destructive" : ""}>
+                                  Role/Department *
+                                </Label>
+                                <Input 
+                                  id={`exp-role-${exp.id}`}
+                                  value={exp.role}
+                                  onChange={(e) => handleExperienceChange(exp.id, "role", e.target.value)}
+                                  className={formErrors[`exp_${index}_role`] ? "border-destructive" : ""}
+                                />
+                                {formErrors[`exp_${index}_role`] && (
+                                  <p className="text-xs text-destructive mt-1">Role is required</p>
+                                )}
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label htmlFor={`exp-start-${exp.id}`}>
+                                  Start Date
+                                </Label>
+                                <Input 
+                                  id={`exp-start-${exp.id}`}
+                                  placeholder="MM/YYYY"
+                                  value={exp.startDate}
+                                  onChange={(e) => handleExperienceChange(exp.id, "startDate", e.target.value)}
+                                />
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label htmlFor={`exp-end-${exp.id}`}>
+                                  End Date
+                                </Label>
+                                <Input 
+                                  id={`exp-end-${exp.id}`}
+                                  placeholder="MM/YYYY or Present"
+                                  value={exp.endDate}
+                                  onChange={(e) => handleExperienceChange(exp.id, "endDate", e.target.value)}
+                                />
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label htmlFor={`exp-desc-${exp.id}`}>
+                                Description
+                              </Label>
+                              <Textarea 
+                                id={`exp-desc-${exp.id}`}
+                                placeholder="Describe your responsibilities and achievements..."
+                                value={exp.description}
+                                onChange={(e) => handleExperienceChange(exp.id, "description", e.target.value)}
+                                rows={4}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                        
+                        <Button 
+                          variant="outline" 
+                          className="w-full flex items-center gap-1"
+                          onClick={handleAddExperience}
+                        >
+                          <Plus className="h-4 w-4" /> Add Another Experience
+                        </Button>
+                        
+                        {renderNavigationButtons()}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="projects" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Projects</CardTitle>
+                        <CardDescription>
+                          Add projects that showcase your skills
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        {projects.map((proj, index) => (
+                          <div key={proj.id} className="space-y-4 border rounded-lg p-4 relative">
+                            <div className="flex justify-between items-center mb-2">
+                              <h3 className="font-medium">
+                                {proj.title ? proj.title : `Project #${index + 1}`}
+                              </h3>
+                              {projects.length > 1 && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={() => handleRemoveProject(proj.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              )}
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label htmlFor={`proj-title-${proj.id}`}>
+                                Project Title
+                              </Label>
+                              <Input 
+                                id={`proj-title-${proj.id}`}
+                                value={proj.title}
+                                onChange={(e) => handleProjectChange(proj.id, "title", e.target.value)}
+                              />
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label htmlFor={`proj-desc-${proj.id}`}>
+                                Description
+                              </Label>
+                              <Textarea 
+                                id={`proj-desc-${proj.id}`}
+                                placeholder="Describe your project, its purpose, and your role..."
+                                value={proj.description}
+                                onChange={(e) => handleProjectChange(proj.id, "description", e.target.value)}
+                                rows={4}
+                              />
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label htmlFor={`proj-tech-${proj.id}`}>
+                                Technologies Used
+                              </Label>
+                              <Input 
+                                id={`proj-tech-${proj.id}`}
+                                placeholder="e.g. React, Node.js, MongoDB"
+                                value={proj.technologies}
+                                onChange={(e) => handleProjectChange(proj.id, "technologies", e.target.value)}
+                              />
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label htmlFor={`proj-link-${proj.id}`}>
+                                Project Link
+                              </Label>
+                              <Input 
+                                id={`proj-link-${proj.id}`}
+                                placeholder="https://..."
+                                value={proj.link}
+                                onChange={(e) => handleProjectChange(proj.id, "link", e.target.value)}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                        
+                        <Button 
+                          variant="outline" 
+                          className="w-full flex items-center gap-1"
+                          onClick={handleAddProject}
+                        >
+                          <Plus className="h-4 w-4" /> Add Another Project
+                        </Button>
+                        
+                        {renderNavigationButtons()}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="skills" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Skills</CardTitle>
+                        <CardDescription>
+                          Highlight your professional, technical, and soft skills
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="professional-skills" className={formErrors.professional ? "text-destructive" : ""}>
+                            Professional Skills *
+                          </Label>
+                          <Textarea 
+                            id="professional-skills"
+                            placeholder="e.g. Project Management, Strategic Planning, Team Leadership"
+                            value={skills.professional}
+                            onChange={(e) => setSkills({ ...skills, professional: e.target.value })}
+                            className={formErrors.professional ? "border-destructive" : ""}
+                          />
+                          {formErrors.professional && (
+                            <p className="text-xs text-destructive mt-1">Professional skills are required</p>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            Separate skills with commas
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="technical-skills" className={formErrors.technical ? "text-destructive" : ""}>
+                            Technical Skills *
+                          </Label>
+                          <Textarea 
+                            id="technical-skills"
+                            placeholder="e.g. JavaScript, React, Node.js, SQL"
+                            value={skills.technical}
+                            onChange={(e) => setSkills({ ...skills, technical: e.target.value })}
+                            className={formErrors.technical ? "border-destructive" : ""}
+                          />
+                          {formErrors.technical && (
+                            <p className="text-xs text-destructive mt-1">Technical skills are required</p>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            Separate skills with commas
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="soft-skills" className={formErrors.soft ? "text-destructive" : ""}>
+                            Soft Skills *
+                          </Label>
+                          <Textarea 
+                            id="soft-skills"
+                            placeholder="e.g. Communication, Problem-solving, Teamwork"
+                            value={skills.soft}
+                            onChange={(e) => setSkills({ ...skills, soft: e.target.value })}
+                            className={formErrors.soft ? "border-destructive" : ""}
+                          />
+                          {formErrors.soft && (
+                            <p className="text-xs text-destructive mt-1">Soft skills are required</p>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            Separate skills with commas
+                          </p>
+                        </div>
+                        
+                        {renderNavigationButtons()}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="objectives" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Career Objective</CardTitle>
+                        <CardDescription>
+                          Add a brief statement about your career goals
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="objective" className={formErrors.objective ? "text-destructive" : ""}>
+                            Career Objective *
+                          </Label>
+                          <Textarea 
+                            id="objective"
+                            placeholder="Write a brief statement about your career goals and what you're looking for..."
+                            value={objective}
+                            onChange={(e) => setObjective(e.target.value)}
+                            className={formErrors.objective ? "border-destructive" : ""}
+                            rows={4}
+                          />
+                          {formErrors.objective && (
+                            <p className="text-xs text-destructive mt-1">Career objective is required</p>
+                          )}
+                        </div>
+                        
+                        {renderNavigationButtons()}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </div>
+            
+            {showLivePreview && (
+              <div className="lg:col-span-1">
+                <div className="sticky top-4">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Preview</CardTitle>
+                    </CardHeader>
+                    <CardContent className="bg-white rounded-md border overflow-auto" style={{ maxHeight: "75vh" }}>
+                      {getResumeData && (
+                        <ResumePreviewContent data={getResumeData()} templateId={templateId} isPreview={true} />
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
+};
+
+export default ResumeBuilder;
