@@ -1,16 +1,30 @@
 
-const GEMINI_API_KEY = "AIzaSyDRuULswOC1iFSJr83VqRaeP1g8p0Vn4Lc";
+// This file contains API functions to interact with Google's Gemini API
+
+const API_KEY = "AIzaSyDRuULswOC1iFSJr83VqRaeP1g8p0Vn4Lc";
 const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
 /**
- * Makes a request to the Gemini API
+ * Get skill suggestions based on job title
  */
-async function geminiRequest(prompt: string): Promise<string> {
+export const getAISkillSuggestions = async (jobTitle: string): Promise<{ professional: string; technical: string; soft: string }> => {
+  const prompt = `
+    Generate skills for a ${jobTitle} resume.
+    I need three types of skills:
+    1. Professional skills
+    2. Technical skills
+    3. Soft skills
+    
+    Return only the skills as a JSON object with three properties: professional, technical, and soft.
+    Each property should be a comma-separated list of skills.
+    DO NOT include any additional text, explanations or formatting.
+  `;
+
   try {
-    const response = await fetch(`${API_URL}?key=${GEMINI_API_KEY}`, {
+    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         contents: [{
@@ -20,118 +34,124 @@ async function geminiRequest(prompt: string): Promise<string> {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Gemini API error:", errorText);
-      throw new Error(`API request failed: ${response.status}`);
+      const errorData = await response.json();
+      throw new Error(`API error: ${errorData.error?.message || response.statusText}`);
     }
 
     const data = await response.json();
+    const textResponse = data.candidates[0].content.parts[0].text;
     
-    // Extract the response text from the Gemini API response
-    if (data.candidates && 
-        data.candidates[0] && 
-        data.candidates[0].content && 
-        data.candidates[0].content.parts && 
-        data.candidates[0].content.parts[0]) {
-      return data.candidates[0].content.parts[0].text;
-    } else {
-      console.error("Unexpected API response format:", data);
-      throw new Error("Invalid API response format");
-    }
-  } catch (error) {
-    console.error("Error calling Gemini API:", error);
-    throw error;
-  }
-}
-
-/**
- * Gets AI skill suggestions based on job title
- */
-export async function getAISkillSuggestions(jobTitle: string): Promise<{
-  professional: string;
-  technical: string;
-  soft: string;
-}> {
-  try {
-    const prompt = `Generate professional skills, technical skills, and soft skills for a ${jobTitle} position. 
-    Format the response exactly in this JSON structure without any explanation or additional text:
-    {
-      "professional": "comma separated list of 5-7 professional skills",
-      "technical": "comma separated list of 5-7 technical skills",
-      "soft": "comma separated list of 5-7 soft skills"
-    }`;
-
-    const response = await geminiRequest(prompt);
-    
+    // Extract the JSON from the response
     try {
-      // Extract the JSON from the response
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      // The response might contain markdown code blocks, so we need to extract just the JSON
+      const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const skills = JSON.parse(jsonMatch[0]);
         return {
-          professional: skills.professional || "",
-          technical: skills.technical || "",
-          soft: skills.soft || ""
+          professional: skills.professional || "Project Management, Time Management, Documentation",
+          technical: skills.technical || "HTML, CSS, JavaScript, React",
+          soft: skills.soft || "Communication, Teamwork, Problem Solving"
         };
       }
-      throw new Error("Could not find valid JSON in response");
-    } catch (jsonError) {
-      console.error("Failed to parse JSON from API response:", jsonError);
-      // Fallback to default skills
-      return {
-        professional: "Project Management, Team Collaboration, Strategy Development, Problem Solving, Quality Assurance",
-        technical: "Microsoft Office, Google Workspace, Project Management Software, Basic Programming, Data Analysis",
-        soft: "Communication, Leadership, Time Management, Adaptability, Critical Thinking"
-      };
+    } catch (parseError) {
+      console.error("Error parsing skills JSON:", parseError);
     }
-  } catch (error) {
-    console.error("Error generating AI skill suggestions:", error);
-    // Fallback to default skills
+    
+    // Fallback values in case the parsing fails
     return {
-      professional: "Project Management, Team Collaboration, Strategy Development, Problem Solving, Quality Assurance",
-      technical: "Microsoft Office, Google Workspace, Project Management Software, Basic Programming, Data Analysis",
-      soft: "Communication, Leadership, Time Management, Adaptability, Critical Thinking"
+      professional: "Project Management, Time Management, Documentation",
+      technical: "HTML, CSS, JavaScript, React",
+      soft: "Communication, Teamwork, Problem Solving"
     };
-  }
-}
-
-/**
- * Gets AI objective suggestion based on job title and name
- */
-export async function getAIObjectiveSuggestion(jobTitle: string, firstName: string = "", lastName: string = ""): Promise<string> {
-  try {
-    const name = `${firstName} ${lastName}`.trim() || "Professional";
-    
-    const prompt = `Write a professional career objective for a ${jobTitle} named ${name}. 
-    Keep it under 3 sentences and make it sound professional, focusing on their experience, skills, and goals.
-    Do not include any explanations, just write the career objective paragraph.`;
-
-    return await geminiRequest(prompt);
   } catch (error) {
-    console.error("Error generating AI objective suggestion:", error);
-    // Fallback to a default objective
-    return `Dedicated ${jobTitle} with a passion for excellence and continuous improvement. Combining technical expertise with strong interpersonal skills to deliver outstanding results. Seeking to leverage my experience and skills in a challenging position where I can make meaningful contributions while continuing to grow professionally.`;
+    console.error("Error getting AI skill suggestions:", error);
+    throw error;
   }
-}
+};
 
 /**
- * Gets AI project description based on title and technologies
+ * Get career objective suggestion
  */
-export async function getAIProjectDescription(title: string, technologies: string = ""): Promise<string> {
-  if (!title) return "";
+export const getAIObjectiveSuggestion = async (jobTitle: string, firstName: string, lastName: string): Promise<string> => {
+  const name = firstName && lastName ? `${firstName} ${lastName}` : "a professional";
   
-  try {
-    const techPrompt = technologies ? ` using ${technologies}` : "";
-    
-    const prompt = `Write a professional project description for a software project titled "${title}"${techPrompt}.
-    The description should be 3-4 sentences long, highlight the problem solved, technologies used, and key features.
-    Do not include any explanations, just write the project description paragraph.`;
+  const prompt = `
+    Generate a professional career objective for ${name}'s resume.
+    The career objective is for a ${jobTitle} position.
+    Write a concise, professional paragraph (3-4 sentences) that highlights career goals and value proposition.
+    DO NOT use bullet points.
+    DO NOT include a title or any formatting.
+    Return only the career objective text.
+  `;
 
-    return await geminiRequest(prompt);
+  try {
+    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: prompt }]
+        }]
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`API error: ${errorData.error?.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    const textResponse = data.candidates[0].content.parts[0].text.trim();
+    
+    // Return the text directly, or a fallback if it's empty
+    return textResponse || `Dedicated ${jobTitle} with a passion for delivering high-quality solutions. Seeking to leverage my technical expertise and collaborative skills to contribute to innovative projects while continuously expanding my knowledge in the field.`;
   } catch (error) {
-    console.error("Error generating AI project description:", error);
-    // Fallback to a default description
-    const techString = technologies ? ` using ${technologies}` : "";
-    return `Developed ${title}${techString} to address specific user needs and business requirements. Followed best practices in software development to ensure code quality, maintainability, and scalability. Collaborated with stakeholders throughout the development process to gather requirements and deliver a solution that exceeds expectations.`;
+    console.error("Error getting AI objective suggestion:", error);
+    throw error;
   }
-}
+};
+
+/**
+ * Get project description suggestion
+ */
+export const getAIProjectDescription = async (projectTitle: string, technologies?: string): Promise<string> => {
+  const tech = technologies ? `using technologies like ${technologies}` : "";
+  
+  const prompt = `
+    Generate a concise project description for a resume project titled "${projectTitle}" ${tech}.
+    Write 2-3 sentences that highlight the purpose of the project, the implementation approach, and the outcome or impact.
+    DO NOT use bullet points.
+    DO NOT include a title or any formatting.
+    Return only the project description text.
+  `;
+
+  try {
+    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: prompt }]
+        }]
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`API error: ${errorData.error?.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    const textResponse = data.candidates[0].content.parts[0].text.trim();
+    
+    // Return the text directly, or a fallback if it's empty
+    return textResponse || `Developed ${projectTitle} to solve real-world problems with efficient and scalable solutions. Implemented best practices in software development to ensure high performance and maintainability.`;
+  } catch (error) {
+    console.error("Error getting AI project description:", error);
+    throw error;
+  }
+};

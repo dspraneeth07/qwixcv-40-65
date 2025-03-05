@@ -1199,7 +1199,7 @@ const ResumeBuilder = () => {
                       <div className="border p-4 bg-white">
                         <ResumePreviewContent 
                           data={getResumeData()} 
-                          readOnly={true} 
+                          isPreview={true} 
                         />
                       </div>
                     </CardContent>
