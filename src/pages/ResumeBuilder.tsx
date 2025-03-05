@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -861,4 +862,676 @@ const ResumeBuilder = () => {
                       <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor="firstName" className="flex items
+                            <Label htmlFor="firstName" className="flex items-center gap-1">
+                              First Name
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                              id="firstName"
+                              placeholder="Enter your first name"
+                              value={personalInfo.firstName}
+                              onChange={(e) => setPersonalInfo({ ...personalInfo, firstName: e.target.value })}
+                              className={formErrors.firstName ? "border-red-500" : ""}
+                            />
+                            {formErrors.firstName && (
+                              <p className="text-red-500 text-xs mt-1">First name is required</p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="lastName" className="flex items-center gap-1">
+                              Last Name
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                              id="lastName"
+                              placeholder="Enter your last name"
+                              value={personalInfo.lastName}
+                              onChange={(e) => setPersonalInfo({ ...personalInfo, lastName: e.target.value })}
+                              className={formErrors.lastName ? "border-red-500" : ""}
+                            />
+                            {formErrors.lastName && (
+                              <p className="text-red-500 text-xs mt-1">Last name is required</p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="jobTitle" className="flex items-center gap-1">
+                              Job Title
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                              id="jobTitle"
+                              placeholder="e.g. Software Developer"
+                              value={personalInfo.jobTitle}
+                              onChange={(e) => setPersonalInfo({ ...personalInfo, jobTitle: e.target.value })}
+                              className={formErrors.jobTitle ? "border-red-500" : ""}
+                            />
+                            {formErrors.jobTitle && (
+                              <p className="text-red-500 text-xs mt-1">Job title is required</p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="email" className="flex items-center gap-1">
+                              Email
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                              id="email"
+                              type="email"
+                              placeholder="your.email@example.com"
+                              value={personalInfo.email}
+                              onChange={(e) => setPersonalInfo({ ...personalInfo, email: e.target.value })}
+                              className={formErrors.email ? "border-red-500" : ""}
+                            />
+                            {formErrors.email && (
+                              <p className="text-red-500 text-xs mt-1">Email is required</p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="phone" className="flex items-center gap-1">
+                              Phone
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <div className="flex">
+                              <Select 
+                                value={personalInfo.countryCode} 
+                                onValueChange={handleCountryCodeChange}
+                              >
+                                <SelectTrigger className="w-[110px] rounded-r-none">
+                                  <SelectValue placeholder="+1" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {countryCodes.map((code) => (
+                                    <SelectItem key={code.value} value={code.value}>
+                                      {code.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Input
+                                id="phone"
+                                className={`rounded-l-none flex-1 ${formErrors.phone ? "border-red-500" : ""}`}
+                                placeholder="Phone number"
+                                value={personalInfo.phone}
+                                onChange={handlePhoneChange}
+                                ref={phoneInputRef}
+                              />
+                            </div>
+                            {formErrors.phone && (
+                              <p className="text-red-500 text-xs mt-1">Phone number is required</p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="location" className="flex items-center gap-1">
+                              Location
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                              id="location"
+                              placeholder="City, State/Province, Country"
+                              value={personalInfo.location}
+                              onChange={(e) => setPersonalInfo({ ...personalInfo, location: e.target.value })}
+                              className={formErrors.location ? "border-red-500" : ""}
+                            />
+                            {formErrors.location && (
+                              <p className="text-red-500 text-xs mt-1">Location is required</p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                          <div className="space-y-2">
+                            <Label htmlFor="githubUrl">
+                              GitHub URL
+                            </Label>
+                            <Input
+                              id="githubUrl"
+                              placeholder="https://github.com/yourusername"
+                              value={personalInfo.githubUrl}
+                              onChange={(e) => setPersonalInfo({ ...personalInfo, githubUrl: e.target.value })}
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="linkedinUrl">
+                              LinkedIn URL
+                            </Label>
+                            <Input
+                              id="linkedinUrl"
+                              placeholder="https://linkedin.com/in/yourusername"
+                              value={personalInfo.linkedinUrl}
+                              onChange={(e) => setPersonalInfo({ ...personalInfo, linkedinUrl: e.target.value })}
+                            />
+                          </div>
+                        </div>
+                        
+                        {renderNavigationButtons()}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="education" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Education</CardTitle>
+                        <CardDescription>
+                          Add your educational background
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {education.map((edu, index) => (
+                          <div 
+                            key={edu.id} 
+                            className={`p-4 border rounded-lg mb-4 ${
+                              index === education.length - 1 ? "" : ""
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <h3 className="font-medium">{edu.customName}</h3>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleRemoveEducation(edu.id)}
+                                className="h-8 w-8 p-0 text-muted-foreground"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor={`${edu.id}_school`} className="flex items-center gap-1">
+                                  School/University
+                                  <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                  id={`${edu.id}_school`}
+                                  placeholder="Harvard University"
+                                  value={edu.school}
+                                  onChange={(e) => handleEducationChange(edu.id, "school", e.target.value)}
+                                  className={formErrors[`edu_${index}_school`] ? "border-red-500" : ""}
+                                />
+                                {formErrors[`edu_${index}_school`] && (
+                                  <p className="text-red-500 text-xs mt-1">School name is required</p>
+                                )}
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label htmlFor={`${edu.id}_degree`} className="flex items-center gap-1">
+                                  Degree
+                                  <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                  id={`${edu.id}_degree`}
+                                  placeholder="Bachelor of Science in Computer Science"
+                                  value={edu.degree}
+                                  onChange={(e) => handleEducationChange(edu.id, "degree", e.target.value)}
+                                  className={formErrors[`edu_${index}_degree`] ? "border-red-500" : ""}
+                                />
+                                {formErrors[`edu_${index}_degree`] && (
+                                  <p className="text-red-500 text-xs mt-1">Degree is required</p>
+                                )}
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label htmlFor={`${edu.id}_graduationYear`} className="flex items-center gap-1">
+                                  Graduation Year
+                                  <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                  id={`${edu.id}_graduationYear`}
+                                  placeholder="2023"
+                                  value={edu.graduationYear}
+                                  onChange={(e) => handleEducationChange(edu.id, "graduationYear", e.target.value)}
+                                  className={formErrors[`edu_${index}_graduationYear`] ? "border-red-500" : ""}
+                                  maxLength={4}
+                                />
+                                {formErrors[`edu_${index}_graduationYear`] && (
+                                  <p className="text-red-500 text-xs mt-1">Graduation year is required</p>
+                                )}
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <Label htmlFor={`${edu.id}_score`} className="flex items-center gap-1">
+                                    GPA/Score
+                                    <span className="text-red-500">*</span>
+                                  </Label>
+                                  
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => generateAIContent("score", { id: edu.id })}
+                                    className="h-6 rounded-sm px-2 text-xs"
+                                    disabled={generatingAI}
+                                  >
+                                    <Lightbulb className="h-3 w-3 mr-1" />
+                                    Suggest
+                                  </Button>
+                                </div>
+                                <Input
+                                  id={`${edu.id}_score`}
+                                  placeholder="e.g. GPA: 3.8/4.0"
+                                  value={edu.score}
+                                  onChange={(e) => handleEducationChange(edu.id, "score", e.target.value)}
+                                  className={formErrors[`edu_${index}_score`] ? "border-red-500" : ""}
+                                />
+                                {formErrors[`edu_${index}_score`] && (
+                                  <p className="text-red-500 text-xs mt-1">GPA/Score is required</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        
+                        <Button 
+                          onClick={handleAddEducation}
+                          variant="outline" 
+                          className="w-full mt-2 mb-4"
+                        >
+                          <Plus className="h-4 w-4 mr-2" /> Add Another Education
+                        </Button>
+                        
+                        {renderNavigationButtons()}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="experience" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Work Experience</CardTitle>
+                        <CardDescription>
+                          Add your work experience
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {experience.map((exp, index) => (
+                          <div 
+                            key={exp.id} 
+                            className={`p-4 border rounded-lg mb-4 ${
+                              index === experience.length - 1 ? "" : ""
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <h3 className="font-medium">Experience #{index + 1}</h3>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleRemoveExperience(exp.id)}
+                                className="h-8 w-8 p-0 text-muted-foreground"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor={`${exp.id}_companyName`} className="flex items-center gap-1">
+                                  Company Name
+                                </Label>
+                                <Input
+                                  id={`${exp.id}_companyName`}
+                                  placeholder="Google LLC"
+                                  value={exp.companyName}
+                                  onChange={(e) => handleExperienceChange(exp.id, "companyName", e.target.value)}
+                                  className={formErrors[`exp_${index}_companyName`] ? "border-red-500" : ""}
+                                />
+                                {formErrors[`exp_${index}_companyName`] && (
+                                  <p className="text-red-500 text-xs mt-1">Company name is required</p>
+                                )}
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label htmlFor={`${exp.id}_jobTitle`} className="flex items-center gap-1">
+                                  Job Title
+                                </Label>
+                                <Input
+                                  id={`${exp.id}_jobTitle`}
+                                  placeholder="Senior Software Engineer"
+                                  value={exp.jobTitle}
+                                  onChange={(e) => handleExperienceChange(exp.id, "jobTitle", e.target.value)}
+                                  className={formErrors[`exp_${index}_jobTitle`] ? "border-red-500" : ""}
+                                />
+                                {formErrors[`exp_${index}_jobTitle`] && (
+                                  <p className="text-red-500 text-xs mt-1">Job title is required</p>
+                                )}
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label htmlFor={`${exp.id}_role`} className="flex items-center gap-1">
+                                  Role
+                                </Label>
+                                <Input
+                                  id={`${exp.id}_role`}
+                                  placeholder="Frontend Developer"
+                                  value={exp.role}
+                                  onChange={(e) => handleExperienceChange(exp.id, "role", e.target.value)}
+                                  className={formErrors[`exp_${index}_role`] ? "border-red-500" : ""}
+                                />
+                                {formErrors[`exp_${index}_role`] && (
+                                  <p className="text-red-500 text-xs mt-1">Role is required</p>
+                                )}
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label htmlFor={`${exp.id}_startDate`}>
+                                  Start Date
+                                </Label>
+                                <Input
+                                  id={`${exp.id}_startDate`}
+                                  placeholder="Jan 2020"
+                                  value={exp.startDate}
+                                  onChange={(e) => handleExperienceChange(exp.id, "startDate", e.target.value)}
+                                />
+                              </div>
+                              
+                              <div className="space-y-2 md:col-span-2">
+                                <div className="flex justify-between">
+                                  <Label htmlFor={`${exp.id}_endDate`}>
+                                    End Date
+                                  </Label>
+                                </div>
+                                <Input
+                                  id={`${exp.id}_endDate`}
+                                  placeholder="Present"
+                                  value={exp.endDate}
+                                  onChange={(e) => handleExperienceChange(exp.id, "endDate", e.target.value)}
+                                />
+                                <p className="text-muted-foreground text-xs">
+                                  Enter "Present" if this is your current job
+                                </p>
+                              </div>
+                              
+                              <div className="space-y-2 md:col-span-2">
+                                <div className="flex justify-between">
+                                  <Label htmlFor={`${exp.id}_description`}>
+                                    Job Description
+                                  </Label>
+                                  
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => generateAIContent("jobDescription", { id: exp.id })}
+                                    className="h-6 rounded-sm px-2 text-xs"
+                                    disabled={generatingAI}
+                                  >
+                                    <Lightbulb className="h-3 w-3 mr-1" />
+                                    Generate with AI
+                                  </Button>
+                                </div>
+                                <Textarea
+                                  id={`${exp.id}_description`}
+                                  placeholder="Describe your responsibilities and achievements..."
+                                  value={exp.description}
+                                  onChange={(e) => handleExperienceChange(exp.id, "description", e.target.value)}
+                                  className="min-h-[120px]"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        
+                        <Button 
+                          onClick={handleAddExperience}
+                          variant="outline" 
+                          className="w-full mt-2 mb-4"
+                        >
+                          <Plus className="h-4 w-4 mr-2" /> Add Another Experience
+                        </Button>
+                        
+                        {renderNavigationButtons()}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="projects" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Projects</CardTitle>
+                        <CardDescription>
+                          Add your key projects
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {projects.map((proj, index) => (
+                          <div 
+                            key={proj.id} 
+                            className={`p-4 border rounded-lg mb-4 ${
+                              index === projects.length - 1 ? "" : ""
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <h3 className="font-medium">Project #{index + 1}</h3>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleRemoveProject(proj.id)}
+                                className="h-8 w-8 p-0 text-muted-foreground"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor={`${proj.id}_title`}>
+                                  Project Title
+                                </Label>
+                                <Input
+                                  id={`${proj.id}_title`}
+                                  placeholder="E-commerce Website"
+                                  value={proj.title}
+                                  onChange={(e) => handleProjectChange(proj.id, "title", e.target.value)}
+                                />
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label htmlFor={`${proj.id}_technologies`}>
+                                  Technologies Used
+                                </Label>
+                                <Input
+                                  id={`${proj.id}_technologies`}
+                                  placeholder="React, Node.js, MongoDB"
+                                  value={proj.technologies}
+                                  onChange={(e) => handleProjectChange(proj.id, "technologies", e.target.value)}
+                                />
+                              </div>
+                              
+                              <div className="space-y-2 md:col-span-2">
+                                <Label htmlFor={`${proj.id}_link`}>
+                                  Project Link (optional)
+                                </Label>
+                                <Input
+                                  id={`${proj.id}_link`}
+                                  placeholder="https://github.com/yourusername/project"
+                                  value={proj.link}
+                                  onChange={(e) => handleProjectChange(proj.id, "link", e.target.value)}
+                                />
+                              </div>
+                              
+                              <div className="space-y-2 md:col-span-2">
+                                <div className="flex justify-between">
+                                  <Label htmlFor={`${proj.id}_description`}>
+                                    Project Description
+                                  </Label>
+                                  
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => generateAIContent("projectDescription", { id: proj.id })}
+                                    className="h-6 rounded-sm px-2 text-xs"
+                                    disabled={generatingAI}
+                                  >
+                                    <Lightbulb className="h-3 w-3 mr-1" />
+                                    Generate with AI
+                                  </Button>
+                                </div>
+                                <Textarea
+                                  id={`${proj.id}_description`}
+                                  placeholder="Describe your project, your role, and the outcomes..."
+                                  value={proj.description}
+                                  onChange={(e) => handleProjectChange(proj.id, "description", e.target.value)}
+                                  className="min-h-[120px]"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        
+                        <Button 
+                          onClick={handleAddProject}
+                          variant="outline" 
+                          className="w-full mt-2 mb-4"
+                        >
+                          <Plus className="h-4 w-4 mr-2" /> Add Another Project
+                        </Button>
+                        
+                        {renderNavigationButtons()}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="skills" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Skills</CardTitle>
+                        <CardDescription>
+                          Add your professional skills
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex flex-row items-center space-x-2 mb-3">
+                          <Sparkles className="h-5 w-5 text-primary" />
+                          <p className="text-sm text-muted-foreground">
+                            Pro tip: Separate skills with commas for better formatting
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="professional-skills" className="flex items-center gap-1">
+                              Professional Skills
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <Textarea
+                              id="professional-skills"
+                              placeholder="Project Management, Team Leadership, Strategic Planning"
+                              value={skills.professional}
+                              onChange={(e) => setSkills({ ...skills, professional: e.target.value })}
+                              className={formErrors.professional ? "border-red-500" : ""}
+                            />
+                            {formErrors.professional && (
+                              <p className="text-red-500 text-xs mt-1">Professional skills are required</p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="technical-skills" className="flex items-center gap-1">
+                              Technical Skills
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <Textarea
+                              id="technical-skills"
+                              placeholder="JavaScript, React, Node.js, Python, SQL"
+                              value={skills.technical}
+                              onChange={(e) => setSkills({ ...skills, technical: e.target.value })}
+                              className={formErrors.technical ? "border-red-500" : ""}
+                            />
+                            {formErrors.technical && (
+                              <p className="text-red-500 text-xs mt-1">Technical skills are required</p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="soft-skills" className="flex items-center gap-1">
+                              Soft Skills
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <Textarea
+                              id="soft-skills"
+                              placeholder="Communication, Teamwork, Problem-solving, Adaptability"
+                              value={skills.soft}
+                              onChange={(e) => setSkills({ ...skills, soft: e.target.value })}
+                              className={formErrors.soft ? "border-red-500" : ""}
+                            />
+                            {formErrors.soft && (
+                              <p className="text-red-500 text-xs mt-1">Soft skills are required</p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {renderNavigationButtons()}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="objectives" className="p-0">
+                    <Card className="border-0 shadow-none">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xl">Career Objective</CardTitle>
+                        <CardDescription>
+                          Add a concise career objective or professional summary
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <Label htmlFor="objective" className="flex items-center gap-1">
+                              Career Objective
+                              <span className="text-red-500">*</span>
+                            </Label>
+                          </div>
+                          <Textarea
+                            id="objective"
+                            placeholder="A brief statement about your career goals and what you bring to the table..."
+                            value={objective}
+                            onChange={(e) => setObjective(e.target.value)}
+                            className={`min-h-[150px] ${formErrors.objective ? "border-red-500" : ""}`}
+                          />
+                          {formErrors.objective && (
+                            <p className="text-red-500 text-xs mt-1">Career objective is required</p>
+                          )}
+                          <p className="text-muted-foreground text-xs">
+                            Keep it concise - 2-3 sentences that highlight your experience, skills, and career goals.
+                          </p>
+                        </div>
+                        
+                        {renderNavigationButtons()}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </div>
+            
+            {showLivePreview && (
+              <div className="lg:col-span-1">
+                <div className="sticky top-24">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Live Preview</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <div className="bg-white border-t overflow-hidden rounded-b-lg" style={{ height: "70vh" }}>
+                        <div className="h-full overflow-y-auto p-4 scale-[0.8] origin-top">
+                          <ResumePreviewContent resumeData={getResumeData()} />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
+};
+
+export default ResumeBuilder;
