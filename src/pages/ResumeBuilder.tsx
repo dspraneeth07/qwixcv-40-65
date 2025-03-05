@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -11,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/components/ui/use-toast";
 import { Plus, Trash, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { ResumePreviewContent } from "./ResumePreview";
+import { getAISkillSuggestions, getAIObjectiveSuggestion, getAIProjectDescription } from "@/utils/geminiApi";
 
 interface PersonalInfo {
   firstName: string;
@@ -59,117 +59,6 @@ interface FormErrors {
 }
 
 const STORAGE_KEY = "resumeData";
-
-// AI suggestions based on job title
-const getAISkillSuggestions = (jobTitle: string) => {
-  const suggestions: { [key: string]: Skills } = {
-    "Software Engineer": {
-      professional: "Agile Development, Code Review, System Design, Test-Driven Development, CI/CD",
-      technical: "JavaScript, Python, Java, SQL, AWS, Docker, Git, React, Node.js",
-      soft: "Problem Solving, Communication, Teamwork, Time Management, Critical Thinking"
-    },
-    "Front-end Developer": {
-      professional: "UI/UX Design, Web Performance Optimization, Responsive Design, Cross-Browser Compatibility",
-      technical: "HTML, CSS, JavaScript, TypeScript, React, Vue.js, Angular, SASS, Webpack",
-      soft: "Attention to Detail, Creativity, Communication, Time Management, Teamwork"
-    },
-    "Data Scientist": {
-      professional: "Data Analysis, Statistical Modeling, Machine Learning, Data Visualization, Big Data Processing",
-      technical: "Python, R, SQL, TensorFlow, PyTorch, Pandas, NumPy, Tableau, Power BI",
-      soft: "Analytical Thinking, Problem Solving, Communication, Curiosity, Attention to Detail"
-    },
-    "Product Manager": {
-      professional: "Product Strategy, Market Research, Roadmap Planning, Agile Methodologies, User Story Creation",
-      technical: "JIRA, Confluence, Product Analytics, SQL, A/B Testing, Wireframing",
-      soft: "Leadership, Communication, Negotiation, Strategic Thinking, Stakeholder Management"
-    },
-    "UX Designer": {
-      professional: "User Research, Wireframing, Prototyping, Usability Testing, Information Architecture",
-      technical: "Figma, Sketch, Adobe XD, InVision, Zeplin, HTML/CSS Basics",
-      soft: "Empathy, Communication, Creativity, Problem Solving, Collaboration"
-    }
-  };
-
-  // Default suggestions if job title doesn't match
-  const defaultSuggestions: Skills = {
-    professional: "Project Management, Team Collaboration, Strategy Development, Problem Solving",
-    technical: "Microsoft Office, Google Workspace, Project Management Software, Basic Programming",
-    soft: "Communication, Leadership, Time Management, Adaptability, Critical Thinking"
-  };
-
-  // Check for partial matches to be more flexible
-  for (const title in suggestions) {
-    if (jobTitle.toLowerCase().includes(title.toLowerCase()) || 
-        title.toLowerCase().includes(jobTitle.toLowerCase())) {
-      return suggestions[title];
-    }
-  }
-
-  return defaultSuggestions;
-};
-
-// AI suggestions for career objective based on job title
-const getAIObjectiveSuggestion = (jobTitle: string, firstName: string = "", lastName: string = "") => {
-  const name = `${firstName} ${lastName}`.trim() || "Professional";
-  
-  const suggestions: { [key: string]: string } = {
-    "Software Engineer": `Dedicated and efficient ${jobTitle} with a passion for developing innovative applications that deliver exceptional user experiences. Leveraging strong problem-solving abilities and technical expertise to create scalable and maintainable solutions. Seeking to apply my skills in a collaborative environment to drive technological advancement and business growth.`,
-    
-    "Front-end Developer": `Creative and detail-oriented ${jobTitle} with expertise in building responsive and intuitive user interfaces. Committed to writing clean, efficient code and staying current with emerging technologies and best practices. Looking to contribute to a forward-thinking team where I can enhance user experiences through innovative front-end solutions.`,
-    
-    "Data Scientist": `Results-driven ${jobTitle} with a strong analytical mindset and expertise in extracting actionable insights from complex datasets. Skilled in applying statistical methods and machine learning algorithms to solve business problems. Eager to leverage my technical and analytical abilities to drive data-informed decision making.`,
-    
-    "Product Manager": `Strategic ${jobTitle} with a proven track record of guiding products from conception to launch. Adept at identifying market opportunities, defining product vision, and collaborating with cross-functional teams to deliver user-centric solutions. Seeking to utilize my leadership and technical skills to develop innovative products that solve real-world problems.`,
-    
-    "UX Designer": `Empathetic ${jobTitle} passionate about creating intuitive and engaging user experiences. Combining research insights with design thinking to craft solutions that meet both user needs and business objectives. Eager to apply my creative problem-solving skills to design products that delight users and drive business growth.`
-  };
-
-  // Default suggestion if job title doesn't match
-  const defaultSuggestion = `Dedicated ${jobTitle} with a passion for excellence and continuous improvement. Combining technical expertise with strong interpersonal skills to deliver outstanding results. Seeking to leverage my experience and skills in a challenging position where I can make meaningful contributions while continuing to grow professionally.`;
-
-  // Check for partial matches to be more flexible
-  for (const title in suggestions) {
-    if (jobTitle.toLowerCase().includes(title.toLowerCase()) || 
-        title.toLowerCase().includes(jobTitle.toLowerCase())) {
-      return suggestions[title];
-    }
-  }
-
-  return defaultSuggestion;
-};
-
-// AI suggestions for project descriptions
-const getAIProjectDescription = (title: string, technologies: string = "") => {
-  if (!title) return "";
-  
-  const techString = technologies ? ` using ${technologies}` : "";
-  
-  const projectTypes: { [key: string]: string } = {
-    "E-commerce": `Developed a comprehensive e-commerce platform${techString} that features product browsing, user authentication, shopping cart functionality, and secure payment processing. Implemented responsive design for optimal user experience across all devices. Integrated inventory management system to track product availability in real-time.`,
-    
-    "Portfolio": `Designed and built a professional portfolio website${techString} to showcase my work and skills. Implemented responsive layouts, smooth animations, and optimized performance. Integrated a content management system for easy updates and maintenance.`,
-    
-    "Blog": `Created a feature-rich blog platform${techString} with content management capabilities, user authentication, and comment functionality. Implemented SEO best practices, responsive design, and performance optimizations for fast page loading.`,
-    
-    "Social Media": `Developed a social media application${techString} that allows users to create profiles, connect with friends, share content, and engage through likes and comments. Implemented real-time notifications and messaging functionality for enhanced user interaction.`,
-    
-    "Dashboard": `Built an interactive analytics dashboard${techString} that visualizes complex data in an intuitive way. Implemented filtering capabilities, custom charts, and exportable reports. Designed with user experience in mind to make data interpretation accessible to non-technical users.`,
-    
-    "Mobile App": `Designed and developed a mobile application${techString} that delivers a seamless user experience across iOS and Android platforms. Implemented offline functionality, push notifications, and integrated with backend services for data synchronization.`,
-    
-    "Game": `Created an interactive game${techString} with engaging gameplay mechanics, sound effects, and visual animations. Implemented scoring system, multiple difficulty levels, and user progress tracking.`
-  };
-
-  // Check for partial matches in project title
-  for (const type in projectTypes) {
-    if (title.toLowerCase().includes(type.toLowerCase())) {
-      return projectTypes[type];
-    }
-  }
-
-  // Default description if no specific project type is matched
-  return `Developed ${title}${techString} to address specific user needs and business requirements. Followed best practices in software development to ensure code quality, maintainability, and scalability. Collaborated with stakeholders throughout the development process to gather requirements and deliver a solution that exceeds expectations.`;
-};
 
 const ResumeBuilder = () => {
   const navigate = useNavigate();
@@ -474,7 +363,7 @@ const ResumeBuilder = () => {
     setProjects(projects.filter(project => project.id !== id));
   };
 
-  const generateAISkillSuggestions = () => {
+  const generateAISkillSuggestions = async () => {
     if (!personalInfo.jobTitle) {
       toast({
         title: "Job Title Required",
@@ -484,16 +373,30 @@ const ResumeBuilder = () => {
       return;
     }
 
-    const suggestions = getAISkillSuggestions(personalInfo.jobTitle);
-    setSkills(suggestions);
-    
-    toast({
-      title: "Skills Generated",
-      description: "AI has suggested skills based on your job title."
-    });
+    try {
+      toast({
+        title: "Generating Skills",
+        description: "AI is working on your skill suggestions...",
+      });
+      
+      const suggestions = await getAISkillSuggestions(personalInfo.jobTitle);
+      setSkills(suggestions);
+      
+      toast({
+        title: "Skills Generated",
+        description: "AI has suggested skills based on your job title."
+      });
+    } catch (error) {
+      console.error("Error generating skills:", error);
+      toast({
+        title: "Generation Failed",
+        description: "Could not generate skills. Please try again later.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const generateAIObjective = () => {
+  const generateAIObjective = async () => {
     if (!personalInfo.jobTitle) {
       toast({
         title: "Job Title Required",
@@ -503,21 +406,35 @@ const ResumeBuilder = () => {
       return;
     }
 
-    const suggestion = getAIObjectiveSuggestion(
-      personalInfo.jobTitle, 
-      personalInfo.firstName, 
-      personalInfo.lastName
-    );
-    
-    setObjective(suggestion);
-    
-    toast({
-      title: "Objective Generated",
-      description: "AI has created a career objective based on your information."
-    });
+    try {
+      toast({
+        title: "Generating Objective",
+        description: "AI is working on your career objective...",
+      });
+      
+      const suggestion = await getAIObjectiveSuggestion(
+        personalInfo.jobTitle, 
+        personalInfo.firstName, 
+        personalInfo.lastName
+      );
+      
+      setObjective(suggestion);
+      
+      toast({
+        title: "Objective Generated",
+        description: "AI has created a career objective based on your information."
+      });
+    } catch (error) {
+      console.error("Error generating objective:", error);
+      toast({
+        title: "Generation Failed",
+        description: "Could not generate career objective. Please try again later.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const generateProjectDescription = (id: string) => {
+  const generateProjectDescription = async (id: string) => {
     const project = projects.find(p => p.id === id);
     
     if (!project || !project.title) {
@@ -529,17 +446,31 @@ const ResumeBuilder = () => {
       return;
     }
 
-    const suggestion = getAIProjectDescription(
-      project.title,
-      project.technologies
-    );
-    
-    updateProject(id, "description", suggestion);
-    
-    toast({
-      title: "Description Generated",
-      description: "AI has created a project description based on your title."
-    });
+    try {
+      toast({
+        title: "Generating Description",
+        description: "AI is working on your project description...",
+      });
+      
+      const suggestion = await getAIProjectDescription(
+        project.title,
+        project.technologies
+      );
+      
+      updateProject(id, "description", suggestion);
+      
+      toast({
+        title: "Description Generated",
+        description: "AI has created a project description based on your title."
+      });
+    } catch (error) {
+      console.error("Error generating project description:", error);
+      toast({
+        title: "Generation Failed",
+        description: "Could not generate project description. Please try again later.",
+        variant: "destructive"
+      });
+    }
   };
 
   const getActiveContent = () => {
@@ -1012,153 +943,4 @@ const ResumeBuilder = () => {
         return (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold">Skills</h2>
-              <p className="text-gray-500">Showcase your professional and technical abilities</p>
-            </div>
-
-            <div className="flex justify-end">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-gray-500 gap-1 mb-4"
-                onClick={generateAISkillSuggestions}
-              >
-                <Sparkles className="h-4 w-4" /> AI Suggest Skills
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="professional" className="text-base">
-                Professional Skills <span className="text-red-500">*</span>
-              </Label>
-              <Textarea
-                id="professional"
-                placeholder="Project Management, Team Leadership, Strategic Planning, etc."
-                value={skills.professional}
-                onChange={e => setSkills({...skills, professional: e.target.value})}
-                className={formErrors.professional ? "border-red-500" : ""}
-                rows={3}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="technical" className="text-base">
-                Technical Skills <span className="text-red-500">*</span>
-              </Label>
-              <Textarea
-                id="technical"
-                placeholder="JavaScript, React, Node.js, CSS, etc."
-                value={skills.technical}
-                onChange={e => setSkills({...skills, technical: e.target.value})}
-                className={formErrors.technical ? "border-red-500" : ""}
-                rows={3}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="soft" className="text-base">
-                Soft Skills <span className="text-red-500">*</span>
-              </Label>
-              <Textarea
-                id="soft"
-                placeholder="Communication, Teamwork, Problem Solving, etc."
-                value={skills.soft}
-                onChange={e => setSkills({...skills, soft: e.target.value})}
-                className={formErrors.soft ? "border-red-500" : ""}
-                rows={3}
-              />
-            </div>
-            
-            <div className="flex justify-between">
-              <Button onClick={() => setActiveTab("projects")} variant="outline" size="lg">
-                <ChevronLeft className="mr-2 h-4 w-4" /> Previous
-              </Button>
-              <Button onClick={() => setActiveTab("objectives")} className="bg-gray-900" size="lg">
-                Next <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        );
-      
-      case "objectives":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold">Career Objective</h2>
-              <p className="text-gray-500">Summarize your career goals and what you bring to the table</p>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Label htmlFor="objective" className="text-base">
-                  Career Objective <span className="text-red-500">*</span>
-                </Label>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="text-gray-500 gap-1"
-                  onClick={generateAIObjective}
-                >
-                  <Sparkles className="h-4 w-4" /> Generate with AI
-                </Button>
-              </div>
-              <Textarea
-                id="objective"
-                placeholder="A concise statement about your career goals and what you bring to a potential employer..."
-                value={objective}
-                onChange={e => setObjective(e.target.value)}
-                className={formErrors.objective ? "border-red-500" : ""}
-                rows={6}
-              />
-            </div>
-            
-            <div className="flex justify-between">
-              <Button onClick={() => setActiveTab("skills")} variant="outline" size="lg">
-                <ChevronLeft className="mr-2 h-4 w-4" /> Previous
-              </Button>
-              <Button onClick={handleGenerate} className="bg-gray-900" size="lg">
-                Generate Resume
-              </Button>
-            </div>
-          </div>
-        );
-      
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <MainLayout>
-      <div className="container max-w-4xl py-8">
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-2">
-            <h1 className="text-3xl font-bold">Resume Builder</h1>
-            <Button 
-              variant="outline" 
-              onClick={() => setShowLivePreview(!showLivePreview)}
-              className="hidden md:flex"
-            >
-              {showLivePreview ? "Hide Preview" : "Show Preview"}
-            </Button>
-          </div>
-          <p className="text-gray-500">Create a professional resume in minutes</p>
-        </div>
-
-        <div className={`grid grid-cols-1 ${showLivePreview ? 'lg:grid-cols-2' : 'lg:grid-cols-1'} gap-8`}>
-          <div className="space-y-6">
-            {getActiveContent()}
-          </div>
-          
-          {showLivePreview && (
-            <div className="hidden lg:block sticky top-20 h-fit">
-              <ResumePreviewContent data={getResumeData()} templateId={selectedTemplate} isPreview={true} />
-            </div>
-          )}
-        </div>
-      </div>
-    </MainLayout>
-  );
-};
-
-export default ResumeBuilder;
+              <h2
