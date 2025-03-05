@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -125,25 +124,25 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
         
         {(personalInfo?.githubUrl || personalInfo?.linkedinUrl) && (
           <div className="flex justify-center space-x-4 mt-2">
-            {personalInfo?.githubUrl && (
+            {personalInfo?.githubUrl && personalInfo.githubUrl.trim() !== "" && (
               <a 
                 href={personalInfo.githubUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="inline-flex items-center text-sm text-primary hover:underline"
               >
-                <Github className="h-4 w-4 mr-1" />
+                <Github className="h-4 w-4 mr-2" />
                 GitHub
               </a>
             )}
-            {personalInfo?.linkedinUrl && (
+            {personalInfo?.linkedinUrl && personalInfo.linkedinUrl.trim() !== "" && (
               <a 
                 href={personalInfo.linkedinUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="inline-flex items-center text-sm text-primary hover:underline"
               >
-                <Linkedin className="h-4 w-4 mr-1" />
+                <Linkedin className="h-4 w-4 mr-2" />
                 LinkedIn
               </a>
             )}
@@ -266,7 +265,6 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
 
 export { ResumePreview };
 
-// Update the ResumePreviewContent to better handle live updates and fix prop types
 export const ResumePreviewContent = ({ 
   data, 
   templateId,
@@ -276,10 +274,8 @@ export const ResumePreviewContent = ({
   templateId?: string;
   isPreview?: boolean;
 }) => {
-  // Use key to force re-render when data changes
   const [key, setKey] = useState(Date.now());
   
-  // Update key when data changes to force re-render
   useEffect(() => {
     setKey(Date.now());
   }, [data]);
@@ -294,7 +290,6 @@ export const ResumePreviewContent = ({
   );
 };
 
-// Separate component for the mini preview to avoid duplicate code
 const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boolean }) => {
   if (!data) return null;
   
@@ -316,7 +311,7 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?:
         
         {(personalInfo?.githubUrl || personalInfo?.linkedinUrl) && (
           <div className="flex justify-center space-x-3 mt-1">
-            {personalInfo?.githubUrl && (
+            {personalInfo?.githubUrl && personalInfo.githubUrl.trim() !== "" && (
               <a 
                 href={personalInfo.githubUrl} 
                 target="_blank" 
@@ -327,7 +322,7 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?:
                 GitHub
               </a>
             )}
-            {personalInfo?.linkedinUrl && (
+            {personalInfo?.linkedinUrl && personalInfo.linkedinUrl.trim() !== "" && (
               <a 
                 href={personalInfo.linkedinUrl} 
                 target="_blank" 
