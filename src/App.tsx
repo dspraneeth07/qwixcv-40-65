@@ -11,7 +11,6 @@ import ResumeBuilder from "./pages/ResumeBuilder";
 import ResumePreview from "./pages/ResumePreview";
 import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
-import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
 
@@ -28,7 +27,6 @@ const App = () => (
           <Route path="/resume-preview" element={<ResumePreview />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/login" element={<Login />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
