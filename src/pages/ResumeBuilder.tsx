@@ -97,7 +97,7 @@ const ResumeBuilder = () => {
     soft: "",
   });
   const [objective, setObjective] = useState("");
-	const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [selectedTemplate, setSelectedTemplate] = useState("default");
 
   useEffect(() => {
@@ -251,14 +251,26 @@ const ResumeBuilder = () => {
     
     try {
       // Navigate with state for more reliable data transfer
-      navigate('/resume-preview', { state: { resumeData } });
+      navigate('/resume-preview', { 
+        state: { 
+          resumeData: JSON.parse(JSON.stringify(resumeData)) 
+        } 
+      });
     } catch (error) {
       console.error("Error navigating to resume preview:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate resume. Please try again.",
-        variant: "destructive"
-      });
+      
+      // Fallback to URL parameters if state navigation fails
+      try {
+        const dataString = encodeURIComponent(JSON.stringify(resumeData));
+        navigate(`/resume-preview?data=${dataString}`);
+      } catch (urlError) {
+        console.error("Error encoding resume data for URL:", urlError);
+        toast({
+          title: "Error",
+          description: "Failed to generate resume. Please try again.",
+          variant: "destructive"
+        });
+      }
     }
   };
 

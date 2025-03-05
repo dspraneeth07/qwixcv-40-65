@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Download, ArrowLeft, Github, Linkedin, ExternalLink } from "lucide-react";
+import { Download, ArrowLeft, ExternalLink } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
 const ResumePreview = () => {
@@ -18,6 +18,7 @@ const ResumePreview = () => {
     try {
       // First try to get data from location state (direct navigation)
       if (location.state && location.state.resumeData) {
+        console.log("Found resume data in location state", location.state.resumeData);
         setResumeData(location.state.resumeData);
         setLoading(false);
         return;
@@ -33,11 +34,18 @@ const ResumePreview = () => {
         return;
       }
       
-      const parsedData = JSON.parse(decodeURIComponent(dataParam));
-      setResumeData(parsedData);
-      setLoading(false);
+      try {
+        const parsedData = JSON.parse(decodeURIComponent(dataParam));
+        console.log("Parsed data from URL param", parsedData);
+        setResumeData(parsedData);
+        setLoading(false);
+      } catch (parseErr) {
+        console.error("Error parsing JSON data:", parseErr);
+        setError("Invalid resume data format. Please go back and try again.");
+        setLoading(false);
+      }
     } catch (err) {
-      console.error("Error parsing resume data:", err);
+      console.error("Error loading resume data:", err);
       setError("Error loading resume data. Please go back and try again.");
       setLoading(false);
     }
@@ -132,7 +140,6 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
                 rel="noopener noreferrer"
                 className="inline-flex items-center text-sm text-primary hover:underline"
               >
-                <Github className="h-4 w-4 mr-2" />
                 {personalInfo.githubUrl}
               </a>
             )}
@@ -143,7 +150,6 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
                 rel="noopener noreferrer"
                 className="inline-flex items-center text-sm text-primary hover:underline"
               >
-                <Linkedin className="h-4 w-4 mr-2" />
                 {personalInfo.linkedinUrl}
               </a>
             )}
@@ -199,7 +205,6 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
                     rel="noopener noreferrer" 
                     className="text-sm text-primary hover:underline flex items-center mt-1"
                   >
-                    <ExternalLink className="h-3 w-3 mr-1" />
                     {proj.link}
                   </a>
                 )}
@@ -316,7 +321,6 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?:
                 rel="noopener noreferrer"
                 className="inline-flex items-center text-xs text-primary hover:underline truncate max-w-full"
               >
-                <Github className="h-3 w-3 mr-1 flex-shrink-0" />
                 <span className="truncate">{personalInfo.githubUrl}</span>
               </a>
             )}
@@ -327,7 +331,6 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?:
                 rel="noopener noreferrer"
                 className="inline-flex items-center text-xs text-primary hover:underline truncate max-w-full"
               >
-                <Linkedin className="h-3 w-3 mr-1 flex-shrink-0" />
                 <span className="truncate">{personalInfo.linkedinUrl}</span>
               </a>
             )}
@@ -383,7 +386,6 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?:
                       rel="noopener noreferrer" 
                       className="text-xs text-primary hover:underline flex items-center mt-1 truncate"
                     >
-                      <ExternalLink className="h-2 w-2 mr-1 flex-shrink-0" />
                       <span className="truncate">{proj.link}</span>
                     </a>
                   )}
