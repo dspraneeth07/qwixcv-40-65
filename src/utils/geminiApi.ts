@@ -9,14 +9,14 @@ const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-
  */
 export const getAISkillSuggestions = async (jobTitle: string): Promise<{ professional: string; technical: string; soft: string }> => {
   const prompt = `
-    Generate skills for a ${jobTitle} resume.
+    You're a professional resume writer. Generate skills for a ${jobTitle} resume.
     I need three types of skills:
-    1. Professional skills
-    2. Technical skills
-    3. Soft skills
+    1. Professional skills - skills related to job management and domain expertise
+    2. Technical skills - specific tools, technologies, and platforms
+    3. Soft skills - interpersonal and character traits
     
     Return only the skills as a JSON object with three properties: professional, technical, and soft.
-    Each property should be a comma-separated list of skills.
+    Each property should be a comma-separated list of 5-8 relevant skills.
     DO NOT include any additional text, explanations or formatting.
   `;
 
@@ -48,9 +48,9 @@ export const getAISkillSuggestions = async (jobTitle: string): Promise<{ profess
       if (jsonMatch) {
         const skills = JSON.parse(jsonMatch[0]);
         return {
-          professional: skills.professional || "Project Management, Time Management, Documentation",
-          technical: skills.technical || "HTML, CSS, JavaScript, React",
-          soft: skills.soft || "Communication, Teamwork, Problem Solving"
+          professional: skills.professional || "Project Management, Time Management, Documentation, Business Analysis, Strategic Planning",
+          technical: skills.technical || "HTML, CSS, JavaScript, React, TypeScript, Git, REST APIs, GraphQL",
+          soft: skills.soft || "Communication, Teamwork, Problem Solving, Adaptability, Time Management, Leadership"
         };
       }
     } catch (parseError) {
@@ -59,9 +59,9 @@ export const getAISkillSuggestions = async (jobTitle: string): Promise<{ profess
     
     // Fallback values in case the parsing fails
     return {
-      professional: "Project Management, Time Management, Documentation",
-      technical: "HTML, CSS, JavaScript, React",
-      soft: "Communication, Teamwork, Problem Solving"
+      professional: "Project Management, Time Management, Documentation, Business Analysis, Strategic Planning",
+      technical: "HTML, CSS, JavaScript, React, TypeScript, Git, REST APIs, GraphQL",
+      soft: "Communication, Teamwork, Problem Solving, Adaptability, Time Management, Leadership"
     };
   } catch (error) {
     console.error("Error getting AI skill suggestions:", error);
@@ -76,9 +76,15 @@ export const getAIObjectiveSuggestion = async (jobTitle: string, firstName: stri
   const name = firstName && lastName ? `${firstName} ${lastName}` : "a professional";
   
   const prompt = `
-    Generate a professional career objective for ${name}'s resume.
-    The career objective is for a ${jobTitle} position.
-    Write a concise, professional paragraph (3-4 sentences) that highlights career goals and value proposition.
+    You're a professional resume writer. Generate a compelling career objective for ${name}'s resume.
+    The objective is for a ${jobTitle} position.
+    
+    Write a concise, professional paragraph (3-4 sentences) that:
+    1. Mentions years of experience (use 5+ if no context given)
+    2. Highlights key skills and strengths
+    3. States career goals and value proposition
+    4. Includes relevant keywords for ATS systems
+    
     DO NOT use bullet points.
     DO NOT include a title or any formatting.
     Return only the career objective text.
@@ -106,7 +112,7 @@ export const getAIObjectiveSuggestion = async (jobTitle: string, firstName: stri
     const textResponse = data.candidates[0].content.parts[0].text.trim();
     
     // Return the text directly, or a fallback if it's empty
-    return textResponse || `Dedicated ${jobTitle} with a passion for delivering high-quality solutions. Seeking to leverage my technical expertise and collaborative skills to contribute to innovative projects while continuously expanding my knowledge in the field.`;
+    return textResponse || `Results-driven ${jobTitle} with 5+ years of experience delivering innovative solutions in fast-paced environments. Adept at leveraging technical expertise and collaborative skills to exceed project objectives and drive business growth. Seeking to contribute my knowledge and passion to a forward-thinking organization while continuing to expand my skillset and take on new challenges.`;
   } catch (error) {
     console.error("Error getting AI objective suggestion:", error);
     throw error;
@@ -120,8 +126,14 @@ export const getAIProjectDescription = async (projectTitle: string, technologies
   const tech = technologies ? `using technologies like ${technologies}` : "";
   
   const prompt = `
-    Generate a concise project description for a resume project titled "${projectTitle}" ${tech}.
-    Write 2-3 sentences that highlight the purpose of the project, the implementation approach, and the outcome or impact.
+    You're a professional resume writer. Generate a concise project description for a resume project titled "${projectTitle}" ${tech}.
+    
+    Write 2-3 sentences that:
+    1. Explain the purpose and functionality of the project
+    2. Highlight the implementation approach and challenges overcome
+    3. Mention quantifiable outcomes or impacts (user metrics, performance improvements, etc.)
+    4. Include relevant technical keywords
+    
     DO NOT use bullet points.
     DO NOT include a title or any formatting.
     Return only the project description text.
@@ -149,7 +161,7 @@ export const getAIProjectDescription = async (projectTitle: string, technologies
     const textResponse = data.candidates[0].content.parts[0].text.trim();
     
     // Return the text directly, or a fallback if it's empty
-    return textResponse || `Developed ${projectTitle} to solve real-world problems with efficient and scalable solutions. Implemented best practices in software development to ensure high performance and maintainability.`;
+    return textResponse || `Developed ${projectTitle}, a scalable solution that improved operational efficiency by 30%. Implemented industry best practices and innovative approaches to overcome technical challenges while maintaining code quality and performance. The project received positive user feedback and was completed ahead of schedule.`;
   } catch (error) {
     console.error("Error getting AI project description:", error);
     throw error;
