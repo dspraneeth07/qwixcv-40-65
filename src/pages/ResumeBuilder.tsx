@@ -178,11 +178,8 @@ const ResumeBuilder = () => {
       if (!edu.graduationDate) errors[`edu_${index}_graduationDate`] = 'Graduation Date is required';
     });
 
-    experience.forEach((exp, index) => {
-      if (!exp.jobTitle) errors[`exp_${index}_jobTitle`] = 'Job Title is required';
-      if (!exp.companyName) errors[`exp_${index}_companyName`] = 'Company Name is required';
-      if (!exp.startDate) errors[`exp_${index}_startDate`] = 'Start Date is required';
-    });
+    // Work experience is now optional
+    // The validation code for experience fields is removed
 
     if (!skills.professional) errors['professional'] = 'Professional skills are required';
     if (!skills.technical) errors['technical'] = 'Technical skills are required';
@@ -192,7 +189,7 @@ const ResumeBuilder = () => {
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [personalInfo, education, experience, skills, objective, validateField]);
+  }, [personalInfo, education, skills, objective, validateField]);
 
   const handleGenerate = () => {
     const formValid = validateForm();
@@ -467,9 +464,20 @@ const ResumeBuilder = () => {
   return (
     <MainLayout>
       <div className="container mx-auto py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Resume Builder</h1>
-          <p className="text-gray-600">Create a professional resume in minutes</p>
+        <div className="mb-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Resume Builder</h1>
+            <p className="text-gray-600">Create a professional resume in minutes</p>
+          </div>
+          
+          {/* Moved Preview button to top right */}
+          <Button 
+            variant="outline" 
+            onClick={() => setShowLivePreview(!showLivePreview)}
+            className="whitespace-nowrap"
+          >
+            {showLivePreview ? "Hide Preview" : "Show Preview"}
+          </Button>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -768,7 +776,7 @@ const ResumeBuilder = () => {
                           <div className="flex justify-between items-center">
                             <div>
                               <h2 className="text-2xl font-bold">Work Experience</h2>
-                              <p className="text-gray-500">Add your professional experience</p>
+                              <p className="text-gray-500">Add your professional experience (optional)</p>
                             </div>
                             <Button onClick={addExperience} variant="outline" className="gap-1">
                               <Plus className="h-4 w-4" /> Add Experience

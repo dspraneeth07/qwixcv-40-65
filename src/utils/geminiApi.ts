@@ -1,4 +1,3 @@
-
 // This file contains API functions to interact with Google's Gemini API
 
 const API_KEY = "AIzaSyDRuULswOC1iFSJr83VqRaeP1g8p0Vn4Lc";
@@ -128,12 +127,12 @@ export const getAIProjectDescription = async (projectTitle: string, technologies
   const prompt = `
     You're a professional resume writer. Generate a concise project description for a resume project titled "${projectTitle}" ${tech}.
     
-    Write 2-3 sentences that:
+    Write 2-3 VERY CONCISE sentences (no more than 3.5 lines total) that:
     1. Explain the purpose and functionality of the project
-    2. Highlight the implementation approach and challenges overcome
-    3. Mention quantifiable outcomes or impacts (user metrics, performance improvements, etc.)
-    4. Include relevant technical keywords
+    2. Briefly highlight implementation approach or key technologies
+    3. Mention one quantifiable outcome or impact (user metrics, performance improvements, etc.)
     
+    IMPORTANT: Keep the response to 3-3.5 lines maximum when viewed on a resume.
     DO NOT use bullet points.
     DO NOT include a title or any formatting.
     Return only the project description text.
@@ -160,8 +159,8 @@ export const getAIProjectDescription = async (projectTitle: string, technologies
     const data = await response.json();
     const textResponse = data.candidates[0].content.parts[0].text.trim();
     
-    // Return the text directly, or a fallback if it's empty
-    return textResponse || `Developed ${projectTitle}, a scalable solution that improved operational efficiency by 30%. Implemented industry best practices and innovative approaches to overcome technical challenges while maintaining code quality and performance. The project received positive user feedback and was completed ahead of schedule.`;
+    // Return the text directly, or a fallback if it's empty (now shorter)
+    return textResponse || `Developed ${projectTitle}, a solution that improved efficiency by 30%. Implemented best practices while overcoming technical challenges to deliver a high-quality product ahead of schedule.`;
   } catch (error) {
     console.error("Error getting AI project description:", error);
     throw error;
