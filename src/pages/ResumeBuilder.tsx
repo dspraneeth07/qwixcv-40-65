@@ -27,7 +27,9 @@ import {
   Briefcase,
   User,
   Eye,
-  Code
+  Code,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
@@ -651,32 +653,118 @@ const ResumeBuilder = () => {
     }, 1500);
   };
 
-  useEffect(() => {
-    if (activeTab === "skills" && skills.professional === "" && skills.technical === "" && skills.soft === "") {
-      toast({
-        title: "Skills Section",
-        description: "Click the 'AI Suggest' button to get skill suggestions based on your job title."
-      });
+  const getAISuggestionButton = () => {
+    switch(activeTab) {
+      case "personal":
+        return null; // No AI suggestions for personal tab
+      case "education":
+        return (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-1"
+            onClick={() => education.length > 0 && generateAIContent("score", { id: education[0].id })}
+            disabled={generatingAI}
+          >
+            <Lightbulb className="h-4 w-4" />
+            AI Suggest Score
+          </Button>
+        );
+      case "experience":
+        return (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-1"
+            onClick={() => experience.length > 0 && generateAIContent("jobDescription", { id: experience[0].id })}
+            disabled={generatingAI}
+          >
+            <Lightbulb className="h-4 w-4" />
+            AI Generate Job Description
+          </Button>
+        );
+      case "projects":
+        return (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-1"
+            onClick={() => projects.length > 0 && generateAIContent("projectDescription", { id: projects[0].id })}
+            disabled={generatingAI}
+          >
+            <Lightbulb className="h-4 w-4" />
+            AI Generate Project Description
+          </Button>
+        );
+      case "skills":
+        return (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-1"
+            onClick={() => generateAIContent("skillSuggestions")}
+            disabled={generatingAI}
+          >
+            <Lightbulb className="h-4 w-4" />
+            AI Suggest Skills
+          </Button>
+        );
+      case "objectives":
+        return (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-1"
+            onClick={() => generateAIContent("objective")}
+            disabled={generatingAI}
+          >
+            <Lightbulb className="h-4 w-4" />
+            AI Generate Objective
+          </Button>
+        );
+      default:
+        return null;
     }
-  }, [activeTab]);
+  };
 
-  useEffect(() => {
-    if (activeTab === "objectives" && objective === "") {
-      toast({
-        title: "Career Objective",
-        description: "Click the 'AI Suggest' button to generate a career objective based on your information."
-      });
-    }
-  }, [activeTab, objective]);
+  const renderNavigationButtons = () => {
+    const tabs = ["personal", "education", "experience", "projects", "skills", "objectives"];
+    const currentIndex = tabs.indexOf(activeTab);
+    const isFirstTab = currentIndex === 0;
+    const isLastTab = currentIndex === tabs.length - 1;
 
-  useEffect(() => {
-    if (templateId) {
-      toast({
-        title: "Template Selected",
-        description: `You've selected template ${templateId}. Customize it now!`,
-      });
-    }
-  }, [templateId]);
+    return (
+      <div className="flex justify-between pt-4">
+        <Button 
+          variant="outline" 
+          onClick={handlePrevious} 
+          disabled={isFirstTab}
+          className="gap-1"
+        >
+          <ChevronLeft className="h-4 w-4" /> Previous
+        </Button>
+        
+        <div className="flex gap-2">
+          {getAISuggestionButton()}
+          
+          {!isLastTab ? (
+            <Button onClick={handleNext} className="gap-1">
+              Next <ChevronRight className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button 
+              variant="default" 
+              onClick={handleGenerate}
+              disabled={!formValid}
+              className="gap-1"
+            >
+              <Download className="h-4 w-4" /> Generate Resume
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <MainLayout>
