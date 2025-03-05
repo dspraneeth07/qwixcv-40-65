@@ -22,11 +22,6 @@ const HeroSection = () => {
                 Build your resume
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link to="/templates">
-                Browse templates
-              </Link>
-            </Button>
           </div>
         </div>
         <div className="mt-16 sm:mt-24 lg:mt-0 lg:flex-1 lg:flex lg:justify-center">

@@ -6,6 +6,7 @@ import TestimonialsSection from "@/components/home/TestimonialsSection";
 import CtaSection from "@/components/home/CtaSection";
 
 const Index = () => {
+  // Ensure any potential cleanup happens when navigating away
   return (
     <MainLayout>
       <HeroSection />
