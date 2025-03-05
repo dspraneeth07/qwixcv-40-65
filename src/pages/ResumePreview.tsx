@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Download, ArrowLeft, Github, Linkedin, Mail, Phone, MapPin } from "lucide-react";
+import { Download, ArrowLeft, Github, Linkedin, Mail, Phone, MapPin, Link as LinkIcon } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import html2pdf from 'html2pdf.js';
 
@@ -16,7 +16,6 @@ const ResumePreview = () => {
 
   useEffect(() => {
     try {
-      // First try to get data from location state (direct navigation)
       if (location.state && location.state.resumeData) {
         console.log("Found resume data in location state", location.state.resumeData);
         setResumeData(location.state.resumeData);
@@ -24,7 +23,6 @@ const ResumePreview = () => {
         return;
       }
       
-      // Then try URL parameters
       const searchParams = new URLSearchParams(location.search);
       const dataParam = searchParams.get('data');
       
@@ -62,7 +60,6 @@ const ResumePreview = () => {
       return;
     }
 
-    // Configure html2pdf options
     const opt = {
       margin: 1,
       filename: `${resumeData?.personalInfo?.firstName || ''}_${resumeData?.personalInfo?.lastName || ''}_Resume.pdf`,
@@ -254,7 +251,7 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
                     rel="noopener noreferrer" 
                     className="text-sm text-primary hover:underline flex items-center mt-1"
                   >
-                    <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                    <LinkIcon className="h-3.5 w-3.5 mr-1" />
                     {proj.link}
                   </a>
                 )}
@@ -451,7 +448,7 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?:
                       rel="noopener noreferrer" 
                       className="text-xs text-primary hover:underline flex items-center mt-1 truncate"
                     >
-                      <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                      <LinkIcon className="h-3.5 w-3.5 mr-1" />
                       <span className="truncate">{proj.link}</span>
                     </a>
                   )}
