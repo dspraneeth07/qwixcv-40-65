@@ -473,7 +473,7 @@ export const ResumePreviewContent = ({
                   </div>
                   {exp.description && (
                     <div className="text-xs mt-1" 
-                         dangerouslySetInnerHTML={{ __html: proj.description.replace(/\n/g, '<br/>') }} />
+                         dangerouslySetInnerHTML={{ __html: exp.description.replace(/\n/g, '<br/>') }} />
                   )}
                 </div>
               ))}
