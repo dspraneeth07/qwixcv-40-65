@@ -1141,17 +1141,6 @@ const ResumeBuilder = () => {
                     </Card>
                   </div>
                 )}
-                
-                {!showLivePreview && (
-                  <div className="lg:col-span-12 flex justify-end">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setShowLivePreview(true)}
-                    >
-                      Show Preview
-                    </Button>
-                  </div>
-                )}
               </div>
             </Tabs>
           </div>
