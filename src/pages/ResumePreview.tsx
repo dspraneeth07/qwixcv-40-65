@@ -266,7 +266,7 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
 
 export { ResumePreview };
 
-// Update the ResumePreviewContent to better handle live updates
+// Update the ResumePreviewContent to better handle live updates and fix prop types
 export const ResumePreviewContent = ({ 
   data, 
   templateId,

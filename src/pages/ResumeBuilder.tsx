@@ -1254,7 +1254,7 @@ const ResumeBuilder = () => {
                     <div className="p-3 max-h-[700px] overflow-auto bg-white">
                       <div className="transform scale-[0.6] origin-top-left min-h-[1000px]">
                         <ResumePreviewContent 
-                          resumeData={getResumeData()} 
+                          data={getResumeData()} 
                           templateId={templateId}
                         />
                       </div>
