@@ -1277,11 +1277,7 @@ const ResumeBuilder = () => {
                           </div>
                         </div>
                         
-                        <div className="flex justify-end gap-2 pt-4">
-                          <Button onClick={() => handleGenerate()} className="gap-1">
-                            Generate
-                          </Button>
-                        </div>
+                        {renderNavigationButtons()}
                       </CardContent>
                     </Card>
                   </TabsContent>
@@ -1309,11 +1305,7 @@ const ResumeBuilder = () => {
                           <FormValidator value={objective} required showMessage={false} />
                         </div>
                         
-                        <div className="flex justify-end gap-2 pt-4">
-                          <Button onClick={() => handleGenerate()} className="gap-1">
-                            Generate
-                          </Button>
-                        </div>
+                        {renderNavigationButtons()}
                       </CardContent>
                     </Card>
                   </TabsContent>
