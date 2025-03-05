@@ -178,9 +178,6 @@ const ResumeBuilder = () => {
       if (!edu.graduationDate) errors[`edu_${index}_graduationDate`] = 'Graduation Date is required';
     });
 
-    // Work experience is now optional
-    // The validation code for experience fields is removed
-
     if (!skills.professional) errors['professional'] = 'Professional skills are required';
     if (!skills.technical) errors['technical'] = 'Technical skills are required';
     if (!skills.soft) errors['soft'] = 'Soft skills are required';
@@ -470,7 +467,6 @@ const ResumeBuilder = () => {
             <p className="text-gray-600">Create a professional resume in minutes</p>
           </div>
           
-          {/* Moved Preview button to top right */}
           <Button 
             variant="outline" 
             onClick={() => setShowLivePreview(!showLivePreview)}
@@ -1132,15 +1128,8 @@ const ResumeBuilder = () => {
                   <div className="lg:col-span-6">
                     <Card className="border shadow-sm h-full">
                       <CardContent className="p-6">
-                        <div className="flex justify-between items-center mb-4">
+                        <div className="mb-4">
                           <h3 className="text-xl font-semibold">Resume Preview</h3>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => setShowLivePreview(false)}
-                          >
-                            Hide Preview
-                          </Button>
                         </div>
                         <div className="border p-4 bg-white overflow-auto max-h-[calc(100vh-200px)]">
                           <ResumePreviewContent 
