@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Download, ArrowLeft, Github, Linkedin } from "lucide-react";
+import { Download, ArrowLeft, Github, Linkedin, ExternalLink } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
 const ResumePreview = () => {
@@ -123,7 +124,7 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
         </div>
         
         {(personalInfo?.githubUrl || personalInfo?.linkedinUrl) && (
-          <div className="flex justify-center space-x-4 mt-2">
+          <div className="flex flex-col items-center space-y-2 mt-2">
             {personalInfo?.githubUrl && personalInfo.githubUrl.trim() !== "" && (
               <a 
                 href={personalInfo.githubUrl} 
@@ -132,7 +133,7 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
                 className="inline-flex items-center text-sm text-primary hover:underline"
               >
                 <Github className="h-4 w-4 mr-2" />
-                GitHub
+                {personalInfo.githubUrl}
               </a>
             )}
             {personalInfo?.linkedinUrl && personalInfo.linkedinUrl.trim() !== "" && (
@@ -143,7 +144,7 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
                 className="inline-flex items-center text-sm text-primary hover:underline"
               >
                 <Linkedin className="h-4 w-4 mr-2" />
-                LinkedIn
+                {personalInfo.linkedinUrl}
               </a>
             )}
           </div>
@@ -190,12 +191,18 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
                     <p className="font-medium">{proj.title}</p>
                     {proj.technologies && <p className="text-sm text-muted-foreground">{proj.technologies}</p>}
                   </div>
-                  {proj.link && (
-                    <a href={proj.link} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
-                      View Project
-                    </a>
-                  )}
                 </div>
+                {proj.link && proj.link.trim() !== "" && (
+                  <a 
+                    href={proj.link} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-sm text-primary hover:underline flex items-center mt-1"
+                  >
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                    {proj.link}
+                  </a>
+                )}
                 {proj.description && (
                   <div className="text-sm mt-1" 
                        dangerouslySetInnerHTML={{ __html: proj.description.replace(/\n/g, '<br/>') }} />
@@ -218,7 +225,6 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
                   <div>
                     <p className="font-medium">{exp.jobTitle}</p>
                     <p className="text-sm text-muted-foreground">{exp.companyName}</p>
-                    {exp.role && <p className="text-sm">{exp.role}</p>}
                   </div>
                   <p className="text-sm text-right">
                     {exp.startDate} - {exp.endDate || "Present"}
@@ -302,16 +308,16 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?:
         </div>
         
         {(personalInfo?.githubUrl || personalInfo?.linkedinUrl) && (
-          <div className="flex justify-center space-x-3 mt-1">
+          <div className="flex flex-col items-center space-y-1 mt-1">
             {personalInfo?.githubUrl && personalInfo.githubUrl.trim() !== "" && (
               <a 
                 href={personalInfo.githubUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center text-xs text-primary hover:underline"
+                className="inline-flex items-center text-xs text-primary hover:underline truncate max-w-full"
               >
-                <Github className="h-3 w-3 mr-1" />
-                GitHub
+                <Github className="h-3 w-3 mr-1 flex-shrink-0" />
+                <span className="truncate">{personalInfo.githubUrl}</span>
               </a>
             )}
             {personalInfo?.linkedinUrl && personalInfo.linkedinUrl.trim() !== "" && (
@@ -319,10 +325,10 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?:
                 href={personalInfo.linkedinUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center text-xs text-primary hover:underline"
+                className="inline-flex items-center text-xs text-primary hover:underline truncate max-w-full"
               >
-                <Linkedin className="h-3 w-3 mr-1" />
-                LinkedIn
+                <Linkedin className="h-3 w-3 mr-1 flex-shrink-0" />
+                <span className="truncate">{personalInfo.linkedinUrl}</span>
               </a>
             )}
           </div>
@@ -369,13 +375,21 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?:
                       <p className="font-medium text-xs">{proj.title}</p>
                       {proj.technologies && <p className="text-xs text-muted-foreground">{proj.technologies}</p>}
                     </div>
-                    {proj.link && (
-                      <p className="text-xs text-primary">Link</p>
-                    )}
                   </div>
+                  {proj.link && proj.link.trim() !== "" && (
+                    <a 
+                      href={proj.link} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="text-xs text-primary hover:underline flex items-center mt-1 truncate"
+                    >
+                      <ExternalLink className="h-2 w-2 mr-1 flex-shrink-0" />
+                      <span className="truncate">{proj.link}</span>
+                    </a>
+                  )}
                   {proj.description && (
                     <div className="text-xs mt-1" 
-                        dangerouslySetInnerHTML={{ __html: proj.description.replace(/\n/g, '<br/>') }} />
+                         dangerouslySetInnerHTML={{ __html: proj.description.replace(/\n/g, '<br/>') }} />
                   )}
                 </div>
               ))}
@@ -402,7 +416,7 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?:
                   </div>
                   {exp.description && (
                     <div className="text-xs mt-1" 
-                        dangerouslySetInnerHTML={{ __html: exp.description.replace(/\n/g, '<br/>') }} />
+                         dangerouslySetInnerHTML={{ __html: exp.description.replace(/\n/g, '<br/>') }} />
                   )}
                 </div>
               ))}
