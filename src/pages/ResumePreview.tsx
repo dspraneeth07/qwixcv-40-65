@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -265,6 +266,7 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
 
 export { ResumePreview };
 
+// Update the ResumePreviewContent to better handle live updates
 export const ResumePreviewContent = ({ 
   data, 
   templateId,
@@ -274,87 +276,106 @@ export const ResumePreviewContent = ({
   templateId?: string;
   isPreview?: boolean;
 }) => {
-  const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boolean }) => {
-    if (!data) return null;
-    
-    const { personalInfo, education, experience, skills, objective, projects } = data;
-    
-    return (
-      <Card className={`p-4 bg-white shadow-lg print:shadow-none ${isPreview ? 'max-h-full overflow-auto' : 'max-w-3xl w-full'}`}>
-        <div className="border-b pb-2 mb-3 text-center">
-          <h2 className="text-xl font-bold">
-            {personalInfo?.firstName || ""} {personalInfo?.lastName || ""}
-          </h2>
-          <p className="text-primary font-medium text-sm">{personalInfo?.jobTitle || ""}</p>
-          
-          <div className="flex flex-wrap justify-center space-x-2 text-xs text-muted-foreground mt-1">
-            {personalInfo?.email && <span>{personalInfo.email}</span>}
-            {personalInfo?.phone && <span>• {personalInfo.phone}</span>}
-            {personalInfo?.location && <span>• {personalInfo.location}</span>}
-          </div>
-          
-          {(personalInfo?.githubUrl || personalInfo?.linkedinUrl) && (
-            <div className="flex justify-center space-x-3 mt-1">
-              {personalInfo?.githubUrl && (
-                <a 
-                  href={personalInfo.githubUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-xs text-primary hover:underline"
-                >
-                  <Github className="h-3 w-3 mr-1" />
-                  GitHub
-                </a>
-              )}
-              {personalInfo?.linkedinUrl && (
-                <a 
-                  href={personalInfo.linkedinUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-xs text-primary hover:underline"
-                >
-                  <Linkedin className="h-3 w-3 mr-1" />
-                  LinkedIn
-                </a>
-              )}
-            </div>
-          )}
+  // Use key to force re-render when data changes
+  const [key, setKey] = useState(Date.now());
+  
+  // Update key when data changes to force re-render
+  useEffect(() => {
+    setKey(Date.now());
+  }, [data]);
+  
+  return (
+    <div className="h-full overflow-auto p-4 bg-muted border-l">
+      <h3 className="text-sm font-medium mb-3">Live Preview</h3>
+      <div key={key}>
+        <MiniResumeContent data={data} isPreview={isPreview} />
+      </div>
+    </div>
+  );
+};
+
+// Separate component for the mini preview to avoid duplicate code
+const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boolean }) => {
+  if (!data) return null;
+  
+  const { personalInfo, education, experience, skills, objective, projects } = data;
+  
+  return (
+    <Card className={`p-4 bg-white shadow-lg print:shadow-none ${isPreview ? 'max-h-full overflow-auto' : 'max-w-3xl w-full'}`}>
+      <div className="border-b pb-2 mb-3 text-center">
+        <h2 className="text-xl font-bold">
+          {personalInfo?.firstName || ""} {personalInfo?.lastName || ""}
+        </h2>
+        <p className="text-primary font-medium text-sm">{personalInfo?.jobTitle || ""}</p>
+        
+        <div className="flex flex-wrap justify-center space-x-2 text-xs text-muted-foreground mt-1">
+          {personalInfo?.email && <span>{personalInfo.email}</span>}
+          {personalInfo?.phone && <span>• {personalInfo.phone}</span>}
+          {personalInfo?.location && <span>• {personalInfo.location}</span>}
         </div>
         
-        {objective && (
-          <div className="mb-3">
-            <h3 className="text-sm font-semibold border-b pb-1 mb-1">Career Objective</h3>
-            <p className="text-xs">{objective}</p>
+        {(personalInfo?.githubUrl || personalInfo?.linkedinUrl) && (
+          <div className="flex justify-center space-x-3 mt-1">
+            {personalInfo?.githubUrl && (
+              <a 
+                href={personalInfo.githubUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-xs text-primary hover:underline"
+              >
+                <Github className="h-3 w-3 mr-1" />
+                GitHub
+              </a>
+            )}
+            {personalInfo?.linkedinUrl && (
+              <a 
+                href={personalInfo.linkedinUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-xs text-primary hover:underline"
+              >
+                <Linkedin className="h-3 w-3 mr-1" />
+                LinkedIn
+              </a>
+            )}
           </div>
         )}
-        
-        {education && education.length > 0 && (
-          <div className="mb-3">
-            <h3 className="text-sm font-semibold border-b pb-1 mb-1">Education</h3>
-            <div className="space-y-2">
-              {education.map((edu: any) => (
-                <div key={edu.id}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-medium text-xs">{edu.school}</p>
-                      <p className="text-xs">{edu.degree}</p>
-                    </div>
-                    <p className="text-xs text-right">{edu.graduationDate}</p>
+      </div>
+      
+      {objective && (
+        <div className="mb-3">
+          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Career Objective</h3>
+          <p className="text-xs">{objective}</p>
+        </div>
+      )}
+      
+      {education && education.length > 0 && (
+        <div className="mb-3">
+          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Education</h3>
+          <div className="space-y-2">
+            {education.map((edu: any) => (
+              <div key={edu.id}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-medium text-xs">{edu.school}</p>
+                    <p className="text-xs">{edu.degree}</p>
                   </div>
-                  {edu.score && <p className="text-xs text-muted-foreground mt-1">{edu.score}</p>}
+                  <p className="text-xs text-right">{edu.graduationDate}</p>
                 </div>
-              ))}
-            </div>
+                {edu.score && <p className="text-xs text-muted-foreground mt-1">{edu.score}</p>}
+              </div>
+            ))}
           </div>
-        )}
-        
-        {projects && projects.length > 0 && projects[0].title && (
-          <div className="mb-3">
-            <h3 className="text-sm font-semibold border-b pb-1 mb-1">Projects</h3>
-            <div className="space-y-2">
-              {projects
-                .filter((proj: any) => proj.title.trim() !== "")
-                .map((proj: any) => (
+        </div>
+      )}
+      
+      {projects && projects.length > 0 && projects[0].title && (
+        <div className="mb-3">
+          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Projects</h3>
+          <div className="space-y-2">
+            {projects
+              .filter((proj: any) => proj.title.trim() !== "")
+              .map((proj: any) => (
                 <div key={proj.id}>
                   <div className="flex justify-between items-start">
                     <div>
@@ -367,21 +388,21 @@ export const ResumePreviewContent = ({
                   </div>
                   {proj.description && (
                     <div className="text-xs mt-1" 
-                         dangerouslySetInnerHTML={{ __html: proj.description.replace(/\n/g, '<br/>') }} />
+                        dangerouslySetInnerHTML={{ __html: proj.description.replace(/\n/g, '<br/>') }} />
                   )}
                 </div>
               ))}
-            </div>
           </div>
-        )}
-        
-        {experience && experience.length > 0 && experience[0].jobTitle && (
-          <div className="mb-3">
-            <h3 className="text-sm font-semibold border-b pb-1 mb-1">Work Experience</h3>
-            <div className="space-y-2">
-              {experience
-                .filter((exp: any) => exp.jobTitle.trim() !== "")
-                .map((exp: any) => (
+        </div>
+      )}
+      
+      {experience && experience.length > 0 && experience[0].jobTitle && (
+        <div className="mb-3">
+          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Work Experience</h3>
+          <div className="space-y-2">
+            {experience
+              .filter((exp: any) => exp.jobTitle.trim() !== "")
+              .map((exp: any) => (
                 <div key={exp.id}>
                   <div className="flex justify-between items-start">
                     <div>
@@ -394,48 +415,40 @@ export const ResumePreviewContent = ({
                   </div>
                   {exp.description && (
                     <div className="text-xs mt-1" 
-                         dangerouslySetInnerHTML={{ __html: exp.description.replace(/\n/g, '<br/>') }} />
+                        dangerouslySetInnerHTML={{ __html: exp.description.replace(/\n/g, '<br/>') }} />
                   )}
                 </div>
               ))}
-            </div>
           </div>
-        )}
-        
-        {skills && (
-          <div className="mb-3">
-            <h3 className="text-sm font-semibold border-b pb-1 mb-1">Skills</h3>
-            <div className="grid grid-cols-1 gap-2">
-              {skills.professional && (
-                <div>
-                  <p className="font-medium text-xs">Professional</p>
-                  <p className="text-xs">{skills.professional}</p>
-                </div>
-              )}
-              {skills.technical && (
-                <div>
-                  <p className="font-medium text-xs">Technical</p>
-                  <p className="text-xs">{skills.technical}</p>
-                </div>
-              )}
-              {skills.soft && (
-                <div>
-                  <p className="font-medium text-xs">Soft Skills</p>
-                  <p className="text-xs">{skills.soft}</p>
-                </div>
-              )}
-            </div>
+        </div>
+      )}
+      
+      {skills && (
+        <div className="mb-3">
+          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Skills</h3>
+          <div className="grid grid-cols-1 gap-2">
+            {skills.professional && (
+              <div>
+                <p className="font-medium text-xs">Professional</p>
+                <p className="text-xs">{skills.professional}</p>
+              </div>
+            )}
+            {skills.technical && (
+              <div>
+                <p className="font-medium text-xs">Technical</p>
+                <p className="text-xs">{skills.technical}</p>
+              </div>
+            )}
+            {skills.soft && (
+              <div>
+                <p className="font-medium text-xs">Soft Skills</p>
+                <p className="text-xs">{skills.soft}</p>
+              </div>
+            )}
           </div>
-        )}
-      </Card>
-    );
-  };
-  
-  return (
-    <div className="h-full overflow-auto p-4 bg-muted border-l">
-      <h3 className="text-sm font-medium mb-3">Live Preview</h3>
-      <ResumeContent data={data} isPreview={isPreview} />
-    </div>
+        </div>
+      )}
+    </Card>
   );
 };
 
