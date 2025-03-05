@@ -109,17 +109,14 @@ const ResumeBuilder = () => {
         const parsedData = JSON.parse(storedData);
         setPersonalInfo(parsedData.personalInfo || personalInfo);
         
-        // Ensure at least one education entry
         setEducation(parsedData.education && parsedData.education.length > 0 
           ? parsedData.education 
           : education);
         
-        // Ensure at least one experience entry
         setExperience(parsedData.experience && parsedData.experience.length > 0 
           ? parsedData.experience 
           : experience);
         
-        // Ensure at least one project entry
         setProjects(parsedData.projects && parsedData.projects.length > 0 
           ? parsedData.projects 
           : projects);
@@ -164,7 +161,6 @@ const ResumeBuilder = () => {
   const validateForm = useCallback(() => {
     const errors: FormErrors = {};
 
-    // Validate Personal Info
     for (const key of Object.keys(personalInfo)) {
       const error = validateField(key, personalInfo[key as keyof PersonalInfo]);
       if (error) {
@@ -172,26 +168,22 @@ const ResumeBuilder = () => {
       }
     }
 
-    // Validate Education
     education.forEach((edu, index) => {
       if (!edu.school) errors[`edu_${index}_school`] = 'School is required';
       if (!edu.degree) errors[`edu_${index}_degree`] = 'Degree is required';
       if (!edu.graduationDate) errors[`edu_${index}_graduationDate`] = 'Graduation Date is required';
     });
 
-    // Validate Experience
     experience.forEach((exp, index) => {
       if (!exp.jobTitle) errors[`exp_${index}_jobTitle`] = 'Job Title is required';
       if (!exp.companyName) errors[`exp_${index}_companyName`] = 'Company Name is required';
       if (!exp.startDate) errors[`exp_${index}_startDate`] = 'Start Date is required';
     });
 
-    // Validate Skills
     if (!skills.professional) errors['professional'] = 'Professional skills are required';
     if (!skills.technical) errors['technical'] = 'Technical skills are required';
     if (!skills.soft) errors['soft'] = 'Soft skills are required';
 
-    // Validate Objective
     if (!objective) errors['objective'] = 'Career Objective is required';
 
     setFormErrors(errors);
@@ -270,7 +262,6 @@ const ResumeBuilder = () => {
     });
     
     try {
-      // Navigate with state for more reliable data transfer
       navigate('/resume-preview', { 
         state: { 
           resumeData: JSON.parse(JSON.stringify(resumeData)) 
@@ -279,7 +270,6 @@ const ResumeBuilder = () => {
     } catch (error) {
       console.error("Error navigating to resume preview:", error);
       
-      // Fallback to URL parameters if state navigation fails
       try {
         const dataString = encodeURIComponent(JSON.stringify(resumeData));
         navigate(`/resume-preview?data=${dataString}`);
@@ -305,7 +295,6 @@ const ResumeBuilder = () => {
   };
 
   const deleteEducation = (id: string) => {
-    // Prevent deleting if it's the first/only entry
     if (education.length <= 1) {
       toast({
         title: "Cannot Delete",
@@ -328,7 +317,6 @@ const ResumeBuilder = () => {
   };
 
   const deleteExperience = (id: string) => {
-    // Prevent deleting if it's the first/only entry
     if (experience.length <= 1) {
       toast({
         title: "Cannot Delete",
@@ -351,7 +339,6 @@ const ResumeBuilder = () => {
   };
 
   const deleteProject = (id: string) => {
-    // Prevent deleting if it's the first/only entry
     if (projects.length <= 1) {
       toast({
         title: "Cannot Delete",
@@ -943,4 +930,288 @@ const ResumeBuilder = () => {
         return (
           <div className="space-y-6">
             <div>
-              <h2
+              <h2 className="text-2xl font-bold">Skills</h2>
+              <p className="text-gray-500">Add your professional skills</p>
+            </div>
+            
+            <div className="flex justify-end">
+              <Button 
+                onClick={generateAISkillSuggestions} 
+                variant="outline" 
+                className="gap-1"
+              >
+                <Sparkles className="h-4 w-4" /> Generate Skills with AI
+              </Button>
+            </div>
+
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="professional" className="text-base">
+                  Professional Skills <span className="text-red-500">*</span>
+                </Label>
+                <Textarea
+                  id="professional"
+                  placeholder="Project Management, Team Leadership, Client Communication..."
+                  value={skills.professional}
+                  onChange={e => setSkills({...skills, professional: e.target.value})}
+                  className={formErrors.professional ? "border-red-500" : ""}
+                  rows={3}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="technical" className="text-base">
+                  Technical Skills <span className="text-red-500">*</span>
+                </Label>
+                <Textarea
+                  id="technical"
+                  placeholder="JavaScript, React, Node.js, HTML, CSS..."
+                  value={skills.technical}
+                  onChange={e => setSkills({...skills, technical: e.target.value})}
+                  className={formErrors.technical ? "border-red-500" : ""}
+                  rows={3}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="soft" className="text-base">
+                  Soft Skills <span className="text-red-500">*</span>
+                </Label>
+                <Textarea
+                  id="soft"
+                  placeholder="Communication, Problem Solving, Teamwork, Adaptability..."
+                  value={skills.soft}
+                  onChange={e => setSkills({...skills, soft: e.target.value})}
+                  className={formErrors.soft ? "border-red-500" : ""}
+                  rows={3}
+                />
+              </div>
+            </div>
+            
+            <div className="flex justify-between">
+              <Button onClick={() => setActiveTab("projects")} variant="outline" size="lg">
+                <ChevronLeft className="mr-2 h-4 w-4" /> Previous
+              </Button>
+              <Button onClick={() => setActiveTab("objectives")} className="bg-gray-900" size="lg">
+                Next <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        );
+      
+      case "objectives":
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold">Career Objective</h2>
+              <p className="text-gray-500">Provide a brief summary of your career goals</p>
+            </div>
+            
+            <div className="flex justify-end">
+              <Button 
+                onClick={generateAIObjective} 
+                variant="outline" 
+                className="gap-1"
+              >
+                <Sparkles className="h-4 w-4" /> Generate with AI
+              </Button>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="objective" className="text-base">
+                Objective <span className="text-red-500">*</span>
+              </Label>
+              <Textarea
+                id="objective"
+                placeholder="Dedicated and results-driven professional seeking to leverage my skills and expertise..."
+                value={objective}
+                onChange={e => setObjective(e.target.value)}
+                className={formErrors.objective ? "border-red-500" : ""}
+                rows={6}
+              />
+            </div>
+            
+            <div className="flex justify-between">
+              <Button onClick={() => setActiveTab("skills")} variant="outline" size="lg">
+                <ChevronLeft className="mr-2 h-4 w-4" /> Previous
+              </Button>
+              <Button onClick={() => setActiveTab("template")} className="bg-gray-900" size="lg">
+                Next <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        );
+      
+      case "template":
+        return (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold">Select Template</h2>
+              <p className="text-gray-500">Choose a design for your resume</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <Card 
+                className={`cursor-pointer border-2 hover:shadow-md transition-all ${selectedTemplate === "default" ? "border-primary" : "border-gray-200"}`}
+                onClick={() => setSelectedTemplate("default")}
+              >
+                <CardContent className="p-4">
+                  <div className="aspect-[8.5/11] bg-gray-100 flex items-center justify-center">
+                    <div className="text-center">
+                      <p className="font-medium">Default</p>
+                      <p className="text-sm text-gray-500">Classic professional design</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card 
+                className={`cursor-pointer border-2 hover:shadow-md transition-all ${selectedTemplate === "modern" ? "border-primary" : "border-gray-200"}`}
+                onClick={() => setSelectedTemplate("modern")}
+              >
+                <CardContent className="p-4">
+                  <div className="aspect-[8.5/11] bg-gray-100 flex items-center justify-center">
+                    <div className="text-center">
+                      <p className="font-medium">Modern</p>
+                      <p className="text-sm text-gray-500">Clean and minimal design</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card 
+                className={`cursor-pointer border-2 hover:shadow-md transition-all ${selectedTemplate === "creative" ? "border-primary" : "border-gray-200"}`}
+                onClick={() => setSelectedTemplate("creative")}
+              >
+                <CardContent className="p-4">
+                  <div className="aspect-[8.5/11] bg-gray-100 flex items-center justify-center">
+                    <div className="text-center">
+                      <p className="font-medium">Creative</p>
+                      <p className="text-sm text-gray-500">Unique and eye-catching layout</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <div className="flex justify-between">
+              <Button onClick={() => setActiveTab("objectives")} variant="outline" size="lg">
+                <ChevronLeft className="mr-2 h-4 w-4" /> Previous
+              </Button>
+              <Button onClick={handleGenerate} className="bg-green-600 hover:bg-green-700" size="lg">
+                Generate Resume
+              </Button>
+            </div>
+          </div>
+        );
+        
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <MainLayout>
+      <div className="container mx-auto py-8">
+        <div className="max-w-5xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold">Resume Builder</h1>
+            <p className="text-gray-600">Create a professional resume in minutes</p>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-3">
+              <div className="space-y-2 sticky top-8">
+                <Button
+                  variant={activeTab === "personal" ? "default" : "ghost"}
+                  className="w-full justify-start"
+                  onClick={() => setActiveTab("personal")}
+                >
+                  Personal Details
+                </Button>
+                <Button
+                  variant={activeTab === "education" ? "default" : "ghost"}
+                  className="w-full justify-start"
+                  onClick={() => setActiveTab("education")}
+                >
+                  Education
+                </Button>
+                <Button
+                  variant={activeTab === "experience" ? "default" : "ghost"}
+                  className="w-full justify-start"
+                  onClick={() => setActiveTab("experience")}
+                >
+                  Experience
+                </Button>
+                <Button
+                  variant={activeTab === "projects" ? "default" : "ghost"}
+                  className="w-full justify-start"
+                  onClick={() => setActiveTab("projects")}
+                >
+                  Projects
+                </Button>
+                <Button
+                  variant={activeTab === "skills" ? "default" : "ghost"}
+                  className="w-full justify-start"
+                  onClick={() => setActiveTab("skills")}
+                >
+                  Skills
+                </Button>
+                <Button
+                  variant={activeTab === "objectives" ? "default" : "ghost"}
+                  className="w-full justify-start"
+                  onClick={() => setActiveTab("objectives")}
+                >
+                  Career Objective
+                </Button>
+                <Button
+                  variant={activeTab === "template" ? "default" : "ghost"}
+                  className="w-full justify-start"
+                  onClick={() => setActiveTab("template")}
+                >
+                  Select Template
+                </Button>
+                
+                <div className="pt-6">
+                  <Button 
+                    variant="outline" 
+                    className="w-full gap-2"
+                    onClick={() => setShowLivePreview(!showLivePreview)}
+                  >
+                    {showLivePreview ? "Hide Preview" : "Show Preview"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="lg:col-span-9">
+              <Card className="border shadow-sm">
+                <CardContent className="p-6">
+                  {getActiveContent()}
+                </CardContent>
+              </Card>
+              
+              {showLivePreview && (
+                <div className="mt-8">
+                  <Card className="border shadow-sm">
+                    <CardContent className="p-6">
+                      <h3 className="text-xl font-semibold mb-4">Live Preview</h3>
+                      <div className="border p-4 bg-white">
+                        <ResumePreviewContent 
+                          data={getResumeData()} 
+                          readOnly={true} 
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
+};
+
+export default ResumeBuilder;
