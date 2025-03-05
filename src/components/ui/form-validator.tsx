@@ -7,6 +7,7 @@ interface FormValidatorProps extends React.HTMLAttributes<HTMLDivElement> {
   required?: boolean;
   errorMessage?: string;
   showMessage?: boolean;
+  highlightOnly?: boolean;
 }
 
 const FormValidator = React.forwardRef<HTMLDivElement, FormValidatorProps>(
@@ -16,13 +17,14 @@ const FormValidator = React.forwardRef<HTMLDivElement, FormValidatorProps>(
     required = false, 
     errorMessage = "This field is required", 
     showMessage = false,
+    highlightOnly = false,
     ...props 
   }, ref) => {
     const isEmpty = required && (!value || value.trim() === "");
 
     return (
       <div ref={ref} className={cn("text-xs text-destructive min-h-5", className)} {...props}>
-        {isEmpty && showMessage && errorMessage}
+        {isEmpty && showMessage && !highlightOnly && errorMessage}
       </div>
     );
   }

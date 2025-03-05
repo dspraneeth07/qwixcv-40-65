@@ -10,7 +10,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
   const navigation = [
     { name: "Home", href: "/" },
-    { name: "Templates", href: "/templates" },
     { name: "Resume Builder", href: "/builder" },
     { name: "Pricing", href: "/pricing" },
     { name: "Contact", href: "/contact" },
@@ -88,7 +87,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
             <div className="flex flex-col gap-3">
               <p className="font-medium">Product</p>
-              <Link to="/templates" className="text-sm text-muted-foreground hover:text-primary">Templates</Link>
               <Link to="/builder" className="text-sm text-muted-foreground hover:text-primary">Resume Builder</Link>
               <Link to="/pricing" className="text-sm text-muted-foreground hover:text-primary">Pricing</Link>
             </div>

@@ -274,18 +274,10 @@ export const ResumePreviewContent = ({
   templateId?: string;
   isPreview?: boolean;
 }) => {
-  const [key, setKey] = useState(Date.now());
-  
-  useEffect(() => {
-    setKey(Date.now());
-  }, [data]);
-  
   return (
     <div className="h-full overflow-auto p-4 bg-muted border-l">
       <h3 className="text-sm font-medium mb-3">Live Preview</h3>
-      <div key={key}>
-        <MiniResumeContent data={data} isPreview={isPreview} />
-      </div>
+      <MiniResumeContent data={data} isPreview={isPreview} />
     </div>
   );
 };

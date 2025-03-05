@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,7 +49,6 @@ interface Education {
 interface Experience {
   id: string;
   jobTitle: string;
-  role: string;
   companyName: string;
   startDate: string;
   endDate: string;
@@ -101,12 +100,12 @@ const countryCodes = [
 const STORAGE_KEY = "resume_builder_data";
 
 const ResumeBuilder = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const templateId = searchParams.get("template") || "modern1";
+  const templateId = "modern1"; // Default template, since we're removing template selection
   const [activeTab, setActiveTab] = useState("personal");
   const [formValid, setFormValid] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, boolean>>({});
+  const [validationTriggered, setValidationTriggered] = useState(false);
   
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
     firstName: "",
@@ -135,7 +134,6 @@ const ResumeBuilder = () => {
     {
       id: "exp1",
       jobTitle: "",
-      role: "",
       companyName: "",
       startDate: "",
       endDate: "",
@@ -263,13 +261,13 @@ const ResumeBuilder = () => {
     const educationValid = education.every(edu => 
       edu.school.trim() !== "" && 
       edu.degree.trim() !== "" && 
-      edu.graduationYear.trim() !== "" && 
-      edu.score.trim() !== ""
+      edu.graduationYear.trim() !== ""
+      // Score is now optional, removed from validation
     );
     
     const experienceValid = experience.every(exp => 
-      (!exp.companyName.trim() && !exp.jobTitle.trim() && !exp.role.trim()) || 
-      (exp.companyName.trim() !== "" && exp.jobTitle.trim() !== "" && exp.role.trim() !== "")
+      (!exp.companyName.trim() && !exp.jobTitle.trim()) || 
+      (exp.companyName.trim() !== "" && exp.jobTitle.trim() !== "")
     );
     
     const skillsValid = 
@@ -292,14 +290,13 @@ const ResumeBuilder = () => {
       if (edu.school.trim() === "") errors[`edu_${index}_school`] = true;
       if (edu.degree.trim() === "") errors[`edu_${index}_degree`] = true;
       if (edu.graduationYear.trim() === "") errors[`edu_${index}_graduationYear`] = true;
-      if (edu.score.trim() === "") errors[`edu_${index}_score`] = true;
+      // Score is now optional, removed from validation
     });
     
     experience.forEach((exp, index) => {
-      if (exp.companyName.trim() !== "" || exp.jobTitle.trim() !== "" || exp.role.trim() !== "") {
+      if (exp.companyName.trim() !== "" || exp.jobTitle.trim() !== "") {
         if (exp.companyName.trim() === "") errors[`exp_${index}_companyName`] = true;
         if (exp.jobTitle.trim() === "") errors[`exp_${index}_jobTitle`] = true;
-        if (exp.role.trim() === "") errors[`exp_${index}_role`] = true;
       }
     });
     
@@ -332,6 +329,8 @@ const ResumeBuilder = () => {
   };
   
   const handleGenerate = () => {
+    setValidationTriggered(true);
+    
     if (!formValid) {
       if (formErrors.firstName || formErrors.lastName || formErrors.jobTitle || 
           formErrors.email || formErrors.phone || formErrors.location) {
@@ -508,7 +507,6 @@ const ResumeBuilder = () => {
     const newExperience: Experience = {
       id: `exp${experience.length + 1}`,
       jobTitle: "",
-      role: "",
       companyName: "",
       startDate: "",
       endDate: "",
@@ -585,13 +583,6 @@ const ResumeBuilder = () => {
             proj.id === context.id ? { ...proj, description: generatedContent } : proj
           ));
           break;
-        
-        case "score":
-          generatedContent = "GPA: 3.8/4.0";
-          setEducation(education.map(edu => 
-            edu.id === context.id ? { ...edu, score: generatedContent } : edu
-          ));
-          break;
           
         case "objective":
           const userJobTitle = personalInfo.jobTitle || "professional";
@@ -658,19 +649,6 @@ const ResumeBuilder = () => {
     switch(activeTab) {
       case "personal":
         return null; // No AI suggestions for personal tab
-      case "education":
-        return (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="gap-1"
-            onClick={() => education.length > 0 && generateAIContent("score", { id: education[0].id })}
-            disabled={generatingAI}
-          >
-            <Lightbulb className="h-4 w-4" />
-            AI Suggest Score
-          </Button>
-        );
       case "experience":
         return (
           <Button 
@@ -756,7 +734,6 @@ const ResumeBuilder = () => {
             <Button 
               variant="default" 
               onClick={handleGenerate}
-              disabled={!formValid}
               className="gap-1"
             >
               <Download className="h-4 w-4" /> Generate Resume
@@ -765,6 +742,13 @@ const ResumeBuilder = () => {
         </div>
       </div>
     );
+  };
+
+  // Input error styling helper
+  const getInputStyle = (fieldName: string) => {
+    return validationTriggered && formErrors[fieldName] 
+      ? "border-red-500 focus:border-red-500 focus-visible:ring-red-500" 
+      : "";
   };
 
   return (
@@ -780,20 +764,6 @@ const ResumeBuilder = () => {
         </div>
         
         <div className="relative">
-          {templateId && (
-            <div className="mb-6 p-4 bg-primary/10 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  <span className="font-medium">Using template: {templateId}</span>
-                </div>
-                <Button variant="outline" size="sm" asChild>
-                  <a href="/templates">Change Template</a>
-                </Button>
-              </div>
-            </div>
-          )}
-          
           <div className={`grid grid-cols-1 ${showLivePreview ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-8`}>
             <div className={showLivePreview ? 'lg:col-span-2' : 'lg:col-span-1'}>
               <div className="bg-card shadow-sm rounded-lg border mb-6">
@@ -862,139 +832,124 @@ const ResumeBuilder = () => {
                       <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor="firstName" className={formErrors.firstName ? "text-destructive" : ""}>
-                              First Name *
+                            <Label htmlFor="firstName" className="flex items-center">
+                              First Name <span className="text-red-500 ml-1">*</span>
                             </Label>
-                            <Input
-                              id="firstName"
+                            <Input 
+                              id="firstName" 
+                              placeholder="John" 
                               value={personalInfo.firstName}
                               onChange={(e) => setPersonalInfo({ ...personalInfo, firstName: e.target.value })}
-                              className={formErrors.firstName ? "border-destructive" : ""}
+                              className={getInputStyle("firstName")}
                             />
-                            {formErrors.firstName && (
-                              <p className="text-xs text-destructive mt-1">First name is required</p>
-                            )}
+                            <FormValidator value={personalInfo.firstName} required highlightOnly />
                           </div>
-                          
                           <div className="space-y-2">
-                            <Label htmlFor="lastName" className={formErrors.lastName ? "text-destructive" : ""}>
-                              Last Name *
+                            <Label htmlFor="lastName" className="flex items-center">
+                              Last Name <span className="text-red-500 ml-1">*</span>
                             </Label>
-                            <Input
-                              id="lastName"
+                            <Input 
+                              id="lastName" 
+                              placeholder="Doe" 
                               value={personalInfo.lastName}
                               onChange={(e) => setPersonalInfo({ ...personalInfo, lastName: e.target.value })}
-                              className={formErrors.lastName ? "border-destructive" : ""}
+                              className={getInputStyle("lastName")}
                             />
-                            {formErrors.lastName && (
-                              <p className="text-xs text-destructive mt-1">Last name is required</p>
-                            )}
+                            <FormValidator value={personalInfo.lastName} required highlightOnly />
                           </div>
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor="jobTitle" className={formErrors.jobTitle ? "text-destructive" : ""}>
-                            Job Title *
+                          <Label htmlFor="jobTitle" className="flex items-center">
+                            Job Title <span className="text-red-500 ml-1">*</span>
                           </Label>
-                          <Input
-                            id="jobTitle"
-                            placeholder="e.g. Frontend Developer"
+                          <Input 
+                            id="jobTitle" 
+                            placeholder="Front-end Developer" 
                             value={personalInfo.jobTitle}
                             onChange={(e) => setPersonalInfo({ ...personalInfo, jobTitle: e.target.value })}
-                            className={formErrors.jobTitle ? "border-destructive" : ""}
+                            className={getInputStyle("jobTitle")}
                           />
-                          {formErrors.jobTitle && (
-                            <p className="text-xs text-destructive mt-1">Job title is required</p>
-                          )}
+                          <FormValidator value={personalInfo.jobTitle} required highlightOnly />
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor="email" className={formErrors.email ? "text-destructive" : ""}>
-                            Email *
+                          <Label htmlFor="email" className="flex items-center">
+                            Email <span className="text-red-500 ml-1">*</span>
                           </Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            placeholder="your.email@example.com"
+                          <Input 
+                            id="email" 
+                            type="email" 
+                            placeholder="john.doe@example.com" 
                             value={personalInfo.email}
                             onChange={(e) => setPersonalInfo({ ...personalInfo, email: e.target.value })}
-                            className={formErrors.email ? "border-destructive" : ""}
+                            className={getInputStyle("email")}
                           />
-                          {formErrors.email && (
-                            <p className="text-xs text-destructive mt-1">Email is required</p>
-                          )}
+                          <FormValidator value={personalInfo.email} required highlightOnly />
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor="phone" className={formErrors.phone ? "text-destructive" : ""}>
-                            Phone *
+                          <Label htmlFor="phone" className="flex items-center">
+                            Phone Number <span className="text-red-500 ml-1">*</span>
                           </Label>
-                          <div className="flex space-x-2">
-                            <div className="w-1/3">
-                              <Select value={personalInfo.countryCode} onValueChange={handleCountryCodeChange}>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Code" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {countryCodes.map((code) => (
-                                    <SelectItem key={code.value + code.label} value={code.value}>
-                                      {code.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="flex-1">
-                              <Input
-                                id="phone"
-                                placeholder="Phone number"
-                                value={personalInfo.phone}
-                                onChange={handlePhoneChange}
-                                className={formErrors.phone ? "border-destructive" : ""}
-                                ref={phoneInputRef}
-                              />
-                            </div>
+                          <div className="flex">
+                            <Select 
+                              value={personalInfo.countryCode} 
+                              onValueChange={handleCountryCodeChange}
+                            >
+                              <SelectTrigger className="w-[140px] rounded-r-none">
+                                <SelectValue placeholder="Code" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {countryCodes.map((code) => (
+                                  <SelectItem key={code.value} value={code.value}>
+                                    {code.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <Input
+                              id="phone"
+                              type="tel"
+                              placeholder="123-456-7890"
+                              value={personalInfo.phone}
+                              onChange={handlePhoneChange}
+                              className={`flex-1 rounded-l-none ${getInputStyle("phone")}`}
+                              ref={phoneInputRef}
+                            />
                           </div>
-                          {formErrors.phone && (
-                            <p className="text-xs text-destructive mt-1">Phone number is required</p>
-                          )}
+                          <FormValidator value={personalInfo.phone} required highlightOnly />
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor="location" className={formErrors.location ? "text-destructive" : ""}>
-                            Location *
+                          <Label htmlFor="location" className="flex items-center">
+                            Location <span className="text-red-500 ml-1">*</span>
                           </Label>
-                          <Input
-                            id="location"
-                            placeholder="e.g. New York, NY"
+                          <Input 
+                            id="location" 
+                            placeholder="San Francisco, CA" 
                             value={personalInfo.location}
                             onChange={(e) => setPersonalInfo({ ...personalInfo, location: e.target.value })}
-                            className={formErrors.location ? "border-destructive" : ""}
+                            className={getInputStyle("location")}
                           />
-                          {formErrors.location && (
-                            <p className="text-xs text-destructive mt-1">Location is required</p>
-                          )}
+                          <FormValidator value={personalInfo.location} required highlightOnly />
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor="githubUrl">
-                            GitHub URL <span className="text-muted-foreground">(optional)</span>
-                          </Label>
-                          <Input
-                            id="githubUrl"
-                            placeholder="https://github.com/username"
+                          <Label htmlFor="githubUrl">GitHub URL</Label>
+                          <Input 
+                            id="githubUrl" 
+                            placeholder="https://github.com/username" 
                             value={personalInfo.githubUrl}
                             onChange={(e) => setPersonalInfo({ ...personalInfo, githubUrl: e.target.value })}
                           />
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor="linkedinUrl">
-                            LinkedIn URL <span className="text-muted-foreground">(optional)</span>
-                          </Label>
-                          <Input
-                            id="linkedinUrl"
-                            placeholder="https://linkedin.com/in/username"
+                          <Label htmlFor="linkedinUrl">LinkedIn URL</Label>
+                          <Input 
+                            id="linkedinUrl" 
+                            placeholder="https://linkedin.com/in/username" 
                             value={personalInfo.linkedinUrl}
                             onChange={(e) => setPersonalInfo({ ...personalInfo, linkedinUrl: e.target.value })}
                           />
@@ -1007,102 +962,103 @@ const ResumeBuilder = () => {
                   
                   <TabsContent value="education" className="p-0">
                     <Card className="border-0 shadow-none">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-xl">Education</CardTitle>
-                        <CardDescription>
-                          Add your educational background
-                        </CardDescription>
+                      <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                        <div>
+                          <CardTitle className="text-xl">Education</CardTitle>
+                          <CardDescription>
+                            Add your educational background
+                          </CardDescription>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleAddEducation}
+                          className="h-8 px-2 text-xs"
+                        >
+                          <Plus className="h-3.5 w-3.5 mr-1" />
+                          Add Education
+                        </Button>
                       </CardHeader>
                       <CardContent className="space-y-6">
-                        {education.map((edu, index) => (
-                          <div key={edu.id} className="space-y-4 border rounded-lg p-4 relative">
-                            <div className="flex justify-between items-center mb-2">
-                              <h3 className="font-medium">{edu.customName}</h3>
-                              {education.length > 1 && (
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  onClick={() => handleRemoveEducation(edu.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                              )}
+                        {education.map((edu, eduIndex) => (
+                          <div key={edu.id} className="space-y-4 p-4 border rounded-lg relative">
+                            <div className="absolute top-2 right-2 flex items-center">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveEducation(edu.id)}
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">Remove</span>
+                              </Button>
+                            </div>
+                            
+                            <div className="mb-2">
+                              <span className="font-medium text-sm text-muted-foreground">
+                                {edu.customName}
+                              </span>
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="space-y-2">
-                                <Label htmlFor={`edu-school-${edu.id}`} className={formErrors[`edu_${index}_school`] ? "text-destructive" : ""}>
-                                  School/University *
+                                <Label htmlFor={`edu-${edu.id}-school`} className="flex items-center">
+                                  School/University <span className="text-red-500 ml-1">*</span>
                                 </Label>
                                 <Input 
-                                  id={`edu-school-${edu.id}`}
+                                  id={`edu-${edu.id}-school`} 
+                                  placeholder="Harvard University" 
                                   value={edu.school}
                                   onChange={(e) => handleEducationChange(edu.id, "school", e.target.value)}
-                                  className={formErrors[`edu_${index}_school`] ? "border-destructive" : ""}
+                                  className={getInputStyle(`edu_${eduIndex}_school`)}
                                 />
-                                {formErrors[`edu_${index}_school`] && (
-                                  <p className="text-xs text-destructive mt-1">School name is required</p>
-                                )}
+                                <FormValidator value={edu.school} required highlightOnly />
                               </div>
                               
                               <div className="space-y-2">
-                                <Label htmlFor={`edu-degree-${edu.id}`} className={formErrors[`edu_${index}_degree`] ? "text-destructive" : ""}>
-                                  Degree/Certificate *
+                                <Label htmlFor={`edu-${edu.id}-degree`} className="flex items-center">
+                                  Degree <span className="text-red-500 ml-1">*</span>
                                 </Label>
                                 <Input 
-                                  id={`edu-degree-${edu.id}`}
+                                  id={`edu-${edu.id}-degree`} 
+                                  placeholder="Bachelor of Science in Computer Science" 
                                   value={edu.degree}
                                   onChange={(e) => handleEducationChange(edu.id, "degree", e.target.value)}
-                                  className={formErrors[`edu_${index}_degree`] ? "border-destructive" : ""}
+                                  className={getInputStyle(`edu_${eduIndex}_degree`)}
                                 />
-                                {formErrors[`edu_${index}_degree`] && (
-                                  <p className="text-xs text-destructive mt-1">Degree is required</p>
-                                )}
+                                <FormValidator value={edu.degree} required highlightOnly />
                               </div>
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="space-y-2">
-                                <Label htmlFor={`edu-year-${edu.id}`} className={formErrors[`edu_${index}_graduationYear`] ? "text-destructive" : ""}>
-                                  Graduation Year *
+                                <Label htmlFor={`edu-${edu.id}-graduation-year`} className="flex items-center">
+                                  Graduation Year <span className="text-red-500 ml-1">*</span>
                                 </Label>
                                 <Input 
-                                  id={`edu-year-${edu.id}`}
+                                  id={`edu-${edu.id}-graduation-year`} 
+                                  placeholder="2020" 
                                   value={edu.graduationYear}
                                   onChange={(e) => handleEducationChange(edu.id, "graduationYear", e.target.value)}
-                                  className={formErrors[`edu_${index}_graduationYear`] ? "border-destructive" : ""}
-                                  maxLength={4}
+                                  className={getInputStyle(`edu_${eduIndex}_graduationYear`)}
                                 />
-                                {formErrors[`edu_${index}_graduationYear`] && (
-                                  <p className="text-xs text-destructive mt-1">Graduation year is required</p>
-                                )}
+                                <FormValidator value={edu.graduationYear} required highlightOnly />
                               </div>
                               
                               <div className="space-y-2">
-                                <Label htmlFor={`edu-score-${edu.id}`} className={formErrors[`edu_${index}_score`] ? "text-destructive" : ""}>
-                                  GPA/Grade *
+                                <Label htmlFor={`edu-${edu.id}-score`}>
+                                  Score/GPA (Optional)
                                 </Label>
                                 <Input 
-                                  id={`edu-score-${edu.id}`}
+                                  id={`edu-${edu.id}-score`} 
+                                  placeholder="3.8/4.0" 
                                   value={edu.score}
                                   onChange={(e) => handleEducationChange(edu.id, "score", e.target.value)}
-                                  className={formErrors[`edu_${index}_score`] ? "border-destructive" : ""}
                                 />
-                                {formErrors[`edu_${index}_score`] && (
-                                  <p className="text-xs text-destructive mt-1">Score/GPA is required</p>
-                                )}
                               </div>
                             </div>
                           </div>
                         ))}
-                        
-                        <Button 
-                          variant="outline" 
-                          className="w-full flex items-center gap-1"
-                          onClick={handleAddEducation}
-                        >
-                          <Plus className="h-4 w-4" /> Add Another Education
-                        </Button>
                         
                         {renderNavigationButtons()}
                       </CardContent>
@@ -1111,99 +1067,88 @@ const ResumeBuilder = () => {
                   
                   <TabsContent value="experience" className="p-0">
                     <Card className="border-0 shadow-none">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-xl">Work Experience</CardTitle>
-                        <CardDescription>
-                          Add your professional experience
-                        </CardDescription>
+                      <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                        <div>
+                          <CardTitle className="text-xl">Work Experience</CardTitle>
+                          <CardDescription>
+                            Add your professional experience
+                          </CardDescription>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleAddExperience}
+                          className="h-8 px-2 text-xs"
+                        >
+                          <Plus className="h-3.5 w-3.5 mr-1" />
+                          Add Experience
+                        </Button>
                       </CardHeader>
                       <CardContent className="space-y-6">
-                        {experience.map((exp, index) => (
-                          <div key={exp.id} className="space-y-4 border rounded-lg p-4 relative">
-                            <div className="flex justify-between items-center mb-2">
-                              <h3 className="font-medium">
-                                {exp.companyName || exp.jobTitle ? 
-                                  (exp.jobTitle || "Role") + (exp.companyName ? ` at ${exp.companyName}` : "") : 
-                                  `Experience #${index + 1}`}
-                              </h3>
-                              {experience.length > 1 && (
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  onClick={() => handleRemoveExperience(exp.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                              )}
+                        {experience.map((exp, expIndex) => (
+                          <div key={exp.id} className="space-y-4 p-4 border rounded-lg relative">
+                            <div className="absolute top-2 right-2 flex items-center">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveExperience(exp.id)}
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">Remove</span>
+                              </Button>
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="space-y-2">
-                                <Label htmlFor={`exp-company-${exp.id}`} className={formErrors[`exp_${index}_companyName`] ? "text-destructive" : ""}>
-                                  Company Name *
+                                <Label htmlFor={`exp-${exp.id}-job-title`} className="flex items-center">
+                                  Job Title <span className="text-red-500 ml-1">*</span>
                                 </Label>
                                 <Input 
-                                  id={`exp-company-${exp.id}`}
-                                  value={exp.companyName}
-                                  onChange={(e) => handleExperienceChange(exp.id, "companyName", e.target.value)}
-                                  className={formErrors[`exp_${index}_companyName`] ? "border-destructive" : ""}
+                                  id={`exp-${exp.id}-job-title`} 
+                                  placeholder="Software Engineer" 
+                                  value={exp.jobTitle}
+                                  onChange={(e) => handleExperienceChange(exp.id, "jobTitle", e.target.value)}
+                                  className={getInputStyle(`exp_${expIndex}_jobTitle`)}
                                 />
-                                {formErrors[`exp_${index}_companyName`] && (
-                                  <p className="text-xs text-destructive mt-1">Company name is required</p>
-                                )}
+                                <FormValidator value={exp.jobTitle} required highlightOnly />
                               </div>
                               
                               <div className="space-y-2">
-                                <Label htmlFor={`exp-job-${exp.id}`} className={formErrors[`exp_${index}_jobTitle`] ? "text-destructive" : ""}>
-                                  Job Title *
+                                <Label htmlFor={`exp-${exp.id}-company`} className="flex items-center">
+                                  Company <span className="text-red-500 ml-1">*</span>
                                 </Label>
                                 <Input 
-                                  id={`exp-job-${exp.id}`}
-                                  value={exp.jobTitle}
-                                  onChange={(e) => handleExperienceChange(exp.id, "jobTitle", e.target.value)}
-                                  className={formErrors[`exp_${index}_jobTitle`] ? "border-destructive" : ""}
+                                  id={`exp-${exp.id}-company`} 
+                                  placeholder="Google" 
+                                  value={exp.companyName}
+                                  onChange={(e) => handleExperienceChange(exp.id, "companyName", e.target.value)}
+                                  className={getInputStyle(`exp_${expIndex}_companyName`)}
                                 />
-                                {formErrors[`exp_${index}_jobTitle`] && (
-                                  <p className="text-xs text-destructive mt-1">Job title is required</p>
-                                )}
+                                <FormValidator value={exp.companyName} required highlightOnly />
                               </div>
                             </div>
                             
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="space-y-2">
-                                <Label htmlFor={`exp-role-${exp.id}`} className={formErrors[`exp_${index}_role`] ? "text-destructive" : ""}>
-                                  Role/Department *
-                                </Label>
-                                <Input 
-                                  id={`exp-role-${exp.id}`}
-                                  value={exp.role}
-                                  onChange={(e) => handleExperienceChange(exp.id, "role", e.target.value)}
-                                  className={formErrors[`exp_${index}_role`] ? "border-destructive" : ""}
-                                />
-                                {formErrors[`exp_${index}_role`] && (
-                                  <p className="text-xs text-destructive mt-1">Role is required</p>
-                                )}
-                              </div>
-                              
-                              <div className="space-y-2">
-                                <Label htmlFor={`exp-start-${exp.id}`}>
+                                <Label htmlFor={`exp-${exp.id}-start-date`}>
                                   Start Date
                                 </Label>
                                 <Input 
-                                  id={`exp-start-${exp.id}`}
-                                  placeholder="MM/YYYY"
+                                  id={`exp-${exp.id}-start-date`} 
+                                  placeholder="Jun 2020" 
                                   value={exp.startDate}
                                   onChange={(e) => handleExperienceChange(exp.id, "startDate", e.target.value)}
                                 />
                               </div>
                               
                               <div className="space-y-2">
-                                <Label htmlFor={`exp-end-${exp.id}`}>
+                                <Label htmlFor={`exp-${exp.id}-end-date`}>
                                   End Date
                                 </Label>
                                 <Input 
-                                  id={`exp-end-${exp.id}`}
-                                  placeholder="MM/YYYY or Present"
+                                  id={`exp-${exp.id}-end-date`} 
+                                  placeholder="Present (leave blank for current)" 
                                   value={exp.endDate}
                                   onChange={(e) => handleExperienceChange(exp.id, "endDate", e.target.value)}
                                 />
@@ -1211,27 +1156,31 @@ const ResumeBuilder = () => {
                             </div>
                             
                             <div className="space-y-2">
-                              <Label htmlFor={`exp-desc-${exp.id}`}>
-                                Description
-                              </Label>
+                              <div className="flex items-center justify-between">
+                                <Label htmlFor={`exp-${exp.id}-description`}>
+                                  Job Description
+                                </Label>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => generateAIContent("jobDescription", { id: exp.id })}
+                                  className="h-7 text-xs"
+                                  disabled={generatingAI}
+                                >
+                                  <Sparkles className="h-3.5 w-3.5 mr-1" />
+                                  Generate with AI
+                                </Button>
+                              </div>
                               <Textarea 
-                                id={`exp-desc-${exp.id}`}
+                                id={`exp-${exp.id}-description`} 
                                 placeholder="Describe your responsibilities and achievements..."
                                 value={exp.description}
                                 onChange={(e) => handleExperienceChange(exp.id, "description", e.target.value)}
-                                rows={4}
+                                className="min-h-[100px]"
                               />
                             </div>
                           </div>
                         ))}
-                        
-                        <Button 
-                          variant="outline" 
-                          className="w-full flex items-center gap-1"
-                          onClick={handleAddExperience}
-                        >
-                          <Plus className="h-4 w-4" /> Add Another Experience
-                        </Button>
                         
                         {renderNavigationButtons()}
                       </CardContent>
@@ -1240,87 +1189,100 @@ const ResumeBuilder = () => {
                   
                   <TabsContent value="projects" className="p-0">
                     <Card className="border-0 shadow-none">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-xl">Projects</CardTitle>
-                        <CardDescription>
-                          Add projects that showcase your skills
-                        </CardDescription>
+                      <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                        <div>
+                          <CardTitle className="text-xl">Projects</CardTitle>
+                          <CardDescription>
+                            Add your notable projects
+                          </CardDescription>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleAddProject}
+                          className="h-8 px-2 text-xs"
+                        >
+                          <Plus className="h-3.5 w-3.5 mr-1" />
+                          Add Project
+                        </Button>
                       </CardHeader>
                       <CardContent className="space-y-6">
-                        {projects.map((proj, index) => (
-                          <div key={proj.id} className="space-y-4 border rounded-lg p-4 relative">
-                            <div className="flex justify-between items-center mb-2">
-                              <h3 className="font-medium">
-                                {proj.title ? proj.title : `Project #${index + 1}`}
-                              </h3>
-                              {projects.length > 1 && (
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  onClick={() => handleRemoveProject(proj.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                              )}
+                        {projects.map((proj) => (
+                          <div key={proj.id} className="space-y-4 p-4 border rounded-lg relative">
+                            <div className="absolute top-2 right-2 flex items-center">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveProject(proj.id)}
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">Remove</span>
+                              </Button>
                             </div>
                             
                             <div className="space-y-2">
-                              <Label htmlFor={`proj-title-${proj.id}`}>
+                              <Label htmlFor={`proj-${proj.id}-title`}>
                                 Project Title
                               </Label>
                               <Input 
-                                id={`proj-title-${proj.id}`}
+                                id={`proj-${proj.id}-title`} 
+                                placeholder="E-commerce Application" 
                                 value={proj.title}
                                 onChange={(e) => handleProjectChange(proj.id, "title", e.target.value)}
                               />
                             </div>
                             
                             <div className="space-y-2">
-                              <Label htmlFor={`proj-desc-${proj.id}`}>
-                                Description
-                              </Label>
+                              <div className="flex items-center justify-between">
+                                <Label htmlFor={`proj-${proj.id}-description`}>
+                                  Project Description
+                                </Label>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => generateAIContent("projectDescription", { id: proj.id })}
+                                  className="h-7 text-xs"
+                                  disabled={generatingAI}
+                                >
+                                  <Sparkles className="h-3.5 w-3.5 mr-1" />
+                                  Generate with AI
+                                </Button>
+                              </div>
                               <Textarea 
-                                id={`proj-desc-${proj.id}`}
-                                placeholder="Describe your project, its purpose, and your role..."
+                                id={`proj-${proj.id}-description`} 
+                                placeholder="Describe the project, your role, and the technologies used..."
                                 value={proj.description}
                                 onChange={(e) => handleProjectChange(proj.id, "description", e.target.value)}
-                                rows={4}
+                                className="min-h-[100px]"
                               />
                             </div>
                             
                             <div className="space-y-2">
-                              <Label htmlFor={`proj-tech-${proj.id}`}>
+                              <Label htmlFor={`proj-${proj.id}-technologies`}>
                                 Technologies Used
                               </Label>
                               <Input 
-                                id={`proj-tech-${proj.id}`}
-                                placeholder="e.g. React, Node.js, MongoDB"
+                                id={`proj-${proj.id}-technologies`} 
+                                placeholder="React, Node.js, MongoDB" 
                                 value={proj.technologies}
                                 onChange={(e) => handleProjectChange(proj.id, "technologies", e.target.value)}
                               />
                             </div>
                             
                             <div className="space-y-2">
-                              <Label htmlFor={`proj-link-${proj.id}`}>
+                              <Label htmlFor={`proj-${proj.id}-link`}>
                                 Project Link
                               </Label>
                               <Input 
-                                id={`proj-link-${proj.id}`}
-                                placeholder="https://..."
+                                id={`proj-${proj.id}-link`} 
+                                placeholder="https://github.com/username/project" 
                                 value={proj.link}
                                 onChange={(e) => handleProjectChange(proj.id, "link", e.target.value)}
                               />
                             </div>
                           </div>
                         ))}
-                        
-                        <Button 
-                          variant="outline" 
-                          className="w-full flex items-center gap-1"
-                          onClick={handleAddProject}
-                        >
-                          <Plus className="h-4 w-4" /> Add Another Project
-                        </Button>
                         
                         {renderNavigationButtons()}
                       </CardContent>
@@ -1332,65 +1294,50 @@ const ResumeBuilder = () => {
                       <CardHeader className="pb-2">
                         <CardTitle className="text-xl">Skills</CardTitle>
                         <CardDescription>
-                          Highlight your professional, technical, and soft skills
+                          Showcase your professional and technical abilities
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-6">
+                      <CardContent className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="professional-skills" className={formErrors.professional ? "text-destructive" : ""}>
-                            Professional Skills *
+                          <Label htmlFor="professional-skills" className="flex items-center">
+                            Professional Skills <span className="text-red-500 ml-1">*</span>
                           </Label>
                           <Textarea 
-                            id="professional-skills"
-                            placeholder="e.g. Project Management, Strategic Planning, Team Leadership"
+                            id="professional-skills" 
+                            placeholder="Project Management, Team Leadership, Strategic Planning, etc."
                             value={skills.professional}
                             onChange={(e) => setSkills({ ...skills, professional: e.target.value })}
-                            className={formErrors.professional ? "border-destructive" : ""}
+                            className={getInputStyle("professional")}
                           />
-                          {formErrors.professional && (
-                            <p className="text-xs text-destructive mt-1">Professional skills are required</p>
-                          )}
-                          <p className="text-xs text-muted-foreground">
-                            Separate skills with commas
-                          </p>
+                          <FormValidator value={skills.professional} required highlightOnly />
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor="technical-skills" className={formErrors.technical ? "text-destructive" : ""}>
-                            Technical Skills *
+                          <Label htmlFor="technical-skills" className="flex items-center">
+                            Technical Skills <span className="text-red-500 ml-1">*</span>
                           </Label>
                           <Textarea 
-                            id="technical-skills"
-                            placeholder="e.g. JavaScript, React, Node.js, SQL"
+                            id="technical-skills" 
+                            placeholder="JavaScript, React, Node.js, CSS, etc."
                             value={skills.technical}
                             onChange={(e) => setSkills({ ...skills, technical: e.target.value })}
-                            className={formErrors.technical ? "border-destructive" : ""}
+                            className={getInputStyle("technical")}
                           />
-                          {formErrors.technical && (
-                            <p className="text-xs text-destructive mt-1">Technical skills are required</p>
-                          )}
-                          <p className="text-xs text-muted-foreground">
-                            Separate skills with commas
-                          </p>
+                          <FormValidator value={skills.technical} required highlightOnly />
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor="soft-skills" className={formErrors.soft ? "text-destructive" : ""}>
-                            Soft Skills *
+                          <Label htmlFor="soft-skills" className="flex items-center">
+                            Soft Skills <span className="text-red-500 ml-1">*</span>
                           </Label>
                           <Textarea 
-                            id="soft-skills"
-                            placeholder="e.g. Communication, Problem-solving, Teamwork"
+                            id="soft-skills" 
+                            placeholder="Communication, Teamwork, Problem Solving, etc."
                             value={skills.soft}
                             onChange={(e) => setSkills({ ...skills, soft: e.target.value })}
-                            className={formErrors.soft ? "border-destructive" : ""}
+                            className={getInputStyle("soft")}
                           />
-                          {formErrors.soft && (
-                            <p className="text-xs text-destructive mt-1">Soft skills are required</p>
-                          )}
-                          <p className="text-xs text-muted-foreground">
-                            Separate skills with commas
-                          </p>
+                          <FormValidator value={skills.soft} required highlightOnly />
                         </div>
                         
                         {renderNavigationButtons()}
@@ -1403,25 +1350,34 @@ const ResumeBuilder = () => {
                       <CardHeader className="pb-2">
                         <CardTitle className="text-xl">Career Objective</CardTitle>
                         <CardDescription>
-                          Add a brief statement about your career goals
+                          Summarize your career goals and what you bring to the table
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-6">
+                      <CardContent className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="objective" className={formErrors.objective ? "text-destructive" : ""}>
-                            Career Objective *
-                          </Label>
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="career-objective" className="flex items-center">
+                              Career Objective <span className="text-red-500 ml-1">*</span>
+                            </Label>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => generateAIContent("objective")}
+                              className="h-7 text-xs"
+                              disabled={generatingAI}
+                            >
+                              <Sparkles className="h-3.5 w-3.5 mr-1" />
+                              Generate with AI
+                            </Button>
+                          </div>
                           <Textarea 
-                            id="objective"
-                            placeholder="Write a brief statement about your career goals and what you're looking for..."
+                            id="career-objective" 
+                            placeholder="A concise statement about your career goals and what you bring to a potential employer..."
                             value={objective}
                             onChange={(e) => setObjective(e.target.value)}
-                            className={formErrors.objective ? "border-destructive" : ""}
-                            rows={4}
+                            className={`min-h-[150px] ${getInputStyle("objective")}`}
                           />
-                          {formErrors.objective && (
-                            <p className="text-xs text-destructive mt-1">Career objective is required</p>
-                          )}
+                          <FormValidator value={objective} required highlightOnly />
                         </div>
                         
                         {renderNavigationButtons()}
@@ -1433,19 +1389,12 @@ const ResumeBuilder = () => {
             </div>
             
             {showLivePreview && (
-              <div className="lg:col-span-1">
-                <div className="sticky top-4">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg">Preview</CardTitle>
-                    </CardHeader>
-                    <CardContent className="bg-white rounded-md border overflow-auto" style={{ maxHeight: "75vh" }}>
-                      {getResumeData && (
-                        <ResumePreviewContent data={getResumeData()} templateId={templateId} isPreview={true} />
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
+              <div className="bg-card shadow-sm rounded-lg border overflow-hidden">
+                <ResumePreviewContent 
+                  data={getResumeData()} 
+                  templateId={templateId}
+                  isPreview={true}
+                />
               </div>
             )}
           </div>
