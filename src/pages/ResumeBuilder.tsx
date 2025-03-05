@@ -60,6 +60,117 @@ interface FormErrors {
 
 const STORAGE_KEY = "resumeData";
 
+// AI suggestions based on job title
+const getAISkillSuggestions = (jobTitle: string) => {
+  const suggestions: { [key: string]: Skills } = {
+    "Software Engineer": {
+      professional: "Agile Development, Code Review, System Design, Test-Driven Development, CI/CD",
+      technical: "JavaScript, Python, Java, SQL, AWS, Docker, Git, React, Node.js",
+      soft: "Problem Solving, Communication, Teamwork, Time Management, Critical Thinking"
+    },
+    "Front-end Developer": {
+      professional: "UI/UX Design, Web Performance Optimization, Responsive Design, Cross-Browser Compatibility",
+      technical: "HTML, CSS, JavaScript, TypeScript, React, Vue.js, Angular, SASS, Webpack",
+      soft: "Attention to Detail, Creativity, Communication, Time Management, Teamwork"
+    },
+    "Data Scientist": {
+      professional: "Data Analysis, Statistical Modeling, Machine Learning, Data Visualization, Big Data Processing",
+      technical: "Python, R, SQL, TensorFlow, PyTorch, Pandas, NumPy, Tableau, Power BI",
+      soft: "Analytical Thinking, Problem Solving, Communication, Curiosity, Attention to Detail"
+    },
+    "Product Manager": {
+      professional: "Product Strategy, Market Research, Roadmap Planning, Agile Methodologies, User Story Creation",
+      technical: "JIRA, Confluence, Product Analytics, SQL, A/B Testing, Wireframing",
+      soft: "Leadership, Communication, Negotiation, Strategic Thinking, Stakeholder Management"
+    },
+    "UX Designer": {
+      professional: "User Research, Wireframing, Prototyping, Usability Testing, Information Architecture",
+      technical: "Figma, Sketch, Adobe XD, InVision, Zeplin, HTML/CSS Basics",
+      soft: "Empathy, Communication, Creativity, Problem Solving, Collaboration"
+    }
+  };
+
+  // Default suggestions if job title doesn't match
+  const defaultSuggestions: Skills = {
+    professional: "Project Management, Team Collaboration, Strategy Development, Problem Solving",
+    technical: "Microsoft Office, Google Workspace, Project Management Software, Basic Programming",
+    soft: "Communication, Leadership, Time Management, Adaptability, Critical Thinking"
+  };
+
+  // Check for partial matches to be more flexible
+  for (const title in suggestions) {
+    if (jobTitle.toLowerCase().includes(title.toLowerCase()) || 
+        title.toLowerCase().includes(jobTitle.toLowerCase())) {
+      return suggestions[title];
+    }
+  }
+
+  return defaultSuggestions;
+};
+
+// AI suggestions for career objective based on job title
+const getAIObjectiveSuggestion = (jobTitle: string, firstName: string = "", lastName: string = "") => {
+  const name = `${firstName} ${lastName}`.trim() || "Professional";
+  
+  const suggestions: { [key: string]: string } = {
+    "Software Engineer": `Dedicated and efficient ${jobTitle} with a passion for developing innovative applications that deliver exceptional user experiences. Leveraging strong problem-solving abilities and technical expertise to create scalable and maintainable solutions. Seeking to apply my skills in a collaborative environment to drive technological advancement and business growth.`,
+    
+    "Front-end Developer": `Creative and detail-oriented ${jobTitle} with expertise in building responsive and intuitive user interfaces. Committed to writing clean, efficient code and staying current with emerging technologies and best practices. Looking to contribute to a forward-thinking team where I can enhance user experiences through innovative front-end solutions.`,
+    
+    "Data Scientist": `Results-driven ${jobTitle} with a strong analytical mindset and expertise in extracting actionable insights from complex datasets. Skilled in applying statistical methods and machine learning algorithms to solve business problems. Eager to leverage my technical and analytical abilities to drive data-informed decision making.`,
+    
+    "Product Manager": `Strategic ${jobTitle} with a proven track record of guiding products from conception to launch. Adept at identifying market opportunities, defining product vision, and collaborating with cross-functional teams to deliver user-centric solutions. Seeking to utilize my leadership and technical skills to develop innovative products that solve real-world problems.`,
+    
+    "UX Designer": `Empathetic ${jobTitle} passionate about creating intuitive and engaging user experiences. Combining research insights with design thinking to craft solutions that meet both user needs and business objectives. Eager to apply my creative problem-solving skills to design products that delight users and drive business growth.`
+  };
+
+  // Default suggestion if job title doesn't match
+  const defaultSuggestion = `Dedicated ${jobTitle} with a passion for excellence and continuous improvement. Combining technical expertise with strong interpersonal skills to deliver outstanding results. Seeking to leverage my experience and skills in a challenging position where I can make meaningful contributions while continuing to grow professionally.`;
+
+  // Check for partial matches to be more flexible
+  for (const title in suggestions) {
+    if (jobTitle.toLowerCase().includes(title.toLowerCase()) || 
+        title.toLowerCase().includes(jobTitle.toLowerCase())) {
+      return suggestions[title];
+    }
+  }
+
+  return defaultSuggestion;
+};
+
+// AI suggestions for project descriptions
+const getAIProjectDescription = (title: string, technologies: string = "") => {
+  if (!title) return "";
+  
+  const techString = technologies ? ` using ${technologies}` : "";
+  
+  const projectTypes: { [key: string]: string } = {
+    "E-commerce": `Developed a comprehensive e-commerce platform${techString} that features product browsing, user authentication, shopping cart functionality, and secure payment processing. Implemented responsive design for optimal user experience across all devices. Integrated inventory management system to track product availability in real-time.`,
+    
+    "Portfolio": `Designed and built a professional portfolio website${techString} to showcase my work and skills. Implemented responsive layouts, smooth animations, and optimized performance. Integrated a content management system for easy updates and maintenance.`,
+    
+    "Blog": `Created a feature-rich blog platform${techString} with content management capabilities, user authentication, and comment functionality. Implemented SEO best practices, responsive design, and performance optimizations for fast page loading.`,
+    
+    "Social Media": `Developed a social media application${techString} that allows users to create profiles, connect with friends, share content, and engage through likes and comments. Implemented real-time notifications and messaging functionality for enhanced user interaction.`,
+    
+    "Dashboard": `Built an interactive analytics dashboard${techString} that visualizes complex data in an intuitive way. Implemented filtering capabilities, custom charts, and exportable reports. Designed with user experience in mind to make data interpretation accessible to non-technical users.`,
+    
+    "Mobile App": `Designed and developed a mobile application${techString} that delivers a seamless user experience across iOS and Android platforms. Implemented offline functionality, push notifications, and integrated with backend services for data synchronization.`,
+    
+    "Game": `Created an interactive game${techString} with engaging gameplay mechanics, sound effects, and visual animations. Implemented scoring system, multiple difficulty levels, and user progress tracking.`
+  };
+
+  // Check for partial matches in project title
+  for (const type in projectTypes) {
+    if (title.toLowerCase().includes(type.toLowerCase())) {
+      return projectTypes[type];
+    }
+  }
+
+  // Default description if no specific project type is matched
+  return `Developed ${title}${techString} to address specific user needs and business requirements. Followed best practices in software development to ensure code quality, maintainability, and scalability. Collaborated with stakeholders throughout the development process to gather requirements and deliver a solution that exceeds expectations.`;
+};
+
 const ResumeBuilder = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("personal");
@@ -74,9 +185,24 @@ const ResumeBuilder = () => {
     linkedinUrl: "",
     githubUrl: "",
   });
-  const [education, setEducation] = useState<EducationItem[]>([]);
-  const [experience, setExperience] = useState<ExperienceItem[]>([]);
-  const [projects, setProjects] = useState<ProjectItem[]>([]);
+  const [education, setEducation] = useState<EducationItem[]>([{
+    id: String(Date.now()),
+    school: "",
+    degree: "",
+    graduationDate: ""
+  }]);
+  const [experience, setExperience] = useState<ExperienceItem[]>([{
+    id: String(Date.now()),
+    jobTitle: "",
+    companyName: "",
+    startDate: "",
+    description: ""
+  }]);
+  const [projects, setProjects] = useState<ProjectItem[]>([{
+    id: String(Date.now()),
+    title: "",
+    description: ""
+  }]);
   const [skills, setSkills] = useState<Skills>({
     professional: "",
     technical: "",
@@ -93,11 +219,24 @@ const ResumeBuilder = () => {
       try {
         const parsedData = JSON.parse(storedData);
         setPersonalInfo(parsedData.personalInfo || personalInfo);
-        setEducation(parsedData.education || education);
-        setExperience(parsedData.experience || experience);
+        
+        // Ensure at least one education entry
+        setEducation(parsedData.education && parsedData.education.length > 0 
+          ? parsedData.education 
+          : education);
+        
+        // Ensure at least one experience entry
+        setExperience(parsedData.experience && parsedData.experience.length > 0 
+          ? parsedData.experience 
+          : experience);
+        
+        // Ensure at least one project entry
+        setProjects(parsedData.projects && parsedData.projects.length > 0 
+          ? parsedData.projects 
+          : projects);
+        
         setSkills(parsedData.skills || skills);
         setObjective(parsedData.objective || objective);
-        setProjects(parsedData.projects || projects);
       } catch (error) {
         console.error("Error parsing stored resume data:", error);
         localStorage.removeItem(STORAGE_KEY);
@@ -277,6 +416,15 @@ const ResumeBuilder = () => {
   };
 
   const deleteEducation = (id: string) => {
+    // Prevent deleting if it's the first/only entry
+    if (education.length <= 1) {
+      toast({
+        title: "Cannot Delete",
+        description: "At least one education entry is required.",
+        variant: "destructive"
+      });
+      return;
+    }
     setEducation(education.filter(edu => edu.id !== id));
   };
 
@@ -291,6 +439,15 @@ const ResumeBuilder = () => {
   };
 
   const deleteExperience = (id: string) => {
+    // Prevent deleting if it's the first/only entry
+    if (experience.length <= 1) {
+      toast({
+        title: "Cannot Delete",
+        description: "At least one experience entry is required.",
+        variant: "destructive"
+      });
+      return;
+    }
     setExperience(experience.filter(exp => exp.id !== id));
   };
 
@@ -305,7 +462,84 @@ const ResumeBuilder = () => {
   };
 
   const deleteProject = (id: string) => {
+    // Prevent deleting if it's the first/only entry
+    if (projects.length <= 1) {
+      toast({
+        title: "Cannot Delete",
+        description: "At least one project entry is required.",
+        variant: "destructive"
+      });
+      return;
+    }
     setProjects(projects.filter(project => project.id !== id));
+  };
+
+  const generateAISkillSuggestions = () => {
+    if (!personalInfo.jobTitle) {
+      toast({
+        title: "Job Title Required",
+        description: "Please enter a job title first to get relevant skill suggestions.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const suggestions = getAISkillSuggestions(personalInfo.jobTitle);
+    setSkills(suggestions);
+    
+    toast({
+      title: "Skills Generated",
+      description: "AI has suggested skills based on your job title."
+    });
+  };
+
+  const generateAIObjective = () => {
+    if (!personalInfo.jobTitle) {
+      toast({
+        title: "Job Title Required",
+        description: "Please enter a job title first to generate a career objective.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const suggestion = getAIObjectiveSuggestion(
+      personalInfo.jobTitle, 
+      personalInfo.firstName, 
+      personalInfo.lastName
+    );
+    
+    setObjective(suggestion);
+    
+    toast({
+      title: "Objective Generated",
+      description: "AI has created a career objective based on your information."
+    });
+  };
+
+  const generateProjectDescription = (id: string) => {
+    const project = projects.find(p => p.id === id);
+    
+    if (!project || !project.title) {
+      toast({
+        title: "Project Title Required",
+        description: "Please enter a project title first to generate a description.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const suggestion = getAIProjectDescription(
+      project.title,
+      project.technologies
+    );
+    
+    updateProject(id, "description", suggestion);
+    
+    toast({
+      title: "Description Generated",
+      description: "AI has created a project description based on your title."
+    });
   };
 
   const getActiveContent = () => {
@@ -461,19 +695,10 @@ const ResumeBuilder = () => {
               </Button>
             </div>
 
-            {education.length === 0 ? (
-              <Card className="border border-dashed p-8">
-                <CardContent className="flex flex-col items-center justify-center p-0">
-                  <p className="text-center text-gray-500 mb-4">No education added yet</p>
-                  <Button onClick={addEducation} variant="outline" className="gap-1">
-                    <Plus className="h-4 w-4" /> Add Education
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-6">
-                {education.map((edu, index) => (
-                  <Card key={edu.id} className="relative border shadow-sm">
+            <div className="space-y-6">
+              {education.map((edu, index) => (
+                <Card key={edu.id} className="relative border shadow-sm">
+                  {index > 0 && (
                     <Button 
                       variant="ghost" 
                       size="icon" 
@@ -482,68 +707,68 @@ const ResumeBuilder = () => {
                     >
                       <Trash className="h-4 w-4" />
                     </Button>
-                    <CardContent className="p-6">
-                      <div className="text-sm text-gray-500 mb-3">Education #{index + 1}</div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div className="space-y-2">
-                          <Label htmlFor={`school_${edu.id}`} className="text-base">
-                            School/University <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            id={`school_${edu.id}`}
-                            placeholder="Harvard University"
-                            value={edu.school}
-                            onChange={e => updateEducation(edu.id, "school", e.target.value)}
-                            className={formErrors[`edu_${index}_school`] ? "border-red-500" : ""}
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor={`degree_${edu.id}`} className="text-base">
-                            Degree <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            id={`degree_${edu.id}`}
-                            placeholder="Bachelor of Science in Computer Science"
-                            value={edu.degree}
-                            onChange={e => updateEducation(edu.id, "degree", e.target.value)}
-                            className={formErrors[`edu_${index}_degree`] ? "border-red-500" : ""}
-                          />
-                        </div>
+                  )}
+                  <CardContent className="p-6">
+                    <div className="text-sm text-gray-500 mb-3">Education #{index + 1}</div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="space-y-2">
+                        <Label htmlFor={`school_${edu.id}`} className="text-base">
+                          School/University <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id={`school_${edu.id}`}
+                          placeholder="Harvard University"
+                          value={edu.school}
+                          onChange={e => updateEducation(edu.id, "school", e.target.value)}
+                          className={formErrors[`edu_${index}_school`] ? "border-red-500" : ""}
+                        />
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <Label htmlFor={`graduationDate_${edu.id}`} className="text-base">
-                            Graduation Year <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            id={`graduationDate_${edu.id}`}
-                            placeholder="2020"
-                            value={edu.graduationDate}
-                            onChange={e => updateEducation(edu.id, "graduationDate", e.target.value)}
-                            className={formErrors[`edu_${index}_graduationDate`] ? "border-red-500" : ""}
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor={`score_${edu.id}`} className="text-base">
-                            Score/GPA (Optional)
-                          </Label>
-                          <Input
-                            id={`score_${edu.id}`}
-                            placeholder="3.8/4.0"
-                            value={edu.score || ""}
-                            onChange={e => updateEducation(edu.id, "score", e.target.value)}
-                          />
-                        </div>
+                      <div className="space-y-2">
+                        <Label htmlFor={`degree_${edu.id}`} className="text-base">
+                          Degree <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id={`degree_${edu.id}`}
+                          placeholder="Bachelor of Science in Computer Science"
+                          value={edu.degree}
+                          onChange={e => updateEducation(edu.id, "degree", e.target.value)}
+                          className={formErrors[`edu_${index}_degree`] ? "border-red-500" : ""}
+                        />
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor={`graduationDate_${edu.id}`} className="text-base">
+                          Graduation Year <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id={`graduationDate_${edu.id}`}
+                          placeholder="2020"
+                          value={edu.graduationDate}
+                          onChange={e => updateEducation(edu.id, "graduationDate", e.target.value)}
+                          className={formErrors[`edu_${index}_graduationDate`] ? "border-red-500" : ""}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor={`score_${edu.id}`} className="text-base">
+                          Score/GPA (Optional)
+                        </Label>
+                        <Input
+                          id={`score_${edu.id}`}
+                          placeholder="3.8/4.0"
+                          value={edu.score || ""}
+                          onChange={e => updateEducation(edu.id, "score", e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
 
             <div className="flex justify-between">
               <Button onClick={() => setActiveTab("personal")} variant="outline" size="lg">
@@ -569,19 +794,10 @@ const ResumeBuilder = () => {
               </Button>
             </div>
 
-            {experience.length === 0 ? (
-              <Card className="border border-dashed p-8">
-                <CardContent className="flex flex-col items-center justify-center p-0">
-                  <p className="text-center text-gray-500 mb-4">No experience added yet</p>
-                  <Button onClick={addExperience} variant="outline" className="gap-1">
-                    <Plus className="h-4 w-4" /> Add Experience
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-6">
-                {experience.map((exp, index) => (
-                  <Card key={exp.id} className="relative border shadow-sm">
+            <div className="space-y-6">
+              {experience.map((exp, index) => (
+                <Card key={exp.id} className="relative border shadow-sm">
+                  {index > 0 && (
                     <Button 
                       variant="ghost" 
                       size="icon" 
@@ -590,94 +806,94 @@ const ResumeBuilder = () => {
                     >
                       <Trash className="h-4 w-4" />
                     </Button>
-                    <CardContent className="p-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div className="space-y-2">
-                          <Label htmlFor={`jobTitle_${exp.id}`} className="text-base">
-                            Job Title <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            id={`jobTitle_${exp.id}`}
-                            placeholder="Software Engineer"
-                            value={exp.jobTitle}
-                            onChange={e => updateExperience(exp.id, "jobTitle", e.target.value)}
-                            className={formErrors[`exp_${index}_jobTitle`] ? "border-red-500" : ""}
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor={`companyName_${exp.id}`} className="text-base">
-                            Company <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            id={`companyName_${exp.id}`}
-                            placeholder="Google"
-                            value={exp.companyName}
-                            onChange={e => updateExperience(exp.id, "companyName", e.target.value)}
-                            className={formErrors[`exp_${index}_companyName`] ? "border-red-500" : ""}
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div className="space-y-2">
-                          <Label htmlFor={`startDate_${exp.id}`} className="text-base">
-                            Start Date
-                          </Label>
-                          <Input
-                            id={`startDate_${exp.id}`}
-                            placeholder="Jun 2020"
-                            value={exp.startDate}
-                            onChange={e => updateExperience(exp.id, "startDate", e.target.value)}
-                            className={formErrors[`exp_${index}_startDate`] ? "border-red-500" : ""}
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor={`endDate_${exp.id}`} className="text-base">
-                            End Date
-                          </Label>
-                          <Input
-                            id={`endDate_${exp.id}`}
-                            placeholder="Present (leave blank for current)"
-                            value={exp.endDate || ""}
-                            onChange={e => updateExperience(exp.id, "endDate", e.target.value)}
-                          />
-                        </div>
+                  )}
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="space-y-2">
+                        <Label htmlFor={`jobTitle_${exp.id}`} className="text-base">
+                          Job Title <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id={`jobTitle_${exp.id}`}
+                          placeholder="Software Engineer"
+                          value={exp.jobTitle}
+                          onChange={e => updateExperience(exp.id, "jobTitle", e.target.value)}
+                          className={formErrors[`exp_${index}_jobTitle`] ? "border-red-500" : ""}
+                        />
                       </div>
                       
                       <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <Label htmlFor={`description_${exp.id}`} className="text-base">
-                            Job Description
-                          </Label>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-gray-500 gap-1 text-xs"
-                            onClick={() => {
-                              toast({
-                                title: "AI Generation",
-                                description: "This feature is coming soon!"
-                              });
-                            }}
-                          >
-                            <Sparkles className="h-3 w-3" /> Generate with AI
-                          </Button>
-                        </div>
-                        <Textarea
-                          id={`description_${exp.id}`}
-                          placeholder="Describe your responsibilities and achievements..."
-                          value={exp.description}
-                          onChange={e => updateExperience(exp.id, "description", e.target.value)}
-                          rows={4}
+                        <Label htmlFor={`companyName_${exp.id}`} className="text-base">
+                          Company <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id={`companyName_${exp.id}`}
+                          placeholder="Google"
+                          value={exp.companyName}
+                          onChange={e => updateExperience(exp.id, "companyName", e.target.value)}
+                          className={formErrors[`exp_${index}_companyName`] ? "border-red-500" : ""}
                         />
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="space-y-2">
+                        <Label htmlFor={`startDate_${exp.id}`} className="text-base">
+                          Start Date
+                        </Label>
+                        <Input
+                          id={`startDate_${exp.id}`}
+                          placeholder="Jun 2020"
+                          value={exp.startDate}
+                          onChange={e => updateExperience(exp.id, "startDate", e.target.value)}
+                          className={formErrors[`exp_${index}_startDate`] ? "border-red-500" : ""}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor={`endDate_${exp.id}`} className="text-base">
+                          End Date
+                        </Label>
+                        <Input
+                          id={`endDate_${exp.id}`}
+                          placeholder="Present (leave blank for current)"
+                          value={exp.endDate || ""}
+                          onChange={e => updateExperience(exp.id, "endDate", e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <Label htmlFor={`description_${exp.id}`} className="text-base">
+                          Job Description
+                        </Label>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-gray-500 gap-1 text-xs"
+                          onClick={() => {
+                            toast({
+                              title: "AI Generation",
+                              description: "This feature is coming soon!"
+                            });
+                          }}
+                        >
+                          <Sparkles className="h-3 w-3" /> Generate with AI
+                        </Button>
+                      </div>
+                      <Textarea
+                        id={`description_${exp.id}`}
+                        placeholder="Describe your responsibilities and achievements..."
+                        value={exp.description}
+                        onChange={e => updateExperience(exp.id, "description", e.target.value)}
+                        rows={4}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
             
             <div className="flex justify-between">
               <Button onClick={() => setActiveTab("education")} variant="outline" size="lg">
@@ -703,19 +919,10 @@ const ResumeBuilder = () => {
               </Button>
             </div>
 
-            {projects.length === 0 ? (
-              <Card className="border border-dashed p-8">
-                <CardContent className="flex flex-col items-center justify-center p-0">
-                  <p className="text-center text-gray-500 mb-4">No projects added yet</p>
-                  <Button onClick={addProject} variant="outline" className="gap-1">
-                    <Plus className="h-4 w-4" /> Add Project
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-6">
-                {projects.map((project) => (
-                  <Card key={project.id} className="relative border shadow-sm">
+            <div className="space-y-6">
+              {projects.map((project, index) => (
+                <Card key={project.id} className="relative border shadow-sm">
+                  {index > 0 && (
                     <Button 
                       variant="ghost" 
                       size="icon" 
@@ -724,76 +931,71 @@ const ResumeBuilder = () => {
                     >
                       <Trash className="h-4 w-4" />
                     </Button>
-                    <CardContent className="p-6">
-                      <div className="space-y-2 mb-6">
-                        <Label htmlFor={`title_${project.id}`} className="text-base">
-                          Project Title
-                        </Label>
-                        <Input
-                          id={`title_${project.id}`}
-                          placeholder="E-commerce Application"
-                          value={project.title}
-                          onChange={e => updateProject(project.id, "title", e.target.value)}
-                        />
-                      </div>
+                  )}
+                  <CardContent className="p-6">
+                    <div className="space-y-2 mb-6">
+                      <Label htmlFor={`title_${project.id}`} className="text-base">
+                        Project Title
+                      </Label>
+                      <Input
+                        id={`title_${project.id}`}
+                        placeholder="E-commerce Application"
+                        value={project.title}
+                        onChange={e => updateProject(project.id, "title", e.target.value)}
+                      />
+                    </div>
 
-                      <div className="space-y-2 mb-6">
-                        <div className="flex justify-between items-center">
-                          <Label htmlFor={`description_${project.id}`} className="text-base">
-                            Project Description
-                          </Label>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-gray-500 gap-1 text-xs"
-                            onClick={() => {
-                              toast({
-                                title: "AI Generation",
-                                description: "This feature is coming soon!"
-                              });
-                            }}
-                          >
-                            <Sparkles className="h-3 w-3" /> Generate with AI
-                          </Button>
-                        </div>
-                        <Textarea
-                          id={`description_${project.id}`}
-                          placeholder="Describe the project, your role, and the technologies used..."
-                          value={project.description}
-                          onChange={e => updateProject(project.id, "description", e.target.value)}
-                          rows={4}
-                        />
-                      </div>
-
-                      <div className="space-y-2 mb-6">
-                        <Label htmlFor={`technologies_${project.id}`} className="text-base">
-                          Technologies Used
+                    <div className="space-y-2 mb-6">
+                      <div className="flex justify-between items-center">
+                        <Label htmlFor={`description_${project.id}`} className="text-base">
+                          Project Description
                         </Label>
-                        <Input
-                          id={`technologies_${project.id}`}
-                          placeholder="React, Node.js, MongoDB"
-                          value={project.technologies || ""}
-                          onChange={e => updateProject(project.id, "technologies", e.target.value)}
-                        />
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-gray-500 gap-1 text-xs"
+                          onClick={() => generateProjectDescription(project.id)}
+                        >
+                          <Sparkles className="h-3 w-3" /> Generate with AI
+                        </Button>
                       </div>
+                      <Textarea
+                        id={`description_${project.id}`}
+                        placeholder="Describe the project, your role, and the technologies used..."
+                        value={project.description}
+                        onChange={e => updateProject(project.id, "description", e.target.value)}
+                        rows={4}
+                      />
+                    </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor={`link_${project.id}`} className="text-base">
-                          Project Link
-                        </Label>
-                        <Input
-                          id={`link_${project.id}`}
-                          type="url"
-                          placeholder="https://github.com/username/project"
-                          value={project.link || ""}
-                          onChange={e => updateProject(project.id, "link", e.target.value)}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+                    <div className="space-y-2 mb-6">
+                      <Label htmlFor={`technologies_${project.id}`} className="text-base">
+                        Technologies Used
+                      </Label>
+                      <Input
+                        id={`technologies_${project.id}`}
+                        placeholder="React, Node.js, MongoDB"
+                        value={project.technologies || ""}
+                        onChange={e => updateProject(project.id, "technologies", e.target.value)}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor={`link_${project.id}`} className="text-base">
+                        Project Link
+                      </Label>
+                      <Input
+                        id={`link_${project.id}`}
+                        type="url"
+                        placeholder="https://github.com/username/project"
+                        value={project.link || ""}
+                        onChange={e => updateProject(project.id, "link", e.target.value)}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
             
             <div className="flex justify-between">
               <Button onClick={() => setActiveTab("experience")} variant="outline" size="lg">
@@ -812,6 +1014,17 @@ const ResumeBuilder = () => {
             <div>
               <h2 className="text-2xl font-bold">Skills</h2>
               <p className="text-gray-500">Showcase your professional and technical abilities</p>
+            </div>
+
+            <div className="flex justify-end">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-gray-500 gap-1 mb-4"
+                onClick={generateAISkillSuggestions}
+              >
+                <Sparkles className="h-4 w-4" /> AI Suggest Skills
+              </Button>
             </div>
 
             <div className="space-y-2">
@@ -854,21 +1067,6 @@ const ResumeBuilder = () => {
                 className={formErrors.soft ? "border-red-500" : ""}
                 rows={3}
               />
-              <div className="flex justify-end">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-gray-500 gap-1 text-xs mt-1"
-                  onClick={() => {
-                    toast({
-                      title: "AI Suggestion",
-                      description: "This feature is coming soon!"
-                    });
-                  }}
-                >
-                  <Sparkles className="h-3 w-3" /> AI Suggest Skills
-                </Button>
-              </div>
             </div>
             
             <div className="flex justify-between">
@@ -896,17 +1094,12 @@ const ResumeBuilder = () => {
                   Career Objective <span className="text-red-500">*</span>
                 </Label>
                 <Button 
-                  variant="ghost" 
+                  variant="outline" 
                   size="sm" 
-                  className="text-gray-500 gap-1 text-xs"
-                  onClick={() => {
-                    toast({
-                      title: "AI Generation",
-                      description: "This feature is coming soon!"
-                    });
-                  }}
+                  className="text-gray-500 gap-1"
+                  onClick={generateAIObjective}
                 >
-                  <Sparkles className="h-3 w-3" /> Generate with AI
+                  <Sparkles className="h-4 w-4" /> Generate with AI
                 </Button>
               </div>
               <Textarea

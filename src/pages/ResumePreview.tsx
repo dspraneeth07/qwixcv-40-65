@@ -1,11 +1,11 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Download, ArrowLeft, ExternalLink } from "lucide-react";
+import { Download, ArrowLeft, Github, Linkedin, Mail, Phone, MapPin } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import html2pdf from 'html2pdf.js';
 
 const ResumePreview = () => {
   const location = useLocation();
@@ -52,11 +52,45 @@ const ResumePreview = () => {
   }, [location]);
 
   const handleDownload = () => {
-    window.print();
+    const resumeElement = document.getElementById('resume-content');
+    if (!resumeElement) {
+      toast({
+        title: "Error",
+        description: "Could not generate PDF. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Configure html2pdf options
+    const opt = {
+      margin: 1,
+      filename: `${resumeData?.personalInfo?.firstName || ''}_${resumeData?.personalInfo?.lastName || ''}_Resume.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
     toast({
-      title: "Downloading Resume",
+      title: "Generating PDF",
       description: "Your resume is being prepared for download"
     });
+
+    html2pdf().from(resumeElement).set(opt).save()
+      .then(() => {
+        toast({
+          title: "Download Complete",
+          description: "Your resume has been downloaded successfully"
+        });
+      })
+      .catch(err => {
+        console.error("PDF generation error:", err);
+        toast({
+          title: "Error",
+          description: "Failed to generate PDF. Please try again.",
+          variant: "destructive"
+        });
+      });
   };
 
   if (loading) {
@@ -118,43 +152,58 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
   const { personalInfo, education, experience, skills, objective, projects } = data;
   
   return (
-    <Card className={`p-8 bg-white shadow-lg print:shadow-none ${isPreview ? 'max-h-full overflow-auto' : 'max-w-3xl w-full'}`}>
+    <Card id="resume-content" className={`p-8 bg-white shadow-lg print:shadow-none ${isPreview ? 'max-h-full overflow-auto' : 'max-w-3xl w-full'}`}>
       <div className="border-b pb-4 mb-4 text-center">
         <h2 className="text-2xl font-bold">
           {personalInfo?.firstName || ""} {personalInfo?.lastName || ""}
         </h2>
         <p className="text-primary font-medium">{personalInfo?.jobTitle || ""}</p>
         
-        <div className="flex flex-wrap justify-center space-x-3 text-sm text-muted-foreground mt-2">
-          {personalInfo?.email && <span>{personalInfo.email}</span>}
-          {personalInfo?.phone && <span>• {personalInfo.phone}</span>}
-          {personalInfo?.location && <span>• {personalInfo.location}</span>}
+        <div className="flex flex-wrap justify-center gap-3 text-sm text-muted-foreground mt-2">
+          {personalInfo?.email && (
+            <span className="flex items-center">
+              <Mail className="h-3 w-3 mr-1" />
+              {personalInfo.email}
+            </span>
+          )}
+          {personalInfo?.phone && (
+            <span className="flex items-center">
+              <Phone className="h-3 w-3 mr-1" />
+              {personalInfo.phone}
+            </span>
+          )}
+          {personalInfo?.location && (
+            <span className="flex items-center">
+              <MapPin className="h-3 w-3 mr-1" />
+              {personalInfo.location}
+            </span>
+          )}
         </div>
         
-        {(personalInfo?.githubUrl || personalInfo?.linkedinUrl) && (
-          <div className="flex flex-col items-center space-y-2 mt-2">
-            {personalInfo?.githubUrl && personalInfo.githubUrl.trim() !== "" && (
-              <a 
-                href={personalInfo.githubUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center text-sm text-primary hover:underline"
-              >
-                {personalInfo.githubUrl}
-              </a>
-            )}
-            {personalInfo?.linkedinUrl && personalInfo.linkedinUrl.trim() !== "" && (
-              <a 
-                href={personalInfo.linkedinUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center text-sm text-primary hover:underline"
-              >
-                {personalInfo.linkedinUrl}
-              </a>
-            )}
-          </div>
-        )}
+        <div className="flex justify-center gap-4 mt-2">
+          {personalInfo?.githubUrl && personalInfo.githubUrl.trim() !== "" && (
+            <a 
+              href={personalInfo.githubUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center text-sm text-primary hover:underline"
+            >
+              <Github className="h-3.5 w-3.5 mr-1" />
+              GitHub
+            </a>
+          )}
+          {personalInfo?.linkedinUrl && personalInfo.linkedinUrl.trim() !== "" && (
+            <a 
+              href={personalInfo.linkedinUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center text-sm text-primary hover:underline"
+            >
+              <Linkedin className="h-3.5 w-3.5 mr-1" />
+              LinkedIn
+            </a>
+          )}
+        </div>
       </div>
       
       {objective && (
@@ -205,6 +254,7 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
                     rel="noopener noreferrer" 
                     className="text-sm text-primary hover:underline flex items-center mt-1"
                   >
+                    <ExternalLink className="h-3.5 w-3.5 mr-1" />
                     {proj.link}
                   </a>
                 )}
@@ -306,36 +356,51 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?:
         </h2>
         <p className="text-primary font-medium text-sm">{personalInfo?.jobTitle || ""}</p>
         
-        <div className="flex flex-wrap justify-center space-x-2 text-xs text-muted-foreground mt-1">
-          {personalInfo?.email && <span>{personalInfo.email}</span>}
-          {personalInfo?.phone && <span>• {personalInfo.phone}</span>}
-          {personalInfo?.location && <span>• {personalInfo.location}</span>}
+        <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground mt-1">
+          {personalInfo?.email && (
+            <span className="flex items-center">
+              <Mail className="h-3 w-3 mr-1" />
+              {personalInfo.email}
+            </span>
+          )}
+          {personalInfo?.phone && (
+            <span className="flex items-center">
+              <Phone className="h-3 w-3 mr-1" />
+              {personalInfo.phone}
+            </span>
+          )}
+          {personalInfo?.location && (
+            <span className="flex items-center">
+              <MapPin className="h-3 w-3 mr-1" />
+              {personalInfo.location}
+            </span>
+          )}
         </div>
         
-        {(personalInfo?.githubUrl || personalInfo?.linkedinUrl) && (
-          <div className="flex flex-col items-center space-y-1 mt-1">
-            {personalInfo?.githubUrl && personalInfo.githubUrl.trim() !== "" && (
-              <a 
-                href={personalInfo.githubUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center text-xs text-primary hover:underline truncate max-w-full"
-              >
-                <span className="truncate">{personalInfo.githubUrl}</span>
-              </a>
-            )}
-            {personalInfo?.linkedinUrl && personalInfo.linkedinUrl.trim() !== "" && (
-              <a 
-                href={personalInfo.linkedinUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center text-xs text-primary hover:underline truncate max-w-full"
-              >
-                <span className="truncate">{personalInfo.linkedinUrl}</span>
-              </a>
-            )}
-          </div>
-        )}
+        <div className="flex justify-center gap-3 mt-1">
+          {personalInfo?.githubUrl && personalInfo.githubUrl.trim() !== "" && (
+            <a 
+              href={personalInfo.githubUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center text-xs text-primary hover:underline truncate max-w-[45%]"
+            >
+              <Github className="h-3 w-3 mr-1" />
+              <span className="truncate">GitHub</span>
+            </a>
+          )}
+          {personalInfo?.linkedinUrl && personalInfo.linkedinUrl.trim() !== "" && (
+            <a 
+              href={personalInfo.linkedinUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center text-xs text-primary hover:underline truncate max-w-[45%]"
+            >
+              <Linkedin className="h-3 w-3 mr-1" />
+              <span className="truncate">LinkedIn</span>
+            </a>
+          )}
+        </div>
       </div>
       
       {objective && (
@@ -386,6 +451,7 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?:
                       rel="noopener noreferrer" 
                       className="text-xs text-primary hover:underline flex items-center mt-1 truncate"
                     >
+                      <ExternalLink className="h-3.5 w-3.5 mr-1" />
                       <span className="truncate">{proj.link}</span>
                     </a>
                   )}
