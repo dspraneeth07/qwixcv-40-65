@@ -41,9 +41,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                 {item.name}
               </Link>
             ))}
-            <Button asChild size="sm">
-              <Link to="/login">Login</Link>
-            </Button>
           </nav>
           
           {/* Mobile Navigation */}
@@ -66,14 +63,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                     {item.name}
                   </Link>
                 ))}
-                <Button asChild>
-                  <Link 
-                    to="/login" 
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Login
-                  </Link>
-                </Button>
               </div>
             </SheetContent>
           </Sheet>

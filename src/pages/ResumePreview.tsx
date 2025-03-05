@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Download, ArrowLeft } from "lucide-react";
+import { Download, ArrowLeft, Github, Linkedin } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
 const ResumePreview = () => {
@@ -48,138 +48,6 @@ const ResumePreview = () => {
       title: "Downloading Resume",
       description: "Your resume is being prepared for download"
     });
-  };
-
-  const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boolean }) => {
-    if (!data) return null;
-    
-    const { personalInfo, education, experience, skills, objective, projects } = data;
-    
-    return (
-      <Card className={`p-8 bg-white shadow-lg print:shadow-none ${isPreview ? 'max-h-full overflow-auto' : 'max-w-3xl w-full'}`}>
-        <div className="border-b pb-4 mb-4 text-center">
-          <h2 className="text-2xl font-bold">
-            {personalInfo?.firstName || ""} {personalInfo?.lastName || ""}
-          </h2>
-          <p className="text-primary font-medium">{personalInfo?.jobTitle || ""}</p>
-          
-          <div className="flex flex-wrap justify-center space-x-3 text-sm text-muted-foreground mt-2">
-            {personalInfo?.email && <span>{personalInfo.email}</span>}
-            {personalInfo?.phone && <span>• {personalInfo.phone}</span>}
-            {personalInfo?.location && <span>• {personalInfo.location}</span>}
-          </div>
-        </div>
-        
-        {objective && (
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold border-b pb-1 mb-2">Career Objective</h3>
-            <p className="text-sm">{objective}</p>
-          </div>
-        )}
-        
-        {education && education.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold border-b pb-1 mb-2">Education</h3>
-            <div className="space-y-4">
-              {education.map((edu: any) => (
-                <div key={edu.id}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-medium">{edu.school}</p>
-                      <p className="text-sm">{edu.degree}</p>
-                    </div>
-                    <p className="text-sm text-right">{edu.graduationDate}</p>
-                  </div>
-                  {edu.score && <p className="text-sm text-muted-foreground mt-1">{edu.score}</p>}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {projects && projects.length > 0 && projects[0].title && (
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold border-b pb-1 mb-2">Projects</h3>
-            <div className="space-y-4">
-              {projects
-                .filter((proj: any) => proj.title.trim() !== "")
-                .map((proj: any) => (
-                <div key={proj.id}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-medium">{proj.title}</p>
-                      {proj.technologies && <p className="text-sm text-muted-foreground">{proj.technologies}</p>}
-                    </div>
-                    {proj.link && (
-                      <a href={proj.link} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
-                        View Project
-                      </a>
-                    )}
-                  </div>
-                  {proj.description && (
-                    <div className="text-sm mt-1" 
-                         dangerouslySetInnerHTML={{ __html: proj.description.replace(/\n/g, '<br/>') }} />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {experience && experience.length > 0 && experience[0].jobTitle && (
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold border-b pb-1 mb-2">Work Experience</h3>
-            <div className="space-y-4">
-              {experience
-                .filter((exp: any) => exp.jobTitle.trim() !== "")
-                .map((exp: any) => (
-                <div key={exp.id}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-medium">{exp.jobTitle}</p>
-                      <p className="text-sm text-muted-foreground">{exp.companyName}</p>
-                    </div>
-                    <p className="text-sm text-right">
-                      {exp.startDate} - {exp.endDate || "Present"}
-                    </p>
-                  </div>
-                  {exp.description && (
-                    <div className="text-sm mt-1" 
-                         dangerouslySetInnerHTML={{ __html: exp.description.replace(/\n/g, '<br/>') }} />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {skills && (
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold border-b pb-1 mb-2">Skills</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {skills.professional && (
-                <div>
-                  <p className="font-medium text-sm">Professional</p>
-                  <p className="text-sm">{skills.professional}</p>
-                </div>
-              )}
-              {skills.technical && (
-                <div>
-                  <p className="font-medium text-sm">Technical</p>
-                  <p className="text-sm">{skills.technical}</p>
-                </div>
-              )}
-              {skills.soft && (
-                <div>
-                  <p className="font-medium text-sm">Soft Skills</p>
-                  <p className="text-sm">{skills.soft}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </Card>
-    );
   };
 
   if (loading) {
@@ -235,7 +103,6 @@ const ResumePreview = () => {
   );
 };
 
-// Extract ResumeContent component - this component will be reused
 const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boolean }) => {
   if (!data) return null;
   
@@ -254,6 +121,33 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
           {personalInfo?.phone && <span>• {personalInfo.phone}</span>}
           {personalInfo?.location && <span>• {personalInfo.location}</span>}
         </div>
+        
+        {(personalInfo?.githubUrl || personalInfo?.linkedinUrl) && (
+          <div className="flex justify-center space-x-4 mt-2">
+            {personalInfo?.githubUrl && (
+              <a 
+                href={personalInfo.githubUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-sm text-primary hover:underline"
+              >
+                <Github className="h-4 w-4 mr-1" />
+                GitHub
+              </a>
+            )}
+            {personalInfo?.linkedinUrl && (
+              <a 
+                href={personalInfo.linkedinUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-sm text-primary hover:underline"
+              >
+                <Linkedin className="h-4 w-4 mr-1" />
+                LinkedIn
+              </a>
+            )}
+          </div>
+        )}
       </div>
       
       {objective && (
@@ -398,6 +292,33 @@ export const ResumePreviewContent = ({
             {personalInfo?.phone && <span>• {personalInfo.phone}</span>}
             {personalInfo?.location && <span>• {personalInfo.location}</span>}
           </div>
+          
+          {(personalInfo?.githubUrl || personalInfo?.linkedinUrl) && (
+            <div className="flex justify-center space-x-3 mt-1">
+              {personalInfo?.githubUrl && (
+                <a 
+                  href={personalInfo.githubUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center text-xs text-primary hover:underline"
+                >
+                  <Github className="h-3 w-3 mr-1" />
+                  GitHub
+                </a>
+              )}
+              {personalInfo?.linkedinUrl && (
+                <a 
+                  href={personalInfo.linkedinUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center text-xs text-primary hover:underline"
+                >
+                  <Linkedin className="h-3 w-3 mr-1" />
+                  LinkedIn
+                </a>
+              )}
+            </div>
+          )}
         </div>
         
         {objective && (
@@ -426,7 +347,7 @@ export const ResumePreviewContent = ({
             </div>
           </div>
         )}
-
+        
         {projects && projects.length > 0 && projects[0].title && (
           <div className="mb-3">
             <h3 className="text-sm font-semibold border-b pb-1 mb-1">Projects</h3>
