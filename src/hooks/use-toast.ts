@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -141,7 +142,28 @@ type Toast = Omit<ToasterToast, "id"> & {
   id?: string
 }
 
-function toast({ ...props }: Toast) {
+// Return type for the toast function
+type ToastReturnType = {
+  id: string;
+  dismiss: () => void;
+  update: (props: ToasterToast) => void;
+}
+
+// Toast promise options type
+type ToastPromiseOptions = {
+  loading: string;
+  success: string;
+  error: string;
+}
+
+// Define the toast function to be both callable and have the promise method
+interface ToastFunction {
+  (props: Toast): ToastReturnType;
+  promise: <T>(promise: Promise<T>, options: ToastPromiseOptions) => Promise<T>;
+}
+
+// Base toast function implementation
+function toastImpl(props: Toast): ToastReturnType {
   const id = props.id || genId()
 
   const update = (props: ToasterToast) =>
@@ -149,6 +171,7 @@ function toast({ ...props }: Toast) {
       type: "UPDATE_TOAST",
       toast: { ...props, id },
     })
+    
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
 
   dispatch({
@@ -164,29 +187,21 @@ function toast({ ...props }: Toast) {
   })
 
   return {
-    id: id,
+    id,
     dismiss,
     update,
   }
 }
 
-type ToastPromiseOptions = {
-  loading: string
-  success: string
-  error: string
-}
+// Create a properly typed toast object by casting the function
+export const toast = toastImpl as ToastFunction
 
-interface ToastFunction {
-  (props: Toast): { id: string; dismiss: () => void; update: (props: ToasterToast) => void }
-  promise: <T>(promise: Promise<T>, options: ToastPromiseOptions) => Promise<T>
-}
-
-const toastWithPromise = toast as ToastFunction
-toastWithPromise.promise = <T>(promise: Promise<T>, options: ToastPromiseOptions) => {
+// Add the promise method to the toast function
+toast.promise = <T>(promise: Promise<T>, options: ToastPromiseOptions) => {
   const toastId = toast({
     title: "Processing",
     description: options.loading,
-  }).id;
+  }).id
 
   promise
     .then(() => {
@@ -195,7 +210,7 @@ toastWithPromise.promise = <T>(promise: Promise<T>, options: ToastPromiseOptions
         title: "Success",
         description: options.success,
         variant: "default",
-      });
+      })
     })
     .catch(() => {
       toast({
@@ -203,11 +218,11 @@ toastWithPromise.promise = <T>(promise: Promise<T>, options: ToastPromiseOptions
         title: "Error",
         description: options.error,
         variant: "destructive",
-      });
-    });
+      })
+    })
 
-  return promise;
-};
+  return promise
+}
 
 export function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
@@ -224,9 +239,7 @@ export function useToast() {
 
   return {
     ...state,
-    toast: toastWithPromise,
+    toast,
     dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
   }
 }
-
-export { toast }
