@@ -161,13 +161,17 @@ const ResumeBuilder = () => {
   }, [personalInfo, education, experience, skills, objective, projects]);
 
   const getResumeData = useCallback(() => ({
-    personalInfo,
+    personalInfo: {
+      ...personalInfo,
+      phone: `${countryCode} ${personalInfo.phone}`
+    },
     education,
     experience,
     skills,
     objective,
-    projects
-  }), [personalInfo, education, experience, skills, objective, projects]);
+    projects,
+    countryCode
+  }), [personalInfo, education, experience, skills, objective, projects, countryCode]);
 
   const validateField = useCallback((fieldName: string, value: string) => {
     if (!value && (fieldName === 'firstName' || fieldName === 'lastName' || fieldName === 'jobTitle' || fieldName === 'email' || fieldName === 'phone' || fieldName === 'location')) {
@@ -575,12 +579,6 @@ const ResumeBuilder = () => {
                   >
                     <FileText className="w-4 h-4" /> Objectives
                   </TabsTrigger>
-                  
-                  {showLivePreview && (
-                    <div className="ml-auto py-3 px-5 text-sm font-medium text-muted-foreground">
-                      Live Preview
-                    </div>
-                  )}
                 </TabsList>
               </div>
 
@@ -1265,6 +1263,7 @@ const ResumeBuilder = () => {
             <div className="lg:col-span-5">
               <div className="sticky top-20">
                 <div className="bg-white border rounded-lg p-6 shadow-sm max-h-[800px] overflow-y-auto">
+                  <h3 className="text-sm font-medium mb-3">Live Preview</h3>
                   <ResumePreviewContent 
                     data={getResumeData()} 
                     templateId={selectedTemplate} 

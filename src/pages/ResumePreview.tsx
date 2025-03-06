@@ -332,15 +332,23 @@ export const ResumePreviewContent = ({
   return (
     <div className="h-full overflow-auto p-4 bg-muted border-l">
       {!isPreview && <h3 className="text-sm font-medium mb-3">Live Preview</h3>}
-      <MiniResumeContent data={data} isPreview={isPreview} />
+      {data && <MiniResumeContent data={data} isPreview={isPreview} />}
     </div>
   );
 };
 
 const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boolean }) => {
-  if (!data) return null;
+  if (!data || !data.personalInfo) {
+    return (
+      <Card className="p-4 bg-white shadow-sm">
+        <p className="text-sm text-muted-foreground text-center py-8">
+          Fill in your details to see a preview of your resume here
+        </p>
+      </Card>
+    );
+  }
   
-  const { personalInfo, education, experience, skills, objective, projects } = data;
+  const { personalInfo, education, experience, skills, objective, projects, countryCode } = data;
   
   return (
     <Card className={`p-4 bg-white shadow-lg print:shadow-none ${isPreview ? 'max-h-full overflow-auto' : 'max-w-3xl w-full'}`}>
@@ -360,7 +368,7 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?:
           {personalInfo?.phone && (
             <span className="flex items-center">
               <Phone className="h-3 w-3 mr-1" />
-              {personalInfo.phone}
+              {countryCode || "+91"} {personalInfo.phone}
             </span>
           )}
           {personalInfo?.location && (
@@ -370,26 +378,16 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?:
             </span>
           )}
           {personalInfo?.githubUrl && personalInfo.githubUrl.trim() !== "" && (
-            <a 
-              href={personalInfo.githubUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center text-xs text-primary hover:underline truncate"
-            >
+            <span className="inline-flex items-center text-xs text-primary truncate">
               <Github className="h-3 w-3 mr-1" />
               <span className="truncate">{personalInfo.githubUrl}</span>
-            </a>
+            </span>
           )}
           {personalInfo?.linkedinUrl && personalInfo.linkedinUrl.trim() !== "" && (
-            <a 
-              href={personalInfo.linkedinUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center text-xs text-primary hover:underline truncate"
-            >
+            <span className="inline-flex items-center text-xs text-primary truncate">
               <Linkedin className="h-3 w-3 mr-1" />
               <span className="truncate">{personalInfo.linkedinUrl}</span>
-            </a>
+            </span>
           )}
         </div>
       </div>
@@ -409,10 +407,10 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?:
               <div key={edu.id}>
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-medium text-xs">{edu.school}</p>
-                    <p className="text-xs">{edu.degree}</p>
+                    <p className="font-medium text-xs">{edu.school || "University/School"}</p>
+                    <p className="text-xs">{edu.degree || "Degree"}</p>
                   </div>
-                  <p className="text-xs text-right">{edu.graduationDate}</p>
+                  <p className="text-xs text-right">{edu.graduationDate || "Graduation Year"}</p>
                 </div>
                 {edu.score && <p className="text-xs text-muted-foreground mt-1">{edu.score}</p>}
               </div>
@@ -421,69 +419,62 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?:
         </div>
       )}
       
-      {projects && projects.length > 0 && projects[0].title && (
+      {projects && projects.length > 0 && (
         <div className="mb-3">
           <h3 className="text-sm font-semibold border-b pb-1 mb-1">Projects</h3>
           <div className="space-y-2">
-            {projects
-              .filter((proj: any) => proj.title.trim() !== "")
-              .map((proj: any) => (
-                <div key={proj.id}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-medium text-xs">{proj.title}</p>
-                      {proj.technologies && <p className="text-xs text-muted-foreground">{proj.technologies}</p>}
-                    </div>
+            {projects.map((proj: any) => (
+              <div key={proj.id}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-medium text-xs">{proj.title || "Project Title"}</p>
+                    {proj.technologies && <p className="text-xs text-muted-foreground">{proj.technologies}</p>}
                   </div>
-                  {proj.link && proj.link.trim() !== "" && (
-                    <a 
-                      href={proj.link} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-xs text-primary hover:underline flex items-center mt-1 truncate"
-                    >
-                      <LinkIcon className="h-3.5 w-3.5 mr-1" />
-                      <span className="truncate">{proj.link}</span>
-                    </a>
-                  )}
-                  {proj.description && (
-                    <div className="text-xs mt-1" 
-                         dangerouslySetInnerHTML={{ __html: proj.description.replace(/\n/g, '<br/>') }} />
-                  )}
                 </div>
-              ))}
+                {proj.link && proj.link.trim() !== "" && (
+                  <span className="text-xs text-primary flex items-center mt-1 truncate">
+                    <LinkIcon className="h-3.5 w-3.5 mr-1" />
+                    <span className="truncate">{proj.link}</span>
+                  </span>
+                )}
+                {proj.description && (
+                  <div className="text-xs mt-1">
+                    {proj.description}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       )}
       
-      {experience && experience.length > 0 && experience[0].jobTitle && (
+      {experience && experience.length > 0 && (
         <div className="mb-3">
           <h3 className="text-sm font-semibold border-b pb-1 mb-1">Work Experience</h3>
           <div className="space-y-2">
-            {experience
-              .filter((exp: any) => exp.jobTitle.trim() !== "")
-              .map((exp: any) => (
-                <div key={exp.id}>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-medium text-xs">{exp.jobTitle}</p>
-                      <p className="text-xs text-muted-foreground">{exp.companyName}</p>
-                    </div>
-                    <p className="text-xs text-right">
-                      {exp.startDate} - {exp.endDate || "Present"}
-                    </p>
+            {experience.map((exp: any) => (
+              <div key={exp.id}>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-medium text-xs">{exp.jobTitle || "Job Title"}</p>
+                    <p className="text-xs text-muted-foreground">{exp.companyName || "Company"}</p>
                   </div>
-                  {exp.description && (
-                    <div className="text-xs mt-1" 
-                         dangerouslySetInnerHTML={{ __html: exp.description.replace(/\n/g, '<br/>') }} />
-                  )}
+                  <p className="text-xs text-right">
+                    {exp.startDate || "Start Date"} - {exp.endDate || "Present"}
+                  </p>
                 </div>
-              ))}
+                {exp.description && (
+                  <div className="text-xs mt-1">
+                    {exp.description}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       )}
       
-      {skills && (
+      {skills && (Object.values(skills).some(val => val && val.trim() !== "")) && (
         <div className="mb-3">
           <h3 className="text-sm font-semibold border-b pb-1 mb-1">Skills</h3>
           <div className="grid grid-cols-1 gap-2">
