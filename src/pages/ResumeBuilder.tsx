@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -1124,6 +1125,14 @@ const ResumeBuilder = () => {
                               <h2 className="text-2xl font-bold">Career Objectives</h2>
                               <p className="text-gray-500">Enter your career objective</p>
                             </div>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={generateAIObjective}
+                              className="text-xs gap-1"
+                            >
+                              <Sparkles className="h-3 w-3" /> Generate with AI
+                            </Button>
                           </div>
 
                           <div className="space-y-6">
@@ -1131,11 +1140,12 @@ const ResumeBuilder = () => {
                               <Label htmlFor="objective" className="text-base">
                                 Career Objective
                               </Label>
-                              <Input
+                              <Textarea
                                 id="objective"
                                 placeholder="e.g. Seeking a challenging role in the tech industry"
                                 value={objective}
                                 onChange={e => setObjective(e.target.value)}
+                                className="min-h-[120px]"
                               />
                             </div>
                           </div>
@@ -1144,7 +1154,7 @@ const ResumeBuilder = () => {
                             <Button onClick={() => setActiveTab("skills")} variant="outline" size="lg">
                               <ChevronLeft className="mr-2 h-4 w-4" /> Previous
                             </Button>
-                            <Button onClick={handleGenerate} size="lg" className="px-8 py-6 text-lg">
+                            <Button onClick={handleGenerate} className="bg-gray-900" size="lg">
                               Generate Resume
                             </Button>
                           </div>
@@ -1175,11 +1185,14 @@ const ResumeBuilder = () => {
           )}
         </div>
         
-        <div className="mt-8 flex justify-center">
-          <Button onClick={handleGenerate} size="lg" className="px-8 py-6 text-lg">
-            Generate Resume
-          </Button>
-        </div>
+        {/* Remove the bottom "Generate Resume" button that appears on every page */}
+        {activeTab === "objectives" && (
+          <div className="mt-8 flex justify-center">
+            <Button onClick={handleGenerate} size="lg" className="px-8 py-6 text-lg">
+              Generate Resume
+            </Button>
+          </div>
+        )}
       </div>
     </MainLayout>
   );
