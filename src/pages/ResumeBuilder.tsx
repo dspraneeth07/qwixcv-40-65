@@ -1055,6 +1055,19 @@ const ResumeBuilder = () => {
                                   </div>
                                   <FormValidator value={project.description} required errorMessage="Description is required" showMessage={!!formErrors[`proj_${index}_description`]} />
                                 </div>
+                                
+                                <div className="space-y-2">
+                                  <Label htmlFor={`link_${project.id}`} className="text-base">
+                                    Project Link (Optional)
+                                  </Label>
+                                  <Input
+                                    id={`link_${project.id}`}
+                                    type="url"
+                                    placeholder="https://github.com/username/project"
+                                    value={project.link || ""}
+                                    onChange={e => updateProject(project.id, "link", e.target.value)}
+                                  />
+                                </div>
                               </CardContent>
                             </Card>
                           ))}
