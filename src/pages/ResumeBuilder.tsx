@@ -1165,13 +1165,9 @@ const ResumeBuilder = () => {
                 </div>
                 <div className="p-6 max-h-[800px] overflow-y-auto" style={{ backgroundColor: "white" }}>
                   <ResumePreviewContent
-                    personalInfo={personalInfo}
-                    education={education}
-                    experience={experience}
-                    skills={skills}
-                    objective={objective}
-                    projects={projects}
-                    template={selectedTemplate}
+                    data={getResumeData()}
+                    templateId={selectedTemplate}
+                    isPreview={true}
                   />
                 </div>
               </div>
