@@ -5,6 +5,15 @@ const API_KEY = "AIzaSyDRuULswOC1iFSJr83VqRaeP1g8p0Vn4Lc";
 const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
 /**
+ * Ensure text is limited to exactly 4 lines or fewer
+ */
+const limitToFourLines = (text: string): string => {
+  const lines = text.split('\n');
+  if (lines.length <= 4) return text;
+  return lines.slice(0, 4).join('\n');
+};
+
+/**
  * Get skill suggestions based on job title
  */
 export const getAISkillSuggestions = async (jobTitle: string): Promise<{ professional: string; technical: string; soft: string }> => {
@@ -112,8 +121,8 @@ export const getAIObjectiveSuggestion = async (jobTitle: string, firstName: stri
     const data = await response.json();
     const textResponse = data.candidates[0].content.parts[0].text.trim();
     
-    // Return the text directly, or a fallback if it's empty (now shorter)
-    return textResponse || `Results-driven ${jobTitle} with 5+ years of experience delivering innovative solutions. Skilled in problem-solving and collaboration, consistently exceeding targets while adapting to evolving requirements. Seeking to leverage my expertise in a challenging role that offers growth opportunities.`;
+    // Return the text directly, or a fallback if it's empty (now shorter and limited to 4 lines)
+    return limitToFourLines(textResponse) || `Results-driven ${jobTitle} with 5+ years of experience delivering innovative solutions. Skilled in problem-solving and collaboration, consistently exceeding targets while adapting to evolving requirements. Seeking to leverage my expertise in a challenging role that offers growth opportunities.`;
   } catch (error) {
     console.error("Error getting AI objective suggestion:", error);
     throw error;
@@ -162,8 +171,8 @@ export const getAIProjectDescription = async (projectTitle: string, technologies
     const data = await response.json();
     const textResponse = data.candidates[0].content.parts[0].text.trim();
     
-    // Return the text directly, or a fallback if it's empty (now shorter)
-    return textResponse || `Developed ${projectTitle}, a solution that improved efficiency by 30%. Implemented best practices while overcoming technical challenges to deliver a high-quality product ahead of schedule.`;
+    // Return the text directly, or a fallback if it's empty (limited to 4 lines)
+    return limitToFourLines(textResponse) || `Developed ${projectTitle}, a solution that improved efficiency by 30%. Implemented best practices while overcoming technical challenges to deliver a high-quality product ahead of schedule.`;
   } catch (error) {
     console.error("Error getting AI project description:", error);
     throw error;
@@ -210,8 +219,8 @@ export const getAIExperienceDescription = async (jobTitle: string, companyName: 
     const data = await response.json();
     const textResponse = data.candidates[0].content.parts[0].text.trim();
     
-    // Return the text directly, or a fallback if it's empty
-    return textResponse || `Led cross-functional teams and implemented innovative solutions as a ${jobTitle} at ${companyName}, improving overall efficiency by 30%. Utilized industry best practices and cutting-edge technologies to solve complex problems, while consistently delivering projects on time and under budget.`;
+    // Return the text directly, or a fallback if it's empty (limited to 4 lines)
+    return limitToFourLines(textResponse) || `Led cross-functional teams and implemented innovative solutions as a ${jobTitle} at ${companyName}, improving overall efficiency by 30%. Utilized industry best practices and cutting-edge technologies to solve complex problems, while consistently delivering projects on time and under budget.`;
   } catch (error) {
     console.error("Error getting AI experience description:", error);
     throw error;
