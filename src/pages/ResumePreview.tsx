@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -331,7 +332,7 @@ export const ResumePreviewContent = ({
 }) => {
   return (
     <div className="h-full overflow-auto p-4 bg-muted border-l">
-      <h3 className="text-sm font-medium mb-3">Live Preview</h3>
+      {!isPreview && <h3 className="text-sm font-medium mb-3">Live Preview</h3>}
       <MiniResumeContent data={data} isPreview={isPreview} />
     </div>
   );
