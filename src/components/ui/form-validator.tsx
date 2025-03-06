@@ -8,6 +8,8 @@ interface FormValidatorProps extends React.HTMLAttributes<HTMLDivElement> {
   errorMessage?: string;
   showMessage?: boolean;
   highlightOnly?: boolean;
+  pattern?: RegExp;
+  patternMessage?: string;
 }
 
 const FormValidator = React.forwardRef<HTMLDivElement, FormValidatorProps>(
@@ -18,13 +20,18 @@ const FormValidator = React.forwardRef<HTMLDivElement, FormValidatorProps>(
     errorMessage = "This field is required", 
     showMessage = false,
     highlightOnly = false,
+    pattern,
+    patternMessage = "Invalid format",
     ...props 
   }, ref) => {
     const isEmpty = required && (!value || value.trim() === "");
+    const isInvalidPattern = pattern && value && !pattern.test(value);
+    const hasError = isEmpty || isInvalidPattern;
+    const displayMessage = isInvalidPattern ? patternMessage : errorMessage;
 
     return (
       <div ref={ref} className={cn("text-xs text-destructive min-h-5", className)} {...props}>
-        {isEmpty && showMessage && !highlightOnly && errorMessage}
+        {hasError && showMessage && !highlightOnly && displayMessage}
       </div>
     );
   }

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -143,7 +142,10 @@ const ResumeBuilder = () => {
   };
 
   const handleTextInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    return e.target.value;
+    // Allow only letters, spaces, and common punctuation
+    const value = e.target.value.replace(/[^a-zA-Z\s.,'-]/g, '');
+    e.target.value = value;
+    return value;
   };
 
   const saveData = useCallback(() => {
@@ -599,7 +601,12 @@ const ResumeBuilder = () => {
                                 placeholder="John"
                                 className={formErrors.firstName ? "border-red-500" : ""}
                               />
-                              <FormValidator value={personalInfo.firstName} required errorMessage="First name is required" showMessage={!!formErrors.firstName} />
+                              <FormValidator 
+                                value={personalInfo.firstName} 
+                                required 
+                                errorMessage="First name is required" 
+                                showMessage={!!formErrors.firstName} 
+                              />
                             </div>
                             
                             <div className="space-y-2">
@@ -613,7 +620,12 @@ const ResumeBuilder = () => {
                                 placeholder="Doe"
                                 className={formErrors.lastName ? "border-red-500" : ""}
                               />
-                              <FormValidator value={personalInfo.lastName} required errorMessage="Last name is required" showMessage={!!formErrors.lastName} />
+                              <FormValidator 
+                                value={personalInfo.lastName} 
+                                required 
+                                errorMessage="Last name is required" 
+                                showMessage={!!formErrors.lastName} 
+                              />
                             </div>
                           </div>
                           
@@ -628,7 +640,12 @@ const ResumeBuilder = () => {
                               onChange={e => setPersonalInfo({...personalInfo, jobTitle: handleTextInput(e)})}
                               className={formErrors.jobTitle ? "border-red-500" : ""}
                             />
-                            <FormValidator value={personalInfo.jobTitle} required errorMessage="Job title is required" showMessage={!!formErrors.jobTitle} />
+                            <FormValidator 
+                              value={personalInfo.jobTitle} 
+                              required 
+                              errorMessage="Job title is required" 
+                              showMessage={!!formErrors.jobTitle}
+                            />
                           </div>
                           
                           <div className="space-y-2">
@@ -942,7 +959,13 @@ const ResumeBuilder = () => {
                                       onChange={e => updateExperience(exp.id, "description", e.target.value)}
                                       className={`min-h-[120px] ${formErrors[`exp_${index}_description`] ? "border-red-500" : ""}`}
                                     />
-                                    <FormValidator value={exp.description} required errorMessage="Job description is required" showMessage={!!formErrors[`exp_${index}_description`]} />
+                                    <FormValidator 
+                                      value={exp.description} 
+                                      required 
+                                      errorMessage="Job description is required" 
+                                      showMessage={!!formErrors[`exp_${index}_description`]}
+                                    />
+                                    <div className="text-xs text-gray-500 mt-1">AI descriptions are limited to 4 lines maximum</div>
                                   </div>
                                 </CardContent>
                               </Card>
@@ -1002,15 +1025,30 @@ const ResumeBuilder = () => {
                                         onChange={e => updateProject(project.id, "title", handleTextInput(e))}
                                         className={formErrors[`proj_${index}_title`] ? "border-red-500" : ""}
                                       />
-                                      <FormValidator value={project.title} required errorMessage="Project title is required" showMessage={!!formErrors[`proj_${index}_title`]} />
+                                      <FormValidator 
+                                        value={project.title} 
+                                        required 
+                                        errorMessage="Project title is required" 
+                                        showMessage={!!formErrors[`proj_${index}_title`]}
+                                      />
                                     </div>
                                   </div>
                                   
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                     <div className="space-y-2">
-                                      <Label htmlFor={`description_${project.id}`} className="text-base">
-                                        Description <span className="text-red-500">*</span>
-                                      </Label>
+                                      <div className="flex justify-between items-center">
+                                        <Label htmlFor={`description_${project.id}`} className="text-base">
+                                          Description <span className="text-red-500">*</span>
+                                        </Label>
+                                        <Button 
+                                          variant="outline" 
+                                          size="sm" 
+                                          onClick={() => generateProjectDescription(project.id)}
+                                          className="text-xs gap-1"
+                                        >
+                                          <Sparkles className="h-3 w-3" /> Generate with AI
+                                        </Button>
+                                      </div>
                                       <Textarea
                                         id={`description_${project.id}`}
                                         placeholder="Describe your project..."
@@ -1018,7 +1056,13 @@ const ResumeBuilder = () => {
                                         onChange={e => updateProject(project.id, "description", e.target.value)}
                                         className={`min-h-[120px] ${formErrors[`proj_${index}_description`] ? "border-red-500" : ""}`}
                                       />
-                                      <FormValidator value={project.description} required errorMessage="Project description is required" showMessage={!!formErrors[`proj_${index}_description`]} />
+                                      <FormValidator 
+                                        value={project.description} 
+                                        required 
+                                        errorMessage="Project description is required" 
+                                        showMessage={!!formErrors[`proj_${index}_description`]}
+                                      />
+                                      <div className="text-xs text-gray-500 mt-1">AI descriptions are limited to 4 lines maximum</div>
                                     </div>
                                   </div>
                                   
@@ -1147,6 +1191,7 @@ const ResumeBuilder = () => {
                                 onChange={e => setObjective(e.target.value)}
                                 className="min-h-[120px]"
                               />
+                              <div className="text-xs text-gray-500 mt-1">AI objective is limited to 4 lines maximum</div>
                             </div>
                           </div>
 
@@ -1184,15 +1229,6 @@ const ResumeBuilder = () => {
             </div>
           )}
         </div>
-        
-        {/* Remove the bottom "Generate Resume" button that appears on every page */}
-        {activeTab === "objectives" && (
-          <div className="mt-8 flex justify-center">
-            <Button onClick={handleGenerate} size="lg" className="px-8 py-6 text-lg">
-              Generate Resume
-            </Button>
-          </div>
-        )}
       </div>
     </MainLayout>
   );
