@@ -900,4 +900,291 @@ const ResumeBuilder = () => {
                                     <FormValidator value={exp.jobTitle} required errorMessage="Job title is required" showMessage={!!formErrors[`exp_${index}_jobTitle`]} />
                                   </div>
                                   
-                                  <div className="space-
+                                  <div className="space-y-2">
+                                    <Label htmlFor={`companyName_${exp.id}`} className="text-base">
+                                      Company Name <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                      id={`companyName_${exp.id}`}
+                                      placeholder="Tech Corp"
+                                      value={exp.companyName}
+                                      onChange={e => updateExperience(exp.id, "companyName", handleTextInput(e))}
+                                      className={formErrors[`exp_${index}_companyName`] ? "border-red-500" : ""}
+                                    />
+                                    <FormValidator value={exp.companyName} required errorMessage="Company name is required" showMessage={!!formErrors[`exp_${index}_companyName`]} />
+                                  </div>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <Label htmlFor={`startDate_${exp.id}`} className="text-base">
+                                      Start Date <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                      id={`startDate_${exp.id}`}
+                                      type="date"
+                                      value={exp.startDate}
+                                      onChange={e => updateExperience(exp.id, "startDate", e.target.value)}
+                                      className={formErrors[`exp_${index}_startDate`] ? "border-red-500" : ""}
+                                    />
+                                    <FormValidator value={exp.startDate} required errorMessage="Start date is required" showMessage={!!formErrors[`exp_${index}_startDate`]} />
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <Label htmlFor={`endDate_${exp.id}`} className="text-base">
+                                      End Date (Optional)
+                                    </Label>
+                                    <Input
+                                      id={`endDate_${exp.id}`}
+                                      type="date"
+                                      value={exp.endDate || ""}
+                                      onChange={e => updateExperience(exp.id, "endDate", e.target.value)}
+                                    />
+                                  </div>
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <Label htmlFor={`description_${exp.id}`} className="text-base">
+                                    Description <span className="text-red-500">*</span>
+                                  </Label>
+                                  <Textarea
+                                    id={`description_${exp.id}`}
+                                    placeholder="Describe your responsibilities and achievements"
+                                    value={exp.description}
+                                    onChange={e => updateExperience(exp.id, "description", e.target.value)}
+                                    className={formErrors[`exp_${index}_description`] ? "border-red-500" : ""}
+                                  />
+                                  <FormValidator value={exp.description} required errorMessage="Description is required" showMessage={!!formErrors[`exp_${index}_description`]} />
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+
+                        <div className="flex justify-between">
+                          <Button onClick={() => setActiveTab("education")} variant="outline" size="lg">
+                            <ChevronLeft className="mr-2 h-4 w-4" /> Previous
+                          </Button>
+                          <Button onClick={() => setActiveTab("projects")} className="bg-gray-900" size="lg">
+                            Next <ChevronRight className="ml-2 h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="projects" className="mt-0">
+                  <Card className="border shadow-sm">
+                    <CardContent className="p-6">
+                      <div className="space-y-6">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h2 className="text-2xl font-bold">Projects</h2>
+                            <p className="text-gray-500">Add your projects</p>
+                          </div>
+                          <Button onClick={addProject} variant="outline" className="gap-1">
+                            <Plus className="h-4 w-4" /> Add Project
+                          </Button>
+                        </div>
+
+                        <div className="space-y-6">
+                          {projects.map((project, index) => (
+                            <Card key={project.id} className="relative border shadow-sm">
+                              {index > 0 && (
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="absolute right-2 top-2 h-8 w-8 text-gray-500 hover:text-red-500"
+                                  onClick={() => deleteProject(project.id)}
+                                >
+                                  <Trash className="h-4 w-4" />
+                                </Button>
+                              )}
+                              <CardContent className="p-6">
+                                <div className="text-sm text-gray-500 mb-3">Project #{index + 1}</div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                  <div className="space-y-2">
+                                    <Label htmlFor={`title_${project.id}`} className="text-base">
+                                      Title <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                      id={`title_${project.id}`}
+                                      placeholder="Project Name"
+                                      value={project.title}
+                                      onChange={e => updateProject(project.id, "title", handleTextInput(e))}
+                                      className={formErrors[`proj_${index}_title`] ? "border-red-500" : ""}
+                                    />
+                                    <FormValidator value={project.title} required errorMessage="Project title is required" showMessage={!!formErrors[`proj_${index}_title`]} />
+                                  </div>
+                                  
+                                  <div className="space-y-2">
+                                    <Label htmlFor={`technologies_${project.id}`} className="text-base">
+                                      Technologies (Optional)
+                                    </Label>
+                                    <Input
+                                      id={`technologies_${project.id}`}
+                                      placeholder="React, Node.js"
+                                      value={project.technologies || ""}
+                                      onChange={e => updateProject(project.id, "technologies", e.target.value)}
+                                    />
+                                  </div>
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <Label htmlFor={`description_${project.id}`} className="text-base">
+                                    Description <span className="text-red-500">*</span>
+                                  </Label>
+                                  <Textarea
+                                    id={`description_${project.id}`}
+                                    placeholder="Describe your project"
+                                    value={project.description}
+                                    onChange={e => updateProject(project.id, "description", e.target.value)}
+                                    className={formErrors[`proj_${index}_description`] ? "border-red-500" : ""}
+                                  />
+                                  <FormValidator value={project.description} required errorMessage="Description is required" showMessage={!!formErrors[`proj_${index}_description`]} />
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+
+                        <div className="flex justify-between">
+                          <Button onClick={() => setActiveTab("experience")} variant="outline" size="lg">
+                            <ChevronLeft className="mr-2 h-4 w-4" /> Previous
+                          </Button>
+                          <Button onClick={() => setActiveTab("skills")} className="bg-gray-900" size="lg">
+                            Next <ChevronRight className="ml-2 h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="skills" className="mt-0">
+                  <Card className="border shadow-sm">
+                    <CardContent className="p-6">
+                      <div className="space-y-6">
+                        <div>
+                          <h2 className="text-2xl font-bold">Skills</h2>
+                          <p className="text-gray-500">Add your skills</p>
+                        </div>
+
+                        <div className="space-y-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                              <Label htmlFor="professional" className="text-base">
+                                Professional Skills <span className="text-red-500">*</span>
+                              </Label>
+                              <Input
+                                id="professional"
+                                placeholder="React, Node.js"
+                                value={skills.professional}
+                                onChange={e => setSkills({...skills, professional: e.target.value})}
+                                className={formErrors.professional ? "border-red-500" : ""}
+                              />
+                              <FormValidator value={skills.professional} required errorMessage="Professional skills are required" showMessage={!!formErrors.professional} />
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label htmlFor="technical" className="text-base">
+                                Technical Skills <span className="text-red-500">*</span>
+                              </Label>
+                              <Input
+                                id="technical"
+                                placeholder="HTML, CSS, JavaScript"
+                                value={skills.technical}
+                                onChange={e => setSkills({...skills, technical: e.target.value})}
+                                className={formErrors.technical ? "border-red-500" : ""}
+                              />
+                              <FormValidator value={skills.technical} required errorMessage="Technical skills are required" showMessage={!!formErrors.technical} />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                              <Label htmlFor="soft" className="text-base">
+                                Soft Skills <span className="text-red-500">*</span>
+                              </Label>
+                              <Input
+                                id="soft"
+                                placeholder="Communication, Teamwork"
+                                value={skills.soft}
+                                onChange={e => setSkills({...skills, soft: e.target.value})}
+                                className={formErrors.soft ? "border-red-500" : ""}
+                              />
+                              <FormValidator value={skills.soft} required errorMessage="Soft skills are required" showMessage={!!formErrors.soft} />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end">
+                          <Button onClick={() => setActiveTab("projects")} variant="outline" size="lg">
+                            <ChevronLeft className="mr-2 h-4 w-4" /> Previous
+                          </Button>
+                          <Button onClick={() => setActiveTab("objectives")} className="bg-gray-900" size="lg">
+                            Next <ChevronRight className="ml-2 h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="objectives" className="mt-0">
+                  <Card className="border shadow-sm">
+                    <CardContent className="p-6">
+                      <div className="space-y-6">
+                        <div>
+                          <h2 className="text-2xl font-bold">Career Objectives</h2>
+                          <p className="text-gray-500">Add your career objective</p>
+                        </div>
+
+                        <div className="space-y-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                              <Label htmlFor="objective" className="text-base">
+                                Career Objective <span className="text-red-500">*</span>
+                              </Label>
+                              <Input
+                                id="objective"
+                                placeholder="Seeking a challenging role in the tech industry"
+                                value={objective}
+                                onChange={e => setObjective(e.target.value)}
+                                className={formErrors.objective ? "border-red-500" : ""}
+                              />
+                              <FormValidator value={objective} required errorMessage="Career objective is required" showMessage={!!formErrors.objective} />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end">
+                          <Button onClick={() => setActiveTab("skills")} variant="outline" size="lg">
+                            <ChevronLeft className="mr-2 h-4 w-4" /> Previous
+                          </Button>
+                          <Button onClick={handleGenerate} className="bg-gray-900" size="lg">
+                            Generate Resume
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </div>
+            </Tabs>
+          </div>
+
+          {showLivePreview && (
+            <div className="lg:col-span-5">
+              <ResumePreviewContent resumeData={getResumeData()} />
+            </div>
+          )}
+        </div>
+      </div>
+    </MainLayout>
+  );
+};
+
+export default ResumeBuilder;
