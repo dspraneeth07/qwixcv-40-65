@@ -8,6 +8,50 @@ import { toast } from "@/components/ui/use-toast";
 import html2pdf from 'html2pdf.js';
 import LiveChat from "@/components/LiveChat";
 
+interface Skills {
+  professional?: string;
+  technical?: string;
+  soft?: string;
+}
+
+interface ResumeData {
+  personalInfo?: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    location?: string;
+    jobTitle?: string;
+    githubUrl?: string;
+    linkedinUrl?: string;
+  };
+  education?: Array<{
+    id: string;
+    school: string;
+    degree: string;
+    graduationDate: string;
+    score?: string;
+  }>;
+  experience?: Array<{
+    id: string;
+    jobTitle: string;
+    companyName: string;
+    startDate: string;
+    endDate?: string;
+    description?: string;
+  }>;
+  skills?: Skills;
+  objective?: string;
+  projects?: Array<{
+    id: string;
+    title: string;
+    technologies?: string;
+    link?: string;
+    description?: string;
+  }>;
+  countryCode?: string;
+}
+
 const ResumePreview = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -217,10 +261,10 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
               <div key={edu.id}>
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-medium">{edu.school}</p>
-                    <p className="text-sm">{edu.degree}</p>
+                    <p className="font-medium">{edu.school || "University/School"}</p>
+                    <p className="text-sm">{edu.degree || "Degree"}</p>
                   </div>
-                  <p className="text-sm text-right">{edu.graduationDate}</p>
+                  <p className="text-sm text-right">{edu.graduationDate || "Graduation Year"}</p>
                 </div>
                 {edu.score && <p className="text-sm text-muted-foreground mt-1">{edu.score}</p>}
               </div>
@@ -292,6 +336,9 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
       )}
       
       {skills && (
+        Object.values(skills as Skills).some(val => 
+          typeof val === 'string' && val.trim() !== ""
+        )) && (
         <div className="mb-6">
           <h3 className="text-lg font-semibold border-b pb-1 mb-2">Skills</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -337,7 +384,7 @@ export const ResumePreviewContent = ({
   );
 };
 
-const MiniResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boolean }) => {
+const MiniResumeContent = ({ data, isPreview = false }: { data: ResumeData, isPreview?: boolean }) => {
   if (!data || !data.personalInfo) {
     return (
       <Card className="p-4 bg-white shadow-sm">
