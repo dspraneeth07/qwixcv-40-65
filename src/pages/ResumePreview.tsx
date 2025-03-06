@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -7,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Download, ArrowLeft, Github, Linkedin, Mail, Phone, MapPin, Link as LinkIcon } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import html2pdf from 'html2pdf.js';
+import LiveChat from "@/components/LiveChat";
 
 const ResumePreview = () => {
   const location = useLocation();
@@ -140,6 +140,7 @@ const ResumePreview = () => {
           <ResumeContent data={resumeData} />
         </div>
       </div>
+      <LiveChat />
     </MainLayout>
   );
 };
@@ -318,8 +319,6 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
     </Card>
   );
 };
-
-export { ResumePreview };
 
 export const ResumePreviewContent = ({ 
   data, 

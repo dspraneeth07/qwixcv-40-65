@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { ResumePreviewContent } from "./ResumePreview";
 import { getAISkillSuggestions, getAIObjectiveSuggestion, getAIProjectDescription, getAIExperienceDescription } from "@/utils/geminiApi";
+import LiveChat from "@/components/LiveChat";
 
 interface PersonalInfo {
   firstName: string;
@@ -73,8 +74,8 @@ const ResumeBuilder = () => {
     firstName: "",
     lastName: "",
     jobTitle: "",
-    email: "",
-    phone: "",
+    email: "kasireddymanideepreddy405@gmail.com",
+    phone: "9390424085",
     location: "",
     linkedinUrl: "",
     githubUrl: "",
@@ -105,7 +106,7 @@ const ResumeBuilder = () => {
   const [objective, setObjective] = useState("");
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [selectedTemplate, setSelectedTemplate] = useState("default");
-  const [countryCode, setCountryCode] = useState("+1");
+  const [countryCode, setCountryCode] = useState("+91");
 
   useEffect(() => {
     const storedData = localStorage.getItem(STORAGE_KEY);
@@ -574,6 +575,12 @@ const ResumeBuilder = () => {
                   >
                     <FileText className="w-4 h-4" /> Objectives
                   </TabsTrigger>
+                  
+                  {showLivePreview && (
+                    <div className="ml-auto py-3 px-5 text-sm font-medium text-muted-foreground">
+                      Live Preview
+                    </div>
+                  )}
                 </TabsList>
               </div>
 
@@ -1257,7 +1264,6 @@ const ResumeBuilder = () => {
           {showLivePreview && (
             <div className="lg:col-span-5">
               <div className="sticky top-20">
-                <h2 className="text-xl font-semibold mb-4">Live Preview</h2>
                 <div className="bg-white border rounded-lg p-6 shadow-sm max-h-[800px] overflow-y-auto">
                   <ResumePreviewContent 
                     data={getResumeData()} 
@@ -1270,6 +1276,7 @@ const ResumeBuilder = () => {
           )}
         </div>
       </div>
+      <LiveChat />
     </MainLayout>
   );
 };
