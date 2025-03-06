@@ -1259,7 +1259,11 @@ const ResumeBuilder = () => {
               <div className="sticky top-20">
                 <h2 className="text-xl font-semibold mb-4">Live Preview</h2>
                 <div className="bg-white border rounded-lg p-6 shadow-sm max-h-[800px] overflow-y-auto">
-                  <ResumePreviewContent resumeData={getResumeData()} template={selectedTemplate} />
+                  <ResumePreviewContent 
+                    data={getResumeData()} 
+                    templateId={selectedTemplate} 
+                    isPreview={true}
+                  />
                 </div>
               </div>
             </div>
