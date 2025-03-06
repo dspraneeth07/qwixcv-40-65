@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -347,10 +346,10 @@ const ResumeBuilder = () => {
   const generateExperienceDescription = async (id: string) => {
     const exp = experience.find(e => e.id === id);
     
-    if (!exp || !exp.jobTitle || !exp.companyName) {
+    if (!exp || !exp.jobTitle) {
       toast({
         title: "Information Required",
-        description: "Please enter job title and company name first to generate a description.",
+        description: "Please enter job title first to generate a description.",
         variant: "destructive"
       });
       return;
@@ -362,16 +361,13 @@ const ResumeBuilder = () => {
         description: "AI is working on your job description...",
       });
       
-      const suggestion = await getAIExperienceDescription(
-        exp.jobTitle,
-        exp.companyName
-      );
+      const suggestion = await getAIExperienceDescription(exp.jobTitle);
       
       updateExperience(id, "description", suggestion);
       
       toast({
         title: "Description Generated",
-        description: "AI has created a job description based on your information."
+        description: "AI has created a job description based on your job title."
       });
     } catch (error) {
       console.error("Error generating experience description:", error);

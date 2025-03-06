@@ -182,9 +182,11 @@ export const getAIProjectDescription = async (projectTitle: string, technologies
 /**
  * Get work experience description suggestion
  */
-export const getAIExperienceDescription = async (jobTitle: string, companyName: string): Promise<string> => {
+export const getAIExperienceDescription = async (jobTitle: string, companyName?: string): Promise<string> => {
+  const company = companyName ? `at ${companyName}` : "";
+  
   const prompt = `
-    You're a professional resume writer. Generate a concise work experience description for a ${jobTitle} position at ${companyName}.
+    You're a professional resume writer. Generate a concise work experience description for a ${jobTitle} position ${company}.
     
     Write a description that:
     1. Describes key responsibilities relevant to the position
@@ -220,7 +222,7 @@ export const getAIExperienceDescription = async (jobTitle: string, companyName: 
     const textResponse = data.candidates[0].content.parts[0].text.trim();
     
     // Return the text directly, or a fallback if it's empty (limited to 4 lines)
-    return limitToFourLines(textResponse) || `Led cross-functional teams and implemented innovative solutions as a ${jobTitle} at ${companyName}, improving overall efficiency by 30%. Utilized industry best practices and cutting-edge technologies to solve complex problems, while consistently delivering projects on time and under budget.`;
+    return limitToFourLines(textResponse) || `Led cross-functional teams and implemented innovative solutions as a ${jobTitle} ${company}, improving overall efficiency by 30%. Utilized industry best practices and cutting-edge technologies to solve complex problems, while consistently delivering projects on time and under budget.`;
   } catch (error) {
     console.error("Error getting AI experience description:", error);
     throw error;
