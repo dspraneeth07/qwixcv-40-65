@@ -356,26 +356,18 @@ const ResumeBuilder = () => {
     }
 
     try {
-      toast({
-        title: "Generating Description",
-        description: "AI is working on your job description...",
-      });
-      
-      const suggestion = await getAIExperienceDescription(exp.jobTitle);
-      
-      updateExperience(id, "description", suggestion);
-      
-      toast({
-        title: "Description Generated",
-        description: "AI has created a job description based on your job title."
-      });
+      toast.promise(
+        getAIExperienceDescription(exp.jobTitle).then(suggestion => {
+          updateExperience(id, "description", suggestion);
+        }),
+        {
+          loading: "Generating job description...",
+          success: "Job description generated successfully!",
+          error: "Could not generate job description. Please try again."
+        }
+      );
     } catch (error) {
       console.error("Error generating experience description:", error);
-      toast({
-        title: "Generation Failed",
-        description: "Could not generate job description. Please try again later.",
-        variant: "destructive"
-      });
     }
   };
 
@@ -414,29 +406,21 @@ const ResumeBuilder = () => {
     }
 
     try {
-      toast({
-        title: "Generating Description",
-        description: "AI is working on your project description...",
-      });
-      
-      const suggestion = await getAIProjectDescription(
-        project.title,
-        project.technologies
+      toast.promise(
+        getAIProjectDescription(
+          project.title,
+          project.technologies
+        ).then(suggestion => {
+          updateProject(id, "description", suggestion);
+        }),
+        {
+          loading: "Generating project description...",
+          success: "Project description generated successfully!",
+          error: "Could not generate project description. Please try again."
+        }
       );
-      
-      updateProject(id, "description", suggestion);
-      
-      toast({
-        title: "Description Generated",
-        description: "AI has created a project description based on your title."
-      });
     } catch (error) {
       console.error("Error generating project description:", error);
-      toast({
-        title: "Generation Failed",
-        description: "Could not generate project description. Please try again later.",
-        variant: "destructive"
-      });
     }
   };
 
@@ -451,25 +435,18 @@ const ResumeBuilder = () => {
     }
 
     try {
-      toast({
-        title: "Generating Skills",
-        description: "AI is working on your skill suggestions...",
-      });
-      
-      const suggestions = await getAISkillSuggestions(personalInfo.jobTitle);
-      setSkills(suggestions);
-      
-      toast({
-        title: "Skills Generated",
-        description: "AI has suggested skills based on your job title."
-      });
+      toast.promise(
+        getAISkillSuggestions(personalInfo.jobTitle).then(suggestions => {
+          setSkills(suggestions);
+        }),
+        {
+          loading: "Generating skills based on your job title...",
+          success: "Skills generated successfully!",
+          error: "Could not generate skills. Please try again."
+        }
+      );
     } catch (error) {
       console.error("Error generating skills:", error);
-      toast({
-        title: "Generation Failed",
-        description: "Could not generate skills. Please try again later.",
-        variant: "destructive"
-      });
     }
   };
 
@@ -484,30 +461,22 @@ const ResumeBuilder = () => {
     }
 
     try {
-      toast({
-        title: "Generating Objective",
-        description: "AI is working on your career objective...",
-      });
-      
-      const suggestion = await getAIObjectiveSuggestion(
-        personalInfo.jobTitle, 
-        personalInfo.firstName, 
-        personalInfo.lastName
+      toast.promise(
+        getAIObjectiveSuggestion(
+          personalInfo.jobTitle, 
+          personalInfo.firstName, 
+          personalInfo.lastName
+        ).then(suggestion => {
+          setObjective(suggestion);
+        }),
+        {
+          loading: "Generating career objective...",
+          success: "Career objective generated successfully!",
+          error: "Could not generate career objective. Please try again."
+        }
       );
-      
-      setObjective(suggestion);
-      
-      toast({
-        title: "Objective Generated",
-        description: "AI has created a career objective based on your information."
-      });
     } catch (error) {
       console.error("Error generating objective:", error);
-      toast({
-        title: "Generation Failed",
-        description: "Could not generate career objective. Please try again later.",
-        variant: "destructive"
-      });
     }
   };
 
