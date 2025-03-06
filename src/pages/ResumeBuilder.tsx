@@ -1178,7 +1178,7 @@ const ResumeBuilder = () => {
 
           {showLivePreview && (
             <div className="lg:col-span-5">
-              <ResumePreviewContent resumeData={getResumeData()} />
+              <ResumePreviewContent data={getResumeData()} />
             </div>
           )}
         </div>
