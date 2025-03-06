@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -73,8 +74,8 @@ const ResumeBuilder = () => {
     firstName: "",
     lastName: "",
     jobTitle: "",
-    email: "kasireddymanideepreddy405@gmail.com",
-    phone: "9390424085",
+    email: "",
+    phone: "",
     location: "",
     linkedinUrl: "",
     githubUrl: "",
@@ -404,6 +405,45 @@ const ResumeBuilder = () => {
     setProjects(projects.filter(project => project.id !== id));
   };
 
+  const generateProjectDescription = async (id: string) => {
+    const project = projects.find(p => p.id === id);
+    
+    if (!project || !project.title) {
+      toast({
+        title: "Project Title Required",
+        description: "Please enter a project title first to generate a description.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      toast({
+        title: "Generating Description",
+        description: "AI is working on your project description...",
+      });
+      
+      const suggestion = await getAIProjectDescription(
+        project.title,
+        project.technologies
+      );
+      
+      updateProject(id, "description", suggestion);
+      
+      toast({
+        title: "Description Generated",
+        description: "AI has created a project description based on your title."
+      });
+    } catch (error) {
+      console.error("Error generating project description:", error);
+      toast({
+        title: "Generation Failed",
+        description: "Could not generate project description. Please try again later.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const generateAISkillSuggestions = async () => {
     if (!personalInfo.jobTitle) {
       toast({
@@ -470,45 +510,6 @@ const ResumeBuilder = () => {
       toast({
         title: "Generation Failed",
         description: "Could not generate career objective. Please try again later.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const generateProjectDescription = async (id: string) => {
-    const project = projects.find(p => p.id === id);
-    
-    if (!project || !project.title) {
-      toast({
-        title: "Project Title Required",
-        description: "Please enter a project title first to generate a description.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      toast({
-        title: "Generating Description",
-        description: "AI is working on your project description...",
-      });
-      
-      const suggestion = await getAIProjectDescription(
-        project.title,
-        project.technologies
-      );
-      
-      updateProject(id, "description", suggestion);
-      
-      toast({
-        title: "Description Generated",
-        description: "AI has created a project description based on your title."
-      });
-    } catch (error) {
-      console.error("Error generating project description:", error);
-      toast({
-        title: "Generation Failed",
-        description: "Could not generate project description. Please try again later.",
         variant: "destructive"
       });
     }
@@ -931,10 +932,7 @@ const ResumeBuilder = () => {
                                       placeholder="MMM YYYY (e.g., Jan 2024)"
                                       value={exp.startDate}
                                       onChange={(e) => {
-                                        const value = e.target.value.toUpperCase();
-                                        if (validateMonthYearFormat(value) || !value) {
-                                          updateExperience(exp.id, "startDate", value);
-                                        }
+                                        updateExperience(exp.id, "startDate", e.target.value);
                                       }}
                                       className={formErrors[`exp_${index}_startDate`] ? "border-red-500" : ""}
                                     />
@@ -955,10 +953,7 @@ const ResumeBuilder = () => {
                                       placeholder="MMM YYYY (e.g., Dec 2024)"
                                       value={exp.endDate || ""}
                                       onChange={(e) => {
-                                        const value = e.target.value.toUpperCase();
-                                        if (validateMonthYearFormat(value) || !value) {
-                                          updateExperience(exp.id, "endDate", value);
-                                        }
+                                        updateExperience(exp.id, "endDate", e.target.value);
                                       }}
                                     />
                                   </div>
@@ -1074,13 +1069,25 @@ const ResumeBuilder = () => {
                                   <Label htmlFor={`description_${project.id}`} className="text-base">
                                     Description <span className="text-red-500">*</span>
                                   </Label>
-                                  <Textarea
-                                    id={`description_${project.id}`}
-                                    placeholder="Describe your project"
-                                    value={project.description}
-                                    onChange={e => updateProject(project.id, "description", e.target.value)}
-                                    className={formErrors[`proj_${index}_description`] ? "border-red-500" : ""}
-                                  />
+                                  <div className="relative">
+                                    <Textarea
+                                      id={`description_${project.id}`}
+                                      placeholder="Describe your project"
+                                      value={project.description}
+                                      onChange={e => updateProject(project.id, "description", e.target.value)}
+                                      className={formErrors[`proj_${index}_description`] ? "border-red-500" : ""}
+                                    />
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      className="absolute right-2 top-2"
+                                      onClick={() => generateProjectDescription(project.id)}
+                                    >
+                                      <Sparkles className="h-4 w-4 mr-1" />
+                                      AI Suggest
+                                    </Button>
+                                  </div>
                                   <FormValidator value={project.description} required errorMessage="Description is required" showMessage={!!formErrors[`proj_${index}_description`]} />
                                 </div>
                               </CardContent>
@@ -1105,9 +1112,18 @@ const ResumeBuilder = () => {
                   <Card className="border shadow-sm">
                     <CardContent className="p-6">
                       <div className="space-y-6">
-                        <div>
-                          <h2 className="text-2xl font-bold">Skills</h2>
-                          <p className="text-gray-500">Add your skills</p>
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h2 className="text-2xl font-bold">Skills</h2>
+                            <p className="text-gray-500">Add your skills</p>
+                          </div>
+                          <Button 
+                            onClick={generateAISkillSuggestions}
+                            variant="outline"
+                            className="gap-1"
+                          >
+                            <Sparkles className="h-4 w-4" /> AI Generate Skills
+                          </Button>
                         </div>
 
                         <div className="space-y-6">
@@ -1118,7 +1134,7 @@ const ResumeBuilder = () => {
                               </Label>
                               <Input
                                 id="professional"
-                                placeholder="React, Node.js"
+                                placeholder="Project Management, Business Analysis"
                                 value={skills.professional}
                                 onChange={e => setSkills({...skills, professional: e.target.value})}
                                 className={formErrors.professional ? "border-red-500" : ""}
@@ -1158,7 +1174,7 @@ const ResumeBuilder = () => {
                           </div>
                         </div>
 
-                        <div className="flex justify-end">
+                        <div className="flex justify-between">
                           <Button onClick={() => setActiveTab("projects")} variant="outline" size="lg">
                             <ChevronLeft className="mr-2 h-4 w-4" /> Previous
                           </Button>
@@ -1175,30 +1191,39 @@ const ResumeBuilder = () => {
                   <Card className="border shadow-sm">
                     <CardContent className="p-6">
                       <div className="space-y-6">
-                        <div>
-                          <h2 className="text-2xl font-bold">Career Objectives</h2>
-                          <p className="text-gray-500">Add your career objective</p>
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h2 className="text-2xl font-bold">Career Objectives</h2>
+                            <p className="text-gray-500">Add your career objective</p>
+                          </div>
+                          <Button 
+                            onClick={generateAIObjective}
+                            variant="outline"
+                            className="gap-1"
+                          >
+                            <Sparkles className="h-4 w-4" /> AI Generate Objective
+                          </Button>
                         </div>
 
                         <div className="space-y-6">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                              <Label htmlFor="objective" className="text-base">
-                                Career Objective <span className="text-red-500">*</span>
-                              </Label>
-                              <Input
-                                id="objective"
-                                placeholder="Seeking a challenging role in the tech industry"
-                                value={objective}
-                                onChange={e => setObjective(e.target.value)}
-                                className={formErrors.objective ? "border-red-500" : ""}
-                              />
-                              <FormValidator value={objective} required errorMessage="Career objective is required" showMessage={!!formErrors.objective} />
-                            </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="objective" className="text-base">
+                              Career Objective <span className="text-red-500">*</span>
+                            </Label>
+                            <Textarea
+                              id="objective"
+                              placeholder="Seeking a challenging role in the tech industry..."
+                              value={objective}
+                              onChange={e => setObjective(e.target.value)}
+                              className={formErrors.objective ? "border-red-500" : ""}
+                              rows={4}
+                            />
+                            <FormValidator value={objective} required errorMessage="Career objective is required" showMessage={!!formErrors.objective} />
+                            <p className="text-xs text-gray-500 mt-1">Maximum 4 lines recommended for optimal resume appearance</p>
                           </div>
                         </div>
 
-                        <div className="flex justify-end">
+                        <div className="flex justify-between">
                           <Button onClick={() => setActiveTab("skills")} variant="outline" size="lg">
                             <ChevronLeft className="mr-2 h-4 w-4" /> Previous
                           </Button>
