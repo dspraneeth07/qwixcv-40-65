@@ -1,4 +1,3 @@
-
 import * as React from "react"
 
 import type {
@@ -138,6 +137,7 @@ function dispatch(action: Action) {
   })
 }
 
+// Ensure that the Toast type accepts the id parameter
 type Toast = Omit<ToasterToast, "id">
 
 function toast({ ...props }: Toast) {

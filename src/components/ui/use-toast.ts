@@ -3,44 +3,56 @@ import { useToast as useShadcnToast, toast as shadcnToast } from "@/hooks/use-to
 
 export const useToast = useShadcnToast;
 
-// Wrapper for toast to allow for a loading state that will be updated once the operation completes
-export const toast = {
-  ...shadcnToast,
-  promise: (
-    promise: Promise<any>,
-    {
-      loading,
-      success,
-      error,
-    }: {
+// Correctly type the toast function and extend it with a promise method
+type ToastFunction = typeof shadcnToast & {
+  promise: <T>(
+    promise: Promise<T>,
+    options: {
       loading: string;
       success: string;
       error: string;
     }
-  ) => {
-    const toastId = shadcnToast({
-      title: "Processing",
-      description: loading,
-    });
+  ) => Promise<T>;
+};
 
-    promise
-      .then(() => {
-        shadcnToast({
-          id: toastId,
-          title: "Success",
-          description: success,
-          variant: "default",
-        });
-      })
-      .catch(() => {
-        shadcnToast({
-          id: toastId,
-          title: "Error",
-          description: error,
-          variant: "destructive",
-        });
+// Create a properly typed toast object
+export const toast: ToastFunction = Object.assign(
+  shadcnToast, 
+  {
+    promise: <T>(
+      promise: Promise<T>,
+      {
+        loading,
+        success,
+        error,
+      }: {
+        loading: string;
+        success: string;
+        error: string;
+      }
+    ) => {
+      const toastId = shadcnToast({
+        title: "Processing",
+        description: loading,
       });
 
-    return promise;
-  },
-};
+      promise
+        .then(() => {
+          shadcnToast({
+            title: "Success",
+            description: success,
+            variant: "default",
+          });
+        })
+        .catch(() => {
+          shadcnToast({
+            title: "Error",
+            description: error,
+            variant: "destructive",
+          });
+        });
+
+      return promise;
+    },
+  }
+);
