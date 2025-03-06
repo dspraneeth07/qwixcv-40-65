@@ -514,6 +514,12 @@ const ResumeBuilder = () => {
     }
   };
 
+  const validateMonthYearFormat = (value: string) => {
+    if (!value) return true; // Empty is valid
+    const regex = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s\d{4}$/;
+    return regex.test(value);
+  };
+
   return (
     <MainLayout>
       <div className="container mx-auto py-8">
@@ -922,12 +928,22 @@ const ResumeBuilder = () => {
                                     </Label>
                                     <Input
                                       id={`startDate_${exp.id}`}
-                                      type="date"
+                                      placeholder="MMM YYYY (e.g., Jan 2024)"
                                       value={exp.startDate}
-                                      onChange={e => updateExperience(exp.id, "startDate", e.target.value)}
+                                      onChange={(e) => {
+                                        const value = e.target.value.toUpperCase();
+                                        if (validateMonthYearFormat(value) || !value) {
+                                          updateExperience(exp.id, "startDate", value);
+                                        }
+                                      }}
                                       className={formErrors[`exp_${index}_startDate`] ? "border-red-500" : ""}
                                     />
-                                    <FormValidator value={exp.startDate} required errorMessage="Start date is required" showMessage={!!formErrors[`exp_${index}_startDate`]} />
+                                    <FormValidator 
+                                      value={exp.startDate} 
+                                      required 
+                                      errorMessage="Start date is required (MMM YYYY)" 
+                                      showMessage={!!formErrors[`exp_${index}_startDate`]} 
+                                    />
                                   </div>
                                   
                                   <div className="space-y-2">
@@ -936,25 +952,47 @@ const ResumeBuilder = () => {
                                     </Label>
                                     <Input
                                       id={`endDate_${exp.id}`}
-                                      type="date"
+                                      placeholder="MMM YYYY (e.g., Dec 2024)"
                                       value={exp.endDate || ""}
-                                      onChange={e => updateExperience(exp.id, "endDate", e.target.value)}
+                                      onChange={(e) => {
+                                        const value = e.target.value.toUpperCase();
+                                        if (validateMonthYearFormat(value) || !value) {
+                                          updateExperience(exp.id, "endDate", value);
+                                        }
+                                      }}
                                     />
                                   </div>
                                 </div>
                                 
-                                <div className="space-y-2">
+                                <div className="space-y-2 mt-4">
                                   <Label htmlFor={`description_${exp.id}`} className="text-base">
                                     Description <span className="text-red-500">*</span>
                                   </Label>
-                                  <Textarea
-                                    id={`description_${exp.id}`}
-                                    placeholder="Describe your responsibilities and achievements"
-                                    value={exp.description}
-                                    onChange={e => updateExperience(exp.id, "description", e.target.value)}
-                                    className={formErrors[`exp_${index}_description`] ? "border-red-500" : ""}
+                                  <div className="relative">
+                                    <Textarea
+                                      id={`description_${exp.id}`}
+                                      placeholder="Describe your responsibilities and achievements"
+                                      value={exp.description}
+                                      onChange={(e) => updateExperience(exp.id, "description", e.target.value)}
+                                      className={formErrors[`exp_${index}_description`] ? "border-red-500" : ""}
+                                    />
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      className="absolute right-2 top-2"
+                                      onClick={() => generateExperienceDescription(exp.id)}
+                                    >
+                                      <Sparkles className="h-4 w-4 mr-1" />
+                                      AI Suggest
+                                    </Button>
+                                  </div>
+                                  <FormValidator 
+                                    value={exp.description} 
+                                    required 
+                                    errorMessage="Description is required" 
+                                    showMessage={!!formErrors[`exp_${index}_description`]} 
                                   />
-                                  <FormValidator value={exp.description} required errorMessage="Description is required" showMessage={!!formErrors[`exp_${index}_description`]} />
                                 </div>
                               </CardContent>
                             </Card>
