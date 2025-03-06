@@ -6,7 +6,6 @@ import { Card } from "@/components/ui/card";
 import { Download, ArrowLeft, Github, Linkedin, Mail, Phone, MapPin, Link as LinkIcon } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import html2pdf from 'html2pdf.js';
-import LiveChat from "@/components/LiveChat";
 
 interface Skills {
   professional?: string;
@@ -184,7 +183,6 @@ const ResumePreview = () => {
           <ResumeContent data={resumeData} />
         </div>
       </div>
-      <LiveChat />
     </MainLayout>
   );
 };

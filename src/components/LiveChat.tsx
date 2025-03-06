@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,8 +12,12 @@ interface Message {
   timestamp: Date;
 }
 
-const LiveChat = () => {
-  const [isOpen, setIsOpen] = useState(false);
+interface LiveChatProps {
+  onClose?: () => void;
+}
+
+const LiveChat = ({ onClose }: LiveChatProps) => {
+  const [isOpen, setIsOpen] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([
@@ -28,6 +31,11 @@ const LiveChat = () => {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleClose = () => {
+    setIsOpen(false);
+    onClose?.();
+  };
   
   // Auto-scroll to the bottom when new messages appear
   useEffect(() => {
@@ -42,11 +50,6 @@ const LiveChat = () => {
       inputRef.current.focus();
     }
   }, [isOpen, isMinimized]);
-  
-  const toggleChat = () => {
-    setIsOpen(!isOpen);
-    if (isMinimized) setIsMinimized(false);
-  };
   
   const minimizeChat = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -91,10 +94,10 @@ const LiveChat = () => {
     <div className="fixed bottom-4 right-4 z-50">
       {/* Chat button (always visible) */}
       <Button
-        onClick={toggleChat}
-        className={`rounded-full w-12 h-12 shadow-lg flex items-center justify-center ${isOpen ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'}`}
+        onClick={handleClose}
+        className={`rounded-full w-12 h-12 shadow-lg flex items-center justify-center bg-red-500 hover:bg-red-600`}
       >
-        {isOpen ? <X size={20} /> : <MessageCircle size={20} />}
+        <X size={20} />
       </Button>
       
       {/* Chat box */}

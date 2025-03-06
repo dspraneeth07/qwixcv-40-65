@@ -6,8 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Mail, Phone, MessageSquare, Send } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { useState } from "react";
+import LiveChat from "@/components/LiveChat";
 
 const Contact = () => {
+  const [showLiveChat, setShowLiveChat] = useState(false);
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
@@ -77,8 +81,8 @@ const Contact = () => {
                   <p className="text-muted-foreground mb-1">
                     Email our customer support team for general inquiries.
                   </p>
-                  <a href="mailto:support@smartresume.com" className="text-primary hover:underline">
-                    support@smartresume.com
+                  <a href="mailto:kasireddymanideepreddy405@gmail.com" className="text-primary hover:underline">
+                    kasireddymanideepreddy405@gmail.com
                   </a>
                 </div>
               </div>
@@ -90,10 +94,10 @@ const Contact = () => {
                 <div>
                   <h3 className="text-lg font-medium mb-1">Phone Support</h3>
                   <p className="text-muted-foreground mb-1">
-                    For urgent matters, call our support line (Monday-Friday, 9AM-5PM EST).
+                    For urgent matters, call our support line (Monday-Friday, 9AM-5PM IST).
                   </p>
-                  <a href="tel:+11234567890" className="text-primary hover:underline">
-                    +1 (123) 456-7890
+                  <a href="tel:+919390424085" className="text-primary hover:underline">
+                    +91 9390424085
                   </a>
                 </div>
               </div>
@@ -107,7 +111,11 @@ const Contact = () => {
                   <p className="text-muted-foreground mb-1">
                     Chat with our support team for real-time assistance.
                   </p>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setShowLiveChat(true)}
+                  >
                     Start Live Chat
                   </Button>
                 </div>
@@ -134,6 +142,7 @@ const Contact = () => {
           </div>
         </div>
       </div>
+      {showLiveChat && <LiveChat onClose={() => setShowLiveChat(false)} />}
     </MainLayout>
   );
 };
