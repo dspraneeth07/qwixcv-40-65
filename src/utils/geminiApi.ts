@@ -1,4 +1,3 @@
-
 // This file contains API functions to interact with Google's Gemini API
 
 const API_KEY = "AIzaSyDRuULswOC1iFSJr83VqRaeP1g8p0Vn4Lc";
@@ -165,6 +164,53 @@ export const getAIProjectDescription = async (projectTitle: string, technologies
     return textResponse || `Developed ${projectTitle}, a solution that improved efficiency by 30%. Implemented best practices while overcoming technical challenges to deliver a high-quality product ahead of schedule.`;
   } catch (error) {
     console.error("Error getting AI project description:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get work experience description suggestion
+ */
+export const getAIExperienceDescription = async (jobTitle: string, companyName: string): Promise<string> => {
+  const prompt = `
+    You're a professional resume writer. Generate a concise work experience description for a ${jobTitle} position at ${companyName}.
+    
+    Write 2-3 VERY CONCISE sentences (no more than 4 lines total) that:
+    1. Describe key responsibilities relevant to the position
+    2. Mention specific technologies or methodologies used (if applicable)
+    3. Highlight one measurable achievement or impact
+    
+    IMPORTANT: Keep the response to 4 lines MAXIMUM when viewed on a resume.
+    DO NOT use bullet points.
+    DO NOT include a title or any formatting.
+    Return only the work experience description text.
+  `;
+
+  try {
+    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: prompt }]
+        }]
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`API error: ${errorData.error?.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    const textResponse = data.candidates[0].content.parts[0].text.trim();
+    
+    // Return the text directly, or a fallback if it's empty
+    return textResponse || `Led cross-functional teams and implemented innovative solutions as a ${jobTitle} at ${companyName}, improving overall efficiency by 30%. Utilized industry best practices and cutting-edge technologies to solve complex problems, while consistently delivering projects on time and under budget.`;
+  } catch (error) {
+    console.error("Error getting AI experience description:", error);
     throw error;
   }
 };

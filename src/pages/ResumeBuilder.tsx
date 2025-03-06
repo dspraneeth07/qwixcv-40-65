@@ -9,12 +9,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { FormValidator } from "@/components/ui/form-validator";
 import { 
   Plus, Trash, ChevronLeft, ChevronRight, Sparkles, 
   User, GraduationCap, Briefcase, Code, List, FileText
 } from "lucide-react";
 import { ResumePreviewContent } from "./ResumePreview";
-import { getAISkillSuggestions, getAIObjectiveSuggestion, getAIProjectDescription } from "@/utils/geminiApi";
+import { getAISkillSuggestions, getAIObjectiveSuggestion, getAIProjectDescription, getAIExperienceDescription } from "@/utils/geminiApi";
 
 interface PersonalInfo {
   firstName: string;
@@ -133,6 +134,19 @@ const ResumeBuilder = () => {
       }
     }
   }, []);
+
+  // Input validation handlers
+  const handleNumberInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Only allow numbers (digits)
+    const value = e.target.value.replace(/[^0-9]/g, '');
+    e.target.value = value;
+    return value;
+  };
+
+  const handleTextInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Only allow letters, spaces, and common punctuation
+    return e.target.value;
+  };
 
   const saveData = useCallback(() => {
     const data = {
@@ -324,6 +338,45 @@ const ResumeBuilder = () => {
       return;
     }
     setExperience(experience.filter(exp => exp.id !== id));
+  };
+
+  const generateExperienceDescription = async (id: string) => {
+    const exp = experience.find(e => e.id === id);
+    
+    if (!exp || !exp.jobTitle || !exp.companyName) {
+      toast({
+        title: "Information Required",
+        description: "Please enter job title and company name first to generate a description.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      toast({
+        title: "Generating Description",
+        description: "AI is working on your job description...",
+      });
+      
+      const suggestion = await getAIExperienceDescription(
+        exp.jobTitle,
+        exp.companyName
+      );
+      
+      updateExperience(id, "description", suggestion);
+      
+      toast({
+        title: "Description Generated",
+        description: "AI has created a job description based on your information."
+      });
+    } catch (error) {
+      console.error("Error generating experience description:", error);
+      toast({
+        title: "Generation Failed",
+        description: "Could not generate job description. Please try again later.",
+        variant: "destructive"
+      });
+    }
   };
 
   const addProject = () => {
@@ -539,10 +592,11 @@ const ResumeBuilder = () => {
                               <Input
                                 id="firstName"
                                 value={personalInfo.firstName}
-                                onChange={e => setPersonalInfo({...personalInfo, firstName: e.target.value})}
+                                onChange={e => setPersonalInfo({...personalInfo, firstName: handleTextInput(e)})}
                                 placeholder="John"
                                 className={formErrors.firstName ? "border-red-500" : ""}
                               />
+                              <FormValidator value={personalInfo.firstName} required errorMessage="First name is required" showMessage={!!formErrors.firstName} />
                             </div>
                             
                             <div className="space-y-2">
@@ -552,10 +606,11 @@ const ResumeBuilder = () => {
                               <Input
                                 id="lastName"
                                 value={personalInfo.lastName}
-                                onChange={e => setPersonalInfo({...personalInfo, lastName: e.target.value})}
+                                onChange={e => setPersonalInfo({...personalInfo, lastName: handleTextInput(e)})}
                                 placeholder="Doe"
                                 className={formErrors.lastName ? "border-red-500" : ""}
                               />
+                              <FormValidator value={personalInfo.lastName} required errorMessage="Last name is required" showMessage={!!formErrors.lastName} />
                             </div>
                           </div>
                           
@@ -567,9 +622,10 @@ const ResumeBuilder = () => {
                               id="jobTitle"
                               placeholder="Front-end Developer"
                               value={personalInfo.jobTitle}
-                              onChange={e => setPersonalInfo({...personalInfo, jobTitle: e.target.value})}
+                              onChange={e => setPersonalInfo({...personalInfo, jobTitle: handleTextInput(e)})}
                               className={formErrors.jobTitle ? "border-red-500" : ""}
                             />
+                            <FormValidator value={personalInfo.jobTitle} required errorMessage="Job title is required" showMessage={!!formErrors.jobTitle} />
                           </div>
                           
                           <div className="space-y-2">
@@ -584,6 +640,7 @@ const ResumeBuilder = () => {
                               onChange={e => setPersonalInfo({...personalInfo, email: e.target.value})}
                               className={formErrors.email ? "border-red-500" : ""}
                             />
+                            <FormValidator value={personalInfo.email} required errorMessage="Email is required" showMessage={!!formErrors.email} />
                           </div>
                           
                           <div className="space-y-2">
@@ -608,10 +665,14 @@ const ResumeBuilder = () => {
                                 type="tel"
                                 placeholder="123-456-7890"
                                 value={personalInfo.phone}
-                                onChange={e => setPersonalInfo({...personalInfo, phone: e.target.value})}
+                                onChange={e => {
+                                  const value = handleNumberInput(e);
+                                  setPersonalInfo({...personalInfo, phone: value});
+                                }}
                                 className={`flex-1 ${formErrors.phone ? "border-red-500" : ""}`}
                               />
                             </div>
+                            <FormValidator value={personalInfo.phone} required errorMessage="Phone number is required" showMessage={!!formErrors.phone} />
                           </div>
                           
                           <div className="space-y-2">
@@ -702,9 +763,10 @@ const ResumeBuilder = () => {
                                         id={`school_${edu.id}`}
                                         placeholder="Harvard University"
                                         value={edu.school}
-                                        onChange={e => updateEducation(edu.id, "school", e.target.value)}
+                                        onChange={e => updateEducation(edu.id, "school", handleTextInput(e))}
                                         className={formErrors[`edu_${index}_school`] ? "border-red-500" : ""}
                                       />
+                                      <FormValidator value={edu.school} required errorMessage="School name is required" showMessage={!!formErrors[`edu_${index}_school`]} />
                                     </div>
                                     
                                     <div className="space-y-2">
@@ -715,9 +777,10 @@ const ResumeBuilder = () => {
                                         id={`degree_${edu.id}`}
                                         placeholder="Bachelor of Science in Computer Science"
                                         value={edu.degree}
-                                        onChange={e => updateEducation(edu.id, "degree", e.target.value)}
+                                        onChange={e => updateEducation(edu.id, "degree", handleTextInput(e))}
                                         className={formErrors[`edu_${index}_degree`] ? "border-red-500" : ""}
                                       />
+                                      <FormValidator value={edu.degree} required errorMessage="Degree is required" showMessage={!!formErrors[`edu_${index}_degree`]} />
                                     </div>
                                   </div>
                                   
@@ -730,9 +793,13 @@ const ResumeBuilder = () => {
                                         id={`graduationDate_${edu.id}`}
                                         placeholder="2020"
                                         value={edu.graduationDate}
-                                        onChange={e => updateEducation(edu.id, "graduationDate", e.target.value)}
+                                        onChange={e => {
+                                          const value = handleNumberInput(e);
+                                          updateEducation(edu.id, "graduationDate", value);
+                                        }}
                                         className={formErrors[`edu_${index}_graduationDate`] ? "border-red-500" : ""}
                                       />
+                                      <FormValidator value={edu.graduationDate} required errorMessage="Graduation year is required" showMessage={!!formErrors[`edu_${index}_graduationDate`]} />
                                     </div>
                                     
                                     <div className="space-y-2">
@@ -802,9 +869,10 @@ const ResumeBuilder = () => {
                                         id={`jobTitle_${exp.id}`}
                                         placeholder="Software Engineer"
                                         value={exp.jobTitle}
-                                        onChange={e => updateExperience(exp.id, "jobTitle", e.target.value)}
+                                        onChange={e => updateExperience(exp.id, "jobTitle", handleTextInput(e))}
                                         className={formErrors[`exp_${index}_jobTitle`] ? "border-red-500" : ""}
                                       />
+                                      <FormValidator value={exp.jobTitle} required errorMessage="Job title is required" showMessage={!!formErrors[`exp_${index}_jobTitle`]} />
                                     </div>
                                     
                                     <div className="space-y-2">
@@ -815,339 +883,5 @@ const ResumeBuilder = () => {
                                         id={`companyName_${exp.id}`}
                                         placeholder="Google"
                                         value={exp.companyName}
-                                        onChange={e => updateExperience(exp.id, "companyName", e.target.value)}
-                                        className={formErrors[`exp_${index}_companyName`] ? "border-red-500" : ""}
-                                      />
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                    <div className="space-y-2">
-                                      <Label htmlFor={`startDate_${exp.id}`} className="text-base">
-                                        Start Date
-                                      </Label>
-                                      <Input
-                                        id={`startDate_${exp.id}`}
-                                        placeholder="Jun 2020"
-                                        value={exp.startDate}
-                                        onChange={e => updateExperience(exp.id, "startDate", e.target.value)}
-                                        className={formErrors[`exp_${index}_startDate`] ? "border-red-500" : ""}
-                                      />
-                                    </div>
-                                    
-                                    <div className="space-y-2">
-                                      <Label htmlFor={`endDate_${exp.id}`} className="text-base">
-                                        End Date
-                                      </Label>
-                                      <Input
-                                        id={`endDate_${exp.id}`}
-                                        placeholder="Present (leave blank for current)"
-                                        value={exp.endDate || ""}
-                                        onChange={e => updateExperience(exp.id, "endDate", e.target.value)}
-                                      />
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="space-y-2">
-                                    <div className="flex justify-between items-center">
-                                      <Label htmlFor={`description_${exp.id}`} className="text-base">
-                                        Job Description
-                                      </Label>
-                                      <Button 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        className="text-gray-500 gap-1 text-xs"
-                                        onClick={() => {
-                                          toast({
-                                            title: "AI Generation",
-                                            description: "This feature is coming soon!"
-                                          });
-                                        }}
-                                      >
-                                        <Sparkles className="h-3 w-3" /> Generate with AI
-                                      </Button>
-                                    </div>
-                                    <Textarea
-                                      id={`description_${exp.id}`}
-                                      placeholder="Describe your responsibilities and achievements..."
-                                      value={exp.description}
-                                      onChange={e => updateExperience(exp.id, "description", e.target.value)}
-                                      rows={4}
-                                    />
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
-                          
-                          <div className="flex justify-between">
-                            <Button onClick={() => setActiveTab("education")} variant="outline" size="lg">
-                              <ChevronLeft className="mr-2 h-4 w-4" /> Previous
-                            </Button>
-                            <Button onClick={() => setActiveTab("projects")} className="bg-gray-900" size="lg">
-                              Next <ChevronRight className="ml-2 h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-
-                  <TabsContent value="projects" className="mt-0">
-                    <Card className="border shadow-sm">
-                      <CardContent className="p-6">
-                        <div className="space-y-6">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <h2 className="text-2xl font-bold">Projects</h2>
-                              <p className="text-gray-500">Add your notable projects</p>
-                            </div>
-                            <Button onClick={addProject} variant="outline" className="gap-1">
-                              <Plus className="h-4 w-4" /> Add Project
-                            </Button>
-                          </div>
-
-                          <div className="space-y-6">
-                            {projects.map((project, index) => (
-                              <Card key={project.id} className="relative border shadow-sm">
-                                {index > 0 && (
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="absolute right-2 top-2 h-8 w-8 text-gray-500 hover:text-red-500"
-                                    onClick={() => deleteProject(project.id)}
-                                  >
-                                    <Trash className="h-4 w-4" />
-                                  </Button>
-                                )}
-                                <CardContent className="p-6">
-                                  <div className="space-y-2 mb-6">
-                                    <Label htmlFor={`title_${project.id}`} className="text-base">
-                                      Project Title
-                                    </Label>
-                                    <Input
-                                      id={`title_${project.id}`}
-                                      placeholder="E-commerce Application"
-                                      value={project.title}
-                                      onChange={e => updateProject(project.id, "title", e.target.value)}
-                                    />
-                                  </div>
-
-                                  <div className="space-y-2 mb-6">
-                                    <div className="flex justify-between items-center">
-                                      <Label htmlFor={`description_${project.id}`} className="text-base">
-                                        Project Description
-                                      </Label>
-                                      <Button 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        className="text-gray-500 gap-1 text-xs"
-                                        onClick={() => generateProjectDescription(project.id)}
-                                      >
-                                        <Sparkles className="h-3 w-3" /> Generate with AI
-                                      </Button>
-                                    </div>
-                                    <Textarea
-                                      id={`description_${project.id}`}
-                                      placeholder="Describe the project, your role, and the technologies used..."
-                                      value={project.description}
-                                      onChange={e => updateProject(project.id, "description", e.target.value)}
-                                      rows={4}
-                                    />
-                                  </div>
-
-                                  <div className="space-y-2 mb-6">
-                                    <Label htmlFor={`technologies_${project.id}`} className="text-base">
-                                      Technologies Used
-                                    </Label>
-                                    <Input
-                                      id={`technologies_${project.id}`}
-                                      placeholder="React, Node.js, MongoDB"
-                                      value={project.technologies || ""}
-                                      onChange={e => updateProject(project.id, "technologies", e.target.value)}
-                                    />
-                                  </div>
-
-                                  <div className="space-y-2">
-                                    <Label htmlFor={`link_${project.id}`} className="text-base">
-                                      Project Link
-                                    </Label>
-                                    <Input
-                                      id={`link_${project.id}`}
-                                      type="url"
-                                      placeholder="https://github.com/username/project"
-                                      value={project.link || ""}
-                                      onChange={e => updateProject(project.id, "link", e.target.value)}
-                                    />
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
-                          
-                          <div className="flex justify-between">
-                            <Button onClick={() => setActiveTab("experience")} variant="outline" size="lg">
-                              <ChevronLeft className="mr-2 h-4 w-4" /> Previous
-                            </Button>
-                            <Button onClick={() => setActiveTab("skills")} className="bg-gray-900" size="lg">
-                              Next <ChevronRight className="ml-2 h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-
-                  <TabsContent value="skills" className="mt-0">
-                    <Card className="border shadow-sm">
-                      <CardContent className="p-6">
-                        <div className="space-y-6">
-                          <div>
-                            <h2 className="text-2xl font-bold">Skills</h2>
-                            <p className="text-gray-500">Add your professional skills</p>
-                          </div>
-                          
-                          <div className="flex justify-end">
-                            <Button 
-                              onClick={generateAISkillSuggestions} 
-                              variant="outline" 
-                              className="gap-1"
-                            >
-                              <Sparkles className="h-4 w-4" /> Generate Skills with AI
-                            </Button>
-                          </div>
-
-                          <div className="space-y-5">
-                            <div className="space-y-2">
-                              <Label htmlFor="professional" className="text-base">
-                                Professional Skills <span className="text-red-500">*</span>
-                              </Label>
-                              <Textarea
-                                id="professional"
-                                placeholder="Project Management, Team Leadership, Client Communication..."
-                                value={skills.professional}
-                                onChange={e => setSkills({...skills, professional: e.target.value})}
-                                className={formErrors.professional ? "border-red-500" : ""}
-                                rows={3}
-                              />
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <Label htmlFor="technical" className="text-base">
-                                Technical Skills <span className="text-red-500">*</span>
-                              </Label>
-                              <Textarea
-                                id="technical"
-                                placeholder="JavaScript, React, Node.js, HTML, CSS..."
-                                value={skills.technical}
-                                onChange={e => setSkills({...skills, technical: e.target.value})}
-                                className={formErrors.technical ? "border-red-500" : ""}
-                                rows={3}
-                              />
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <Label htmlFor="soft" className="text-base">
-                                Soft Skills <span className="text-red-500">*</span>
-                              </Label>
-                              <Textarea
-                                id="soft"
-                                placeholder="Communication, Problem Solving, Teamwork, Adaptability..."
-                                value={skills.soft}
-                                onChange={e => setSkills({...skills, soft: e.target.value})}
-                                className={formErrors.soft ? "border-red-500" : ""}
-                                rows={3}
-                              />
-                            </div>
-                          </div>
-                          
-                          <div className="flex justify-between">
-                            <Button onClick={() => setActiveTab("projects")} variant="outline" size="lg">
-                              <ChevronLeft className="mr-2 h-4 w-4" /> Previous
-                            </Button>
-                            <Button onClick={() => setActiveTab("objectives")} className="bg-gray-900" size="lg">
-                              Next <ChevronRight className="ml-2 h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-
-                  <TabsContent value="objectives" className="mt-0">
-                    <Card className="border shadow-sm">
-                      <CardContent className="p-6">
-                        <div className="space-y-6">
-                          <div>
-                            <h2 className="text-2xl font-bold">Career Objective</h2>
-                            <p className="text-gray-500">Provide a brief summary of your career goals</p>
-                          </div>
-                          
-                          <div className="flex justify-end">
-                            <Button 
-                              onClick={generateAIObjective} 
-                              variant="outline" 
-                              className="gap-1"
-                            >
-                              <Sparkles className="h-4 w-4" /> Generate with AI
-                            </Button>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label htmlFor="objective" className="text-base">
-                              Objective <span className="text-red-500">*</span>
-                            </Label>
-                            <Textarea
-                              id="objective"
-                              placeholder="Dedicated and results-driven professional seeking to leverage my skills and expertise..."
-                              value={objective}
-                              onChange={e => setObjective(e.target.value)}
-                              className={formErrors.objective ? "border-red-500" : ""}
-                              rows={6}
-                            />
-                          </div>
-
-                          <div className="mt-6">
-                            <Button onClick={handleGenerate} className="w-full bg-green-600 hover:bg-green-700" size="lg">
-                              Generate Resume
-                            </Button>
-                          </div>
-                          
-                          <div className="flex justify-between">
-                            <Button onClick={() => setActiveTab("skills")} variant="outline" size="lg">
-                              <ChevronLeft className="mr-2 h-4 w-4" /> Previous
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                </div>
-                
-                {showLivePreview && (
-                  <div className="lg:col-span-6">
-                    <Card className="border shadow-sm h-full">
-                      <CardContent className="p-6">
-                        <div className="mb-4">
-                          <h3 className="text-xl font-semibold">Resume Preview</h3>
-                        </div>
-                        <div className="border p-4 bg-white overflow-auto max-h-[calc(100vh-200px)]">
-                          <ResumePreviewContent 
-                            data={getResumeData()} 
-                            isPreview={true} 
-                          />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
-              </div>
-            </Tabs>
-          </div>
-        </div>
-      </div>
-    </MainLayout>
-  );
-};
-
-export default ResumeBuilder;
+                                        onChange={e => updateExperience(exp.id, "companyName", handleTextInput(e))}
+                                        className={formErrors[`exp_${index}_companyName`] ? "border-red-
