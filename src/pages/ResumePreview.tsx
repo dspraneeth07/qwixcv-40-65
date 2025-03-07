@@ -69,7 +69,11 @@ const ResumePreview = () => {
   const [resumeData, setResumeData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [resumeFileName, setResumeFileName] = useState<string>("");
+  const resumeRef = useRef<HTMLDivElement>(null);
+  const pdfGeneratedRef = useRef<boolean>(false);
 
   useEffect(() => {
     try {
@@ -106,116 +110,150 @@ const ResumePreview = () => {
     }
   }, [location]);
 
-  const handleDownload = () => {
-    const resumeElement = document.getElementById('resume-content');
-    if (!resumeElement) {
+  useEffect(() => {
+    if (resumeData && !pdfGeneratedRef.current) {
+      // Use a timeout to ensure the DOM is rendered before generating PDF
+      const timer = setTimeout(() => {
+        generateResumePdf();
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [resumeData]);
+
+  const generateResumePdf = async () => {
+    if (!resumeData || !resumeRef.current) return;
+    
+    try {
+      console.log("Starting PDF generation process");
+      
+      const fullName = `${resumeData.personalInfo?.firstName || 'resume'}_${resumeData.personalInfo?.lastName || ''}`;
+      const fileName = `${fullName.replace(/\s+/g, '_')}.pdf`;
+      setResumeFileName(fileName);
+      
+      // Clone the resume element for PDF generation
+      const clonedElement = resumeRef.current.cloneNode(true) as HTMLElement;
+      
+      clonedElement.style.width = "700px";
+      clonedElement.style.maxWidth = "700px";
+      clonedElement.style.fontSize = "9pt";
+      clonedElement.style.padding = "20px";
+      clonedElement.style.backgroundColor = "white";
+      
+      // Position off-screen for rendering
+      clonedElement.style.position = "absolute";
+      clonedElement.style.left = "-9999px";
+      document.body.appendChild(clonedElement);
+      
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: fileName,
+        image: { type: 'jpeg', quality: 1.0 },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true, 
+          logging: false,
+          backgroundColor: "#ffffff" 
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait',
+          compress: true
+        },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+      
+      const pdfBlobResult = await html2pdf().from(clonedElement).set(opt).outputPdf('blob');
+      
+      // Remove the cloned element after PDF generation
+      document.body.removeChild(clonedElement);
+      
+      // Store the PDF blob and URL
+      setPdfBlob(pdfBlobResult);
+      const pdfUrl = URL.createObjectURL(pdfBlobResult);
+      setPdfUrl(pdfUrl);
+      
+      console.log("Resume PDF generated successfully");
+      pdfGeneratedRef.current = true;
+    } catch (error) {
+      console.error("Error generating PDF:", error);
       toast({
-        title: "Error",
+        title: "PDF Generation Error",
         description: "Could not generate PDF. Please try again.",
         variant: "destructive"
       });
-      return;
     }
+  };
 
-    const clonedElement = resumeElement.cloneNode(true) as HTMLElement;
-    
-    clonedElement.style.width = "700px";
-    clonedElement.style.maxWidth = "700px";
-    clonedElement.style.fontSize = "9pt";
-    clonedElement.style.padding = "20px";
-    clonedElement.style.backgroundColor = "white";
-    
-    clonedElement.style.position = "absolute";
-    clonedElement.style.left = "-9999px";
-    document.body.appendChild(clonedElement);
-
-    const opt = {
-      margin: [10, 10, 10, 10],
-      filename: `${resumeData?.personalInfo?.firstName || ''}_${resumeData?.personalInfo?.lastName || ''}_Resume.pdf`,
-      image: { type: 'jpeg', quality: 1.0 },
-      html2canvas: { 
-        scale: 2, 
-        useCORS: true, 
-        logging: false,
-        backgroundColor: "#ffffff" 
-      },
-      jsPDF: { 
-        unit: 'mm', 
-        format: 'a4', 
-        orientation: 'portrait',
-        compress: true
-      },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-
-    toast({
-      title: "Generating PDF",
-      description: "Your resume is being prepared for download"
-    });
-
-    html2pdf()
-      .from(clonedElement)
-      .set(opt)
-      .save()
-      .then(() => {
-        document.body.removeChild(clonedElement);
+  const handleDownload = async () => {
+    try {
+      // If PDF is already generated, use that
+      if (pdfUrl && pdfBlob) {
+        const link = document.createElement('a');
+        link.href = pdfUrl;
+        link.download = resumeFileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
         toast({
           title: "Download Complete",
           description: "Your resume has been downloaded successfully"
         });
-      })
-      .catch(err => {
-        console.error("PDF generation error:", err);
-        document.body.removeChild(clonedElement);
-        toast({
-          title: "Error",
-          description: "Failed to generate PDF. Please try again.",
-          variant: "destructive"
-        });
+        return;
+      }
+      
+      // Otherwise generate a new PDF
+      toast({
+        title: "Generating PDF",
+        description: "Your resume is being prepared for download"
       });
+      
+      await generateResumePdf();
+      
+      if (pdfUrl) {
+        const link = document.createElement('a');
+        link.href = pdfUrl;
+        link.download = resumeFileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast({
+          title: "Download Complete",
+          description: "Your resume has been downloaded successfully"
+        });
+      } else {
+        throw new Error("PDF generation failed");
+      }
+    } catch (err) {
+      console.error("PDF download error:", err);
+      toast({
+        title: "Error",
+        description: "Could not download PDF. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleShareToMedia = async () => {
     try {
-      const resumeElement = document.getElementById('resume-content');
-      if (!resumeElement) {
+      // If PDF is already generated, use that
+      if (!pdfBlob) {
         toast({
-          title: "Error",
-          description: "Could not generate PDF for sharing. Please try again.",
-          variant: "destructive"
+          title: "Preparing Resume",
+          description: "Getting your resume ready for sharing..."
         });
-        return;
+        await generateResumePdf();
+        
+        if (!pdfBlob) {
+          throw new Error("Could not generate PDF for sharing");
+        }
       }
-
-      toast({
-        title: "Preparing Resume",
-        description: "Getting your resume ready for sharing..."
-      });
-
-      const clonedElement = resumeElement.cloneNode(true) as HTMLElement;
-      
-      clonedElement.style.width = "700px";
-      clonedElement.style.maxWidth = "700px";
-      clonedElement.style.padding = "20px";
-      clonedElement.style.backgroundColor = "white";
-      
-      clonedElement.style.position = "absolute";
-      clonedElement.style.left = "-9999px";
-      document.body.appendChild(clonedElement);
-
-      const opt = {
-        margin: 1,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, backgroundColor: "#ffffff" },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      const pdfBlob = await html2pdf().from(clonedElement).set(opt).outputPdf('blob');
-      
-      document.body.removeChild(clonedElement);
       
       if (navigator.share) {
-        const file = new File([pdfBlob], `${resumeData?.personalInfo?.firstName || ''}_${resumeData?.personalInfo?.lastName || ''}_Resume.pdf`, { 
+        const file = new File([pdfBlob!], resumeFileName, { 
           type: 'application/pdf' 
         });
         
@@ -231,22 +269,26 @@ const ResumePreview = () => {
           });
         } catch (shareError) {
           console.error("Share API error:", shareError);
-          const url = URL.createObjectURL(pdfBlob);
-          window.open(url, '_blank');
+          // Fallback to opening in new tab
+          if (pdfUrl) {
+            window.open(pdfUrl, '_blank');
+            
+            toast({
+              title: "Resume Ready",
+              description: "Your resume has opened in a new tab"
+            });
+          }
+        }
+      } else {
+        // Fallback for browsers without Share API
+        if (pdfUrl) {
+          window.open(pdfUrl, '_blank');
           
           toast({
             title: "Resume Ready",
             description: "Your resume has opened in a new tab"
           });
         }
-      } else {
-        const url = URL.createObjectURL(pdfBlob);
-        window.open(url, '_blank');
-        
-        toast({
-          title: "Resume Ready",
-          description: "Your resume has opened in a new tab"
-        });
       }
     } catch (error) {
       console.error("Share error:", error);
@@ -370,7 +412,193 @@ const ResumePreview = () => {
           </div>
           
           <div className="md:col-span-8">
-            <ResumeContent data={resumeData} />
+            <Card 
+              id="resume-content" 
+              ref={resumeRef} 
+              className="p-6 bg-white shadow-lg print:shadow-none"
+            >
+              <div className="border-b pb-3 mb-3">
+                <h2 className="text-xl font-bold text-center">
+                  {resumeData?.personalInfo?.firstName || ""} {resumeData?.personalInfo?.lastName || ""}
+                </h2>
+                <p className="text-primary font-medium text-center text-sm">{resumeData?.personalInfo?.jobTitle || ""}</p>
+                
+                <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground mt-1">
+                  {resumeData?.personalInfo?.email && (
+                    <span className="flex items-center">
+                      <Mail className="h-3 w-3 mr-1" />
+                      {resumeData.personalInfo.email}
+                    </span>
+                  )}
+                  {resumeData?.personalInfo?.phone && (
+                    <span className="flex items-center">
+                      <Phone className="h-3 w-3 mr-1" />
+                      {resumeData.personalInfo.phone}
+                    </span>
+                  )}
+                  {resumeData?.personalInfo?.location && (
+                    <span className="flex items-center">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      {resumeData.personalInfo.location}
+                    </span>
+                  )}
+                  {resumeData?.personalInfo?.githubUrl && resumeData.personalInfo.githubUrl.trim() !== "" && (
+                    <a 
+                      href={resumeData.personalInfo.githubUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-xs text-primary hover:underline"
+                    >
+                      <Github className="h-3 w-3 mr-1" />
+                      {resumeData.personalInfo.githubUrl}
+                    </a>
+                  )}
+                  {resumeData?.personalInfo?.linkedinUrl && resumeData.personalInfo.linkedinUrl.trim() !== "" && (
+                    <a 
+                      href={resumeData.personalInfo.linkedinUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-xs text-primary hover:underline"
+                    >
+                      <Linkedin className="h-3 w-3 mr-1" />
+                      {resumeData.personalInfo.linkedinUrl}
+                    </a>
+                  )}
+                </div>
+              </div>
+              
+              {resumeData?.objective && (
+                <div className="mb-3">
+                  <h3 className="text-sm font-semibold border-b pb-1 mb-1">Career Objective</h3>
+                  <p className="text-xs">{resumeData.objective}</p>
+                </div>
+              )}
+              
+              {resumeData?.education && resumeData.education.length > 0 && (
+                <div className="mb-3">
+                  <h3 className="text-sm font-semibold border-b pb-1 mb-1">Education</h3>
+                  <div className="space-y-1">
+                    {resumeData.education.map((edu: any) => (
+                      <div key={edu.id}>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium text-xs">{edu.school || "University/School"}</p>
+                            <p className="text-xs">{edu.degree || "Degree"}</p>
+                          </div>
+                          <p className="text-xs text-right">{edu.graduationDate || "Graduation Year"}</p>
+                        </div>
+                        {edu.score && <p className="text-xs text-muted-foreground">{edu.score}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {resumeData?.projects && resumeData.projects.length > 0 && resumeData.projects[0].title && (
+                <div className="mb-3">
+                  <h3 className="text-sm font-semibold border-b pb-1 mb-1">Projects</h3>
+                  <div className="space-y-2">
+                    {resumeData.projects
+                      .filter((proj: any) => proj.title.trim() !== "")
+                      .map((proj: any) => (
+                      <div key={proj.id} className="mb-1">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium text-xs">{proj.title}</p>
+                            {proj.technologies && <p className="text-xs text-muted-foreground">{proj.technologies}</p>}
+                          </div>
+                        </div>
+                        {proj.link && proj.link.trim() !== "" && (
+                          <a 
+                            href={proj.link} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-xs text-primary hover:underline flex items-center"
+                          >
+                            <LinkIcon className="h-3 w-3 mr-1" />
+                            {proj.link}
+                          </a>
+                        )}
+                        {proj.description && (
+                          <div className="text-xs" 
+                               dangerouslySetInnerHTML={{ 
+                                 __html: proj.description
+                                           .split('\n')
+                                           .filter((line: string) => line.trim() !== '')
+                                           .slice(0, 3)
+                                           .join('<br>')
+                               }} 
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {resumeData?.experience && resumeData.experience.length > 0 && resumeData.experience[0].jobTitle && (
+                <div className="mb-3">
+                  <h3 className="text-sm font-semibold border-b pb-1 mb-1">Work Experience</h3>
+                  <div className="space-y-2">
+                    {resumeData.experience
+                      .filter((exp: any) => exp.jobTitle.trim() !== "")
+                      .map((exp: any) => (
+                      <div key={exp.id} className="mb-1">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium text-xs">{exp.jobTitle}</p>
+                            <p className="text-xs text-muted-foreground">{exp.companyName}</p>
+                          </div>
+                          <p className="text-xs text-right">
+                            {exp.startDate} - {exp.endDate || "Present"}
+                          </p>
+                        </div>
+                        {exp.description && (
+                          <div className="text-xs" 
+                               dangerouslySetInnerHTML={{ 
+                                 __html: exp.description
+                                           .split('\n')
+                                           .filter((line: string) => line.trim() !== '')
+                                           .slice(0, 3)
+                                           .join('<br>')
+                               }} 
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {resumeData?.skills && (
+                Object.values(resumeData.skills).some(val => 
+                  typeof val === 'string' && val.trim() !== ""
+                )) && (
+                <div className="mb-2">
+                  <h3 className="text-sm font-semibold border-b pb-1 mb-1">Skills</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    {resumeData.skills.professional && (
+                      <div>
+                        <p className="font-medium text-xs">Professional</p>
+                        <p className="text-xs">{resumeData.skills.professional}</p>
+                      </div>
+                    )}
+                    {resumeData.skills.technical && (
+                      <div>
+                        <p className="font-medium text-xs">Technical</p>
+                        <p className="text-xs">{resumeData.skills.technical}</p>
+                      </div>
+                    )}
+                    {resumeData.skills.soft && (
+                      <div>
+                        <p className="font-medium text-xs">Soft Skills</p>
+                        <p className="text-xs">{resumeData.skills.soft}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </Card>
           </div>
         </div>
       </div>
@@ -378,197 +606,7 @@ const ResumePreview = () => {
   );
 };
 
-const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boolean }) => {
-  if (!data) return null;
-  
-  const { personalInfo, education, experience, skills, objective, projects } = data;
-  
-  return (
-    <Card id="resume-content" className={`p-6 bg-white shadow-lg print:shadow-none ${isPreview ? 'max-h-full overflow-auto' : 'max-w-3xl w-full'}`}>
-      <div className="border-b pb-3 mb-3">
-        <h2 className="text-xl font-bold text-center">
-          {personalInfo?.firstName || ""} {personalInfo?.lastName || ""}
-        </h2>
-        <p className="text-primary font-medium text-center text-sm">{personalInfo?.jobTitle || ""}</p>
-        
-        <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground mt-1">
-          {personalInfo?.email && (
-            <span className="flex items-center">
-              <Mail className="h-3 w-3 mr-1" />
-              {personalInfo.email}
-            </span>
-          )}
-          {personalInfo?.phone && (
-            <span className="flex items-center">
-              <Phone className="h-3 w-3 mr-1" />
-              {personalInfo.phone}
-            </span>
-          )}
-          {personalInfo?.location && (
-            <span className="flex items-center">
-              <MapPin className="h-3 w-3 mr-1" />
-              {personalInfo.location}
-            </span>
-          )}
-          {personalInfo?.githubUrl && personalInfo.githubUrl.trim() !== "" && (
-            <a 
-              href={personalInfo.githubUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center text-xs text-primary hover:underline"
-            >
-              <Github className="h-3 w-3 mr-1" />
-              {personalInfo.githubUrl}
-            </a>
-          )}
-          {personalInfo?.linkedinUrl && personalInfo.linkedinUrl.trim() !== "" && (
-            <a 
-              href={personalInfo.linkedinUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center text-xs text-primary hover:underline"
-            >
-              <Linkedin className="h-3 w-3 mr-1" />
-              {personalInfo.linkedinUrl}
-            </a>
-          )}
-        </div>
-      </div>
-      
-      {objective && (
-        <div className="mb-3">
-          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Career Objective</h3>
-          <p className="text-xs">{objective}</p>
-        </div>
-      )}
-      
-      {education && education.length > 0 && (
-        <div className="mb-3">
-          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Education</h3>
-          <div className="space-y-1">
-            {education.map((edu: any) => (
-              <div key={edu.id}>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium text-xs">{edu.school || "University/School"}</p>
-                    <p className="text-xs">{edu.degree || "Degree"}</p>
-                  </div>
-                  <p className="text-xs text-right">{edu.graduationDate || "Graduation Year"}</p>
-                </div>
-                {edu.score && <p className="text-xs text-muted-foreground">{edu.score}</p>}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      
-      {projects && projects.length > 0 && projects[0].title && (
-        <div className="mb-3">
-          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Projects</h3>
-          <div className="space-y-2">
-            {projects
-              .filter((proj: any) => proj.title.trim() !== "")
-              .map((proj: any) => (
-              <div key={proj.id} className="mb-1">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium text-xs">{proj.title}</p>
-                    {proj.technologies && <p className="text-xs text-muted-foreground">{proj.technologies}</p>}
-                  </div>
-                </div>
-                {proj.link && proj.link.trim() !== "" && (
-                  <a 
-                    href={proj.link} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="text-xs text-primary hover:underline flex items-center"
-                  >
-                    <LinkIcon className="h-3 w-3 mr-1" />
-                    {proj.link}
-                  </a>
-                )}
-                {proj.description && (
-                  <div className="text-xs" 
-                       dangerouslySetInnerHTML={{ 
-                         __html: proj.description
-                                   .split('\n')
-                                   .filter((line: string) => line.trim() !== '')
-                                   .slice(0, 3)
-                                   .join('<br>')
-                       }} 
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      
-      {experience && experience.length > 0 && experience[0].jobTitle && (
-        <div className="mb-3">
-          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Work Experience</h3>
-          <div className="space-y-2">
-            {experience
-              .filter((exp: any) => exp.jobTitle.trim() !== "")
-              .map((exp: any) => (
-              <div key={exp.id} className="mb-1">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium text-xs">{exp.jobTitle}</p>
-                    <p className="text-xs text-muted-foreground">{exp.companyName}</p>
-                  </div>
-                  <p className="text-xs text-right">
-                    {exp.startDate} - {exp.endDate || "Present"}
-                  </p>
-                </div>
-                {exp.description && (
-                  <div className="text-xs" 
-                       dangerouslySetInnerHTML={{ 
-                         __html: exp.description
-                                   .split('\n')
-                                   .filter((line: string) => line.trim() !== '')
-                                   .slice(0, 3)
-                                   .join('<br>')
-                       }} 
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      
-      {skills && (
-        Object.values(skills).some(val => 
-          typeof val === 'string' && val.trim() !== ""
-        )) && (
-        <div className="mb-2">
-          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Skills</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            {skills.professional && (
-              <div>
-                <p className="font-medium text-xs">Professional</p>
-                <p className="text-xs">{skills.professional}</p>
-              </div>
-            )}
-            {skills.technical && (
-              <div>
-                <p className="font-medium text-xs">Technical</p>
-                <p className="text-xs">{skills.technical}</p>
-              </div>
-            )}
-            {skills.soft && (
-              <div>
-                <p className="font-medium text-xs">Soft Skills</p>
-                <p className="text-xs">{skills.soft}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </Card>
-  );
-};
+// Removed the duplicate ResumeContent component since we're now using a direct approach
 
 export const ResumePreviewContent = ({ 
   data, 
