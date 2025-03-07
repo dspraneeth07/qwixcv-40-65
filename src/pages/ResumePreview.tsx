@@ -17,9 +17,7 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import html2pdf from 'html2pdf.js';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ATSScoreDisplay } from "@/components/resume/ATSScoreDisplay";
 import JobSuggestions from "@/components/resume/JobSuggestions";
-import { generateATSScore, ATSScoreData } from "@/utils/atsScoreApi";
 
 interface Skills {
   professional?: string;
@@ -72,8 +70,6 @@ const ResumePreview = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [atsScoreData, setAtsScoreData] = useState<ATSScoreData | null>(null);
-  const [atsLoading, setAtsLoading] = useState(false);
 
   useEffect(() => {
     try {
@@ -109,26 +105,6 @@ const ResumePreview = () => {
       setLoading(false);
     }
   }, [location]);
-
-  useEffect(() => {
-    if (resumeData && !atsScoreData && !atsLoading) {
-      analyzeResumeATS();
-    }
-  }, [resumeData]);
-
-  const analyzeResumeATS = async () => {
-    if (!resumeData) return;
-    
-    setAtsLoading(true);
-    try {
-      const scoreData = await generateATSScore(resumeData);
-      setAtsScoreData(scoreData);
-    } catch (error) {
-      console.error("Error generating ATS score:", error);
-    } finally {
-      setAtsLoading(false);
-    }
-  };
 
   const handleDownload = () => {
     const resumeElement = document.getElementById('resume-content');
@@ -340,10 +316,6 @@ const ResumePreview = () => {
               skills={getAllSkills()} 
               jobTitle={resumeData?.personalInfo?.jobTitle || ""}
               location={resumeData?.personalInfo?.location}
-            />
-            <ATSScoreDisplay 
-              scoreData={atsScoreData}
-              isLoading={atsLoading}
             />
           </div>
           

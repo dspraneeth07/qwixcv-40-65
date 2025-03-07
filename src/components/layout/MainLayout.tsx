@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileText, Menu } from "lucide-react";
+import { FileText, Menu, Briefcase } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
@@ -12,6 +12,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const navigation = [
     { name: "Home", href: "/" },
     { name: "Resume Builder", href: "/builder" },
+    { name: "Job Board", href: "/job-board" },
     { name: "Pricing", href: "/pricing" },
     { name: "Contact", href: "/contact" },
   ];

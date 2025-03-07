@@ -1,7 +1,6 @@
-
 import { JobListing } from "@/types/job";
 
-// API keys for the different job platforms
+// API key for Indeed
 const RAPID_API_KEY = "9515e48d1bmsh7a2462135b3d8e9p1755e7jsn7759e1a20e89";
 
 interface JobSearchParams {
@@ -11,17 +10,58 @@ interface JobSearchParams {
   remote?: boolean;
   employment_type?: string;
   experience?: string;
-  platform?: 'indeed' | 'upwork' | 'linkedin' | 'all';
 }
 
-// Function to fetch jobs from Indeed API
-const fetchIndeedJobs = async (query: string, location?: string): Promise<JobListing[]> => {
+// Function to search for jobs using the Indeed API
+export const fetchJobs = async (params: JobSearchParams): Promise<JobListing[]> => {
   try {
-    const company = query || "Software"; // Default to software jobs if no query
-    const locality = location || "us"; // Default to US if no location
+    const query = params.query || "";
+    const location = params.location || "us";
+    const page = params.page || 1;
+    
+    const url = `https://indeed12.p.rapidapi.com/jobs/search?query=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}&page_id=${page}&locality=us`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'x-rapidapi-host': 'indeed12.p.rapidapi.com',
+        'x-rapidapi-key': RAPID_API_KEY
+      }
+    });
 
+    if (!response.ok) {
+      console.error(`Indeed API error with status: ${response.status}`);
+      return generateMockJobs(params);
+    }
+
+    const data = await response.json();
+    
+    if (!data.hits || data.hits.length === 0) {
+      return generateMockJobs(params);
+    }
+    
+    return data.hits.map((job: any) => ({
+      id: job.id || `indeed-${Math.random().toString(36).substring(7)}`,
+      title: job.title || "Job Position",
+      company: job.company || "Company",
+      location: job.location || location,
+      description: job.snippet || "No description available",
+      date: job.posted_at || new Date().toISOString(),
+      url: job.url || "https://indeed.com",
+      tags: job.tags || [],
+      salary: job.salary || "Not specified",
+      platform: 'indeed'
+    }));
+  } catch (error) {
+    console.error("Error fetching jobs:", error);
+    return generateMockJobs(params);
+  }
+};
+
+// Function to get job details
+export const getJobDetails = async (jobId: string): Promise<any> => {
+  try {
     const response = await fetch(
-      `https://indeed12.p.rapidapi.com/company/${encodeURIComponent(company)}/jobs?locality=${encodeURIComponent(locality)}&start=1`,
+      `https://indeed12.p.rapidapi.com/job/${jobId}?locality=us`,
       {
         headers: {
           'x-rapidapi-host': 'indeed12.p.rapidapi.com',
@@ -31,153 +71,56 @@ const fetchIndeedJobs = async (query: string, location?: string): Promise<JobLis
     );
 
     if (!response.ok) {
-      console.error(`Indeed API error with status: ${response.status}`);
+      console.error(`Job details API error with status: ${response.status}`);
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching job details:", error);
+    return null;
+  }
+};
+
+// Function to get company jobs
+export const getCompanyJobs = async (companyName: string): Promise<JobListing[]> => {
+  try {
+    const response = await fetch(
+      `https://indeed12.p.rapidapi.com/company/${encodeURIComponent(companyName)}/jobs?locality=us&start=1`,
+      {
+        headers: {
+          'x-rapidapi-host': 'indeed12.p.rapidapi.com',
+          'x-rapidapi-key': RAPID_API_KEY
+        }
+      }
+    );
+
+    if (!response.ok) {
+      console.error(`Company jobs API error with status: ${response.status}`);
       return [];
     }
 
     const data = await response.json();
-    return (data.jobs || []).map((job: any) => ({
-      id: `indeed-${job.id || Math.random().toString(36).substring(7)}`,
+    
+    if (!data.jobs || data.jobs.length === 0) {
+      return [];
+    }
+    
+    return data.jobs.map((job: any) => ({
+      id: job.id || `indeed-${Math.random().toString(36).substring(7)}`,
       title: job.title || "Job Position",
-      company: job.company || company,
-      location: job.location || locality,
-      description: job.description || "No description available",
-      date: job.date || new Date().toISOString(),
+      company: companyName,
+      location: job.location || "Not specified",
+      description: job.snippet || "No description available",
+      date: job.posted_at || new Date().toISOString(),
       url: job.url || "https://indeed.com",
       tags: [],
       salary: job.salary || "Not specified",
       platform: 'indeed'
     }));
   } catch (error) {
-    console.error("Error fetching Indeed jobs:", error);
+    console.error("Error fetching company jobs:", error);
     return [];
-  }
-};
-
-// Function to fetch jobs from Upwork API
-const fetchUpworkJobs = async (query: string, location?: string): Promise<JobListing[]> => {
-  try {
-    const search = query || "Web Developer";
-    const locationFilter = location || "United States";
-
-    const response = await fetch(
-      `https://upwork-jobs-api2.p.rapidapi.com/active-freelance-7d?search=%22${encodeURIComponent(search)}%22&location_filter=%22${encodeURIComponent(locationFilter)}%22`,
-      {
-        headers: {
-          'x-rapidapi-host': 'upwork-jobs-api2.p.rapidapi.com',
-          'x-rapidapi-key': RAPID_API_KEY
-        }
-      }
-    );
-
-    if (!response.ok) {
-      console.error(`Upwork API error with status: ${response.status}`);
-      return [];
-    }
-
-    const data = await response.json();
-    return (data.jobs || []).map((job: any) => ({
-      id: `upwork-${job.id || Math.random().toString(36).substring(7)}`,
-      title: job.title || "Freelance Position",
-      company: job.client?.company || "Upwork Client",
-      location: job.client?.location || "Remote",
-      description: job.description || "No description available",
-      date: job.posted_at || new Date().toISOString(),
-      url: job.url || "https://upwork.com",
-      tags: [],
-      salary: job.budget || "Not specified",
-      platform: 'upwork'
-    }));
-  } catch (error) {
-    console.error("Error fetching Upwork jobs:", error);
-    return [];
-  }
-};
-
-// Function to fetch jobs from LinkedIn API
-const fetchLinkedInJobs = async (query?: string): Promise<JobListing[]> => {
-  try {
-    const response = await fetch(
-      `https://linkedin-job-search-api.p.rapidapi.com/active-jb-24h`,
-      {
-        headers: {
-          'x-rapidapi-host': 'linkedin-job-search-api.p.rapidapi.com',
-          'x-rapidapi-key': RAPID_API_KEY
-        }
-      }
-    );
-
-    if (!response.ok) {
-      console.error(`LinkedIn API error with status: ${response.status}`);
-      return [];
-    }
-
-    const data = await response.json();
-    
-    // Filter by query if provided
-    let jobs = data.jobs || [];
-    if (query) {
-      const queryLower = query.toLowerCase();
-      jobs = jobs.filter((job: any) => 
-        job.title?.toLowerCase().includes(queryLower) || 
-        job.company?.toLowerCase().includes(queryLower) ||
-        job.description?.toLowerCase().includes(queryLower)
-      );
-    }
-
-    return jobs.map((job: any) => ({
-      id: `linkedin-${job.id || Math.random().toString(36).substring(7)}`,
-      title: job.title || "LinkedIn Position",
-      company: job.company || "LinkedIn Employer",
-      location: job.location || "Not specified",
-      description: job.description || "No description available",
-      date: job.posted_at || new Date().toISOString(),
-      url: job.url || "https://linkedin.com/jobs",
-      tags: [],
-      salary: "Not specified",
-      platform: 'linkedin'
-    }));
-  } catch (error) {
-    console.error("Error fetching LinkedIn jobs:", error);
-    return [];
-  }
-};
-
-// Main function to fetch jobs from all platforms
-export const fetchJobs = async (params: JobSearchParams): Promise<JobListing[]> => {
-  try {
-    let jobs: JobListing[] = [];
-    
-    // Determine which platforms to fetch from
-    const platform = params.platform || 'all';
-    
-    const promises: Promise<JobListing[]>[] = [];
-    
-    if (platform === 'indeed' || platform === 'all') {
-      promises.push(fetchIndeedJobs(params.query || '', params.location));
-    }
-    
-    if (platform === 'upwork' || platform === 'all') {
-      promises.push(fetchUpworkJobs(params.query || '', params.location));
-    }
-    
-    if (platform === 'linkedin' || platform === 'all') {
-      promises.push(fetchLinkedInJobs(params.query));
-    }
-    
-    // If all API calls fail, use mock data
-    const results = await Promise.all(promises);
-    jobs = results.flat();
-    
-    if (jobs.length === 0) {
-      return generateMockJobs(params);
-    }
-    
-    return jobs;
-  } catch (error) {
-    console.error("Error fetching jobs:", error);
-    // Fallback to mock data if API calls fail
-    return generateMockJobs(params);
   }
 };
 
@@ -190,11 +133,19 @@ export const getJobRecommendations = async (skills: string[], jobTitle: string, 
   const searchQuery = jobTitle || skillsArray.slice(0, 3).join(" ");
   
   try {
+    // Try to fetch company jobs if jobTitle contains a company name
+    if (jobTitle && jobTitle.length > 3) {
+      const companyJobs = await getCompanyJobs(jobTitle);
+      if (companyJobs.length > 0) {
+        return companyJobs;
+      }
+    }
+    
+    // Otherwise do a regular search
     return await fetchJobs({
       query: searchQuery,
       location: location,
-      page: 1,
-      remote: true
+      page: 1
     });
   } catch (error) {
     console.error("Error fetching job recommendations:", error);
@@ -202,7 +153,7 @@ export const getJobRecommendations = async (skills: string[], jobTitle: string, 
   }
 };
 
-// Mock data generation for development
+// Mock data generation for development fallback
 const generateMockJobs = (params: JobSearchParams): JobListing[] => {
   const jobTitles = [
     "Frontend Developer", "Backend Engineer", "Full Stack Developer", 
@@ -245,10 +196,8 @@ const generateMockJobs = (params: JobSearchParams): JobListing[] => {
     "$120,000 - $150,000", "$150,000 - $180,000", "Competitive"
   ];
 
-  const platforms = ['indeed', 'upwork', 'linkedin'] as const;
-
   // Filter based on search parameters
-  let filteredJobs = Array(20).fill(0).map((_, i) => {
+  let filteredJobs = Array(10).fill(0).map((_, i) => {
     const randomDate = new Date();
     randomDate.setDate(randomDate.getDate() - Math.floor(Math.random() * 30));
     
@@ -258,7 +207,6 @@ const generateMockJobs = (params: JobSearchParams): JobListing[] => {
     const descIndex = Math.floor(Math.random() * descriptions.length);
     const tagIndex = Math.floor(Math.random() * tags.length);
     const salaryIndex = Math.floor(Math.random() * salaries.length);
-    const platformIndex = Math.floor(Math.random() * platforms.length);
     
     return {
       id: `job-${i + 1}`,
@@ -270,7 +218,7 @@ const generateMockJobs = (params: JobSearchParams): JobListing[] => {
       url: "https://example.com/job-application",
       tags: tags[tagIndex],
       salary: salaries[salaryIndex],
-      platform: platforms[platformIndex]
+      platform: 'indeed' as const
     };
   });
   
@@ -289,10 +237,6 @@ const generateMockJobs = (params: JobSearchParams): JobListing[] => {
     filteredJobs = filteredJobs.filter(job => 
       job.location.toLowerCase().includes(location)
     );
-  }
-
-  if (params.platform && params.platform !== 'all') {
-    filteredJobs = filteredJobs.filter(job => job.platform === params.platform);
   }
   
   // Pagination

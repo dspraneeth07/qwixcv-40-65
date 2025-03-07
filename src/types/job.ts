@@ -9,7 +9,7 @@ export interface JobListing {
   url: string;
   tags?: string[];
   salary?: string;
-  platform: 'indeed' | 'upwork' | 'linkedin' | 'other'; // Added platform field
+  platform: 'indeed'; // Simplified to only include Indeed
 }
 
 export interface JobFilter {
@@ -20,5 +20,4 @@ export interface JobFilter {
   keywordMatch?: string[]; // For matching with resume skills
   employmentType?: string; // For API parameter
   salary?: string; // For filtering by salary range
-  platform?: 'indeed' | 'upwork' | 'linkedin' | 'all'; // Added platform filter
 }
