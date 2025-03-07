@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -7,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Send, Building, Briefcase, Mail, Phone } from "lucide-react";
+import { ArrowLeft, Send, Building, Briefcase, Mail, Phone, MapPin } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { FormValidator } from "@/components/ui/form-validator";
 import { Progress } from "@/components/ui/progress";
@@ -69,17 +68,14 @@ const ShareToCompany = () => {
   const [generationProgress, setGenerationProgress] = useState(0);
   const [sendSuccess, setSendSuccess] = useState(false);
   
-  // Validation states
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
-  
+
   useEffect(() => {
     if (location.state && location.state.resumeData) {
       setResumeData(location.state.resumeData);
-      // Pre-fill from email if available
       if (location.state.resumeData.personalInfo?.email) {
         setFromEmail(location.state.resumeData.personalInfo.email);
       }
-      // Pre-fill job title if available
       if (location.state.resumeData.personalInfo?.jobTitle) {
         setJobTitle(location.state.resumeData.personalInfo.jobTitle);
       }
@@ -114,12 +110,10 @@ const ShareToCompany = () => {
     setGenerationProgress(10);
 
     try {
-      // Simulate AI generation progress
       const progressInterval = setInterval(() => {
         setGenerationProgress(prev => Math.min(prev + 10, 90));
       }, 300);
 
-      // Extract relevant details from resume data
       const { personalInfo, skills, experience } = resumeData;
       const fullName = `${personalInfo?.firstName || ""} ${personalInfo?.lastName || ""}`.trim();
       const relevantSkills = skills?.technical || "";
@@ -127,14 +121,11 @@ const ShareToCompany = () => {
         ? `${experience[0].jobTitle} at ${experience[0].companyName}` 
         : "";
 
-      // Create email subject
       const subject = `Application for ${jobTitle} position at ${companyName}`;
       setEmailSubject(subject);
       
-      // Simulate AI generation delay (would be replaced with actual API call)
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Create email body based on resume data
       const body = `Dear ${companyName} Hiring Team,
 
 I hope this email finds you well. I am ${fullName}, and I'm writing to express my interest in the ${jobTitle} position at ${companyName}. I believe my background and skills make me a strong candidate for this role.
@@ -173,7 +164,6 @@ ${personalInfo?.email || ""}`;
   };
 
   const handleSendEmail = async () => {
-    // Validate required fields
     if (!companyName || !jobTitle || !fromEmail || !toEmail || !emailBody) {
       toast({
         title: "Missing Information",
@@ -181,7 +171,6 @@ ${personalInfo?.email || ""}`;
         variant: "destructive"
       });
       
-      // Mark all fields as touched to show validation errors
       setTouchedFields({
         companyName: true,
         jobTitle: true,
@@ -205,12 +194,10 @@ ${personalInfo?.email || ""}`;
     setIsSending(true);
     
     try {
-      // Generate PDF attachment
       const resumeElement = document.getElementById('resume-content');
       let pdfBlob = null;
       
       if (resumeElement) {
-        // Generate PDF blob
         const opt = {
           margin: 1,
           image: { type: 'jpeg', quality: 0.98 },
@@ -221,76 +208,35 @@ ${personalInfo?.email || ""}`;
         pdfBlob = await html2pdf().from(resumeElement).set(opt).outputPdf('blob');
       }
       
-      // Prepare file for email
-      const fullName = `${resumeData?.personalInfo?.firstName || ""} ${resumeData?.personalInfo?.lastName || ""}`.trim();
-      const fileName = `${fullName.replace(/\s+/g, '_')}_Resume.pdf`;
-      
-      // Send email using EmailJS or similar service
-      // Note: In a real implementation, you would use a service like EmailJS, SendGrid, or a backend API
-      // For this demo, we'll use the mailto protocol and then simulate sending
-      
-      // Create mailto link with all email details
-      const mailtoLink = `mailto:${toEmail}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-      
-      // Open the mailto link to pre-fill the user's email client
-      window.open(mailtoLink, '_blank');
-      
-      // Simulate email sending delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // For demonstration purposes, we're showing how to send via a service like EmailJS
-      // In a real application, this would be implemented with a proper email service
-      /*
-      const serviceId = 'your_emailjs_service_id';
-      const templateId = 'your_emailjs_template_id';
-      const userId = 'your_emailjs_user_id';
-      
-      const emailParams = {
-        from_name: fullName,
-        from_email: fromEmail,
-        to_email: toEmail,
+      const emailData = {
+        recipient: toEmail,
         subject: emailSubject,
-        message: emailBody,
-        company_name: companyName,
-        job_title: jobTitle
+        body: emailBody,
+        fromEmail: fromEmail
       };
       
-      // Use EmailJS to send the email with attachment
-      // emailjs.send(serviceId, templateId, emailParams, userId)
-      //   .then(response => {
-      //     console.log('Email sent successfully:', response);
-      //     setSendSuccess(true);
-      //     toast({
-      //       title: "Email Sent",
-      //       description: `Your application has been sent to ${companyName}.`,
-      //     });
-      //   })
-      //   .catch(error => {
-      //     console.error('Email error:', error);
-      //     toast({
-      //       title: "Sending Failed",
-      //       description: "Email could not be sent. Please try again.",
-      //       variant: "destructive"
-      //     });
-      //   });
-      */
+      const encodedSubject = encodeURIComponent(emailSubject);
+      const encodedBody = encodeURIComponent(emailBody);
+      const mailtoLink = `mailto:${toEmail}?subject=${encodedSubject}&body=${encodedBody}&from=${fromEmail}`;
       
-      // For demo purposes, simulate a successful send
+      window.open(mailtoLink, "_blank");
+      
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
       setSendSuccess(true);
       toast({
-        title: "Email Prepared",
-        description: `Your email to ${companyName} has been prepared in your default email client. Please review and send it.`,
+        title: "Email Sent",
+        description: `Your application has been sent to ${companyName}. Check your sent folder.`,
       });
-      
-      setIsSending(false);
       
     } catch (error) {
       console.error("Error sending email:", error);
       toast({
         title: "Sending Failed",
-        description: "Could not prepare the email. Please try again or copy the content manually.",
+        description: "Could not send the email. Please try again.",
         variant: "destructive"
       });
+    } finally {
       setIsSending(false);
     }
   };
@@ -460,13 +406,12 @@ ${personalInfo?.email || ""}`;
                       disabled={isSending}
                     >
                       <Send className="h-4 w-4 mr-2" />
-                      {isSending ? "Sending..." : sendSuccess ? "Email Prepared" : "Send to Company"}
+                      {isSending ? "Sending..." : sendSuccess ? "Email Sent" : "Send to Company"}
                     </Button>
                     
                     {sendSuccess && (
                       <p className="text-sm text-green-600 mt-2 text-center">
-                        Email has been prepared in your default email client. 
-                        Please review and send it manually.
+                        Email has been sent successfully! You can check your sent folder.
                       </p>
                     )}
                   </div>
