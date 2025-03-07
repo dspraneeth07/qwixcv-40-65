@@ -119,23 +119,37 @@ const ResumePreview = () => {
 
     // Create a clone of the element for PDF generation
     const clonedElement = resumeElement.cloneNode(true) as HTMLElement;
-    // Apply additional styles to ensure the content fits on one page
-    clonedElement.style.fontSize = "9pt";
-    clonedElement.style.padding = "10px";
-    clonedElement.style.maxWidth = "100%";
     
-    // Temporarily append to the document
+    // Apply additional styles to ensure the content fits on one page
+    clonedElement.style.width = "100%";
+    clonedElement.style.maxWidth = "700px";
+    clonedElement.style.fontSize = "9pt";
+    clonedElement.style.padding = "20px";
+    clonedElement.style.backgroundColor = "white";
+    
+    // Temporarily append to the document but make it invisible
     clonedElement.style.position = "absolute";
     clonedElement.style.left = "-9999px";
     document.body.appendChild(clonedElement);
 
     const opt = {
-      margin: [5, 5, 5, 5], // Reduced margins (top, right, bottom, left)
+      margin: [10, 10, 10, 10], // Slightly increased margins for better readability
       filename: `${resumeData?.personalInfo?.firstName || ''}_${resumeData?.personalInfo?.lastName || ''}_Resume.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, logging: false },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
-      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } // Try to avoid page breaks
+      image: { type: 'jpeg', quality: 1.0 },
+      html2canvas: { 
+        scale: 2, 
+        useCORS: true, 
+        logging: false,
+        backgroundColor: "#ffffff" 
+      },
+      jsPDF: { 
+        unit: 'mm', 
+        format: 'a4', 
+        orientation: 'portrait', 
+        compress: true,
+        background: '#ffffff'
+      },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
     toast({
@@ -143,25 +157,27 @@ const ResumePreview = () => {
       description: "Your resume is being prepared for download"
     });
 
-    html2pdf().from(clonedElement).set(opt).save()
-      .then(() => {
-        // Remove the cloned element
-        document.body.removeChild(clonedElement);
-        toast({
-          title: "Download Complete",
-          description: "Your resume has been downloaded successfully"
+    setTimeout(() => {
+      html2pdf().from(clonedElement).set(opt).save()
+        .then(() => {
+          // Remove the cloned element
+          document.body.removeChild(clonedElement);
+          toast({
+            title: "Download Complete",
+            description: "Your resume has been downloaded successfully"
+          });
+        })
+        .catch(err => {
+          console.error("PDF generation error:", err);
+          // Remove the cloned element
+          document.body.removeChild(clonedElement);
+          toast({
+            title: "Error",
+            description: "Failed to generate PDF. Please try again.",
+            variant: "destructive"
+          });
         });
-      })
-      .catch(err => {
-        console.error("PDF generation error:", err);
-        // Remove the cloned element
-        document.body.removeChild(clonedElement);
-        toast({
-          title: "Error",
-          description: "Failed to generate PDF. Please try again.",
-          variant: "destructive"
-        });
-      });
+    }, 500); // Add small delay to ensure proper rendering
   };
 
   const handleShareToMedia = async () => {

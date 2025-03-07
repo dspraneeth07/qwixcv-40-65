@@ -1,69 +1,119 @@
-# Welcome to your Lovable project
 
-## Project info
+# QWIK CV - AI-Powered Resume Builder
 
-**URL**: https://lovable.dev/projects/82733390-1d5b-47e7-bf38-7276a84d80ac
+<div align="center">
+  <h3>Build ATS-optimized resumes with AI assistance</h3>
+</div>
 
-## How can I edit this code?
+![QWIK CV Banner](public/og-image.png)
 
-There are several ways of editing your application.
+## 🚀 Project Overview
 
-**Use Lovable**
+QWIK CV is an advanced resume builder that leverages artificial intelligence to help job seekers create professional, ATS-optimized resumes tailored to specific job descriptions. The platform offers intelligent content suggestions, real-time ATS scoring, resume comparison tools, and automated job matching to streamline the job application process.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/82733390-1d5b-47e7-bf38-7276a84d80ac) and start prompting.
+## ✨ Key Features
 
-Changes made via Lovable will be committed automatically to this repo.
+- **AI-Powered Resume Generation**: Create professional resumes with AI-generated content suggestions
+- **ATS Optimization**: Real-time ATS compatibility scoring against job descriptions
+- **Resume Comparison**: Compare your resume against job descriptions with visual feedback
+- **Template Selection**: Choose from multiple professionally designed resume templates
+- **Job Matching**: Get personalized job recommendations based on your resume content
+- **PDF Export**: Download your resume as a professionally formatted PDF document
+- **Job Search**: Browse job listings that match your skills and experience
+- **Share to Companies**: Email your resume directly to potential employers
 
-**Use your preferred IDE**
+## 🛠️ Technology Stack
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Frontend
+- **React**: UI component library for building the interactive interface
+- **TypeScript**: Type-safe JavaScript for reliable code
+- **Tailwind CSS**: Utility-first CSS framework for responsive design
+- **shadcn/ui**: High-quality UI components built with Radix UI and Tailwind
+- **Three.js**: JavaScript 3D library for interactive visualizations
+- **html2pdf.js**: Library for generating PDF documents from HTML content
+- **Recharts**: Composable charting library for data visualization
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Backend Libraries
+- **Tanstack Query**: Data fetching and state management library
+- **React Router**: Navigation and routing for the application
+- **React Hook Form**: Form validation and handling
+- **date-fns**: Date utility library for manipulation and formatting
 
-Follow these steps:
+### API Integrations
+- **AI Integration**: AI-powered content generation and analysis
+- **Indeed API**: Job search and listing integration
+- **ATS Scanner API**: Resume analysis and optimization
+
+## 📐 Architecture
+
+The application follows a modern component-based architecture with:
+
+- **Component-Based Structure**: Modular, reusable UI components
+- **Custom Hooks**: Encapsulated logic for data fetching and state management
+- **Context API**: Global state management for themes and user preferences
+- **Responsive Design**: Mobile-first approach with Tailwind CSS
+- **Type Safety**: Comprehensive TypeScript interfaces for all data models
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js & npm installed - [Install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+
+### Installation
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Clone the repository
+git clone <YOUR_REPO_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navigate to the project directory
+cd qwik-cv
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## 📱 Features in Detail
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Resume Builder
+- Multi-step form for personal information, education, experience, and skills
+- Real-time preview of the resume as you build it
+- AI-powered content suggestions for each section
+- Save and edit functionality
 
-**Use GitHub Codespaces**
+### ATS Scanner
+- Upload job descriptions to analyze resume compatibility
+- Real-time scoring and feedback
+- Keyword matching analysis
+- Improvement suggestions
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Resume Comparison
+- Side-by-side visual comparison of resume and job description
+- Highlighted matching keywords
+- 3D visualization of the matching process
+- Detailed PDF report generation
 
-## What technologies are used for this project?
+### Job Board
+- Search for jobs based on skills and location
+- Filter by job type, experience level, and more
+- Save interesting job postings
+- Direct application links
 
-This project is built with .
+## 👨‍💻 Development Team
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Sai Praneeth Reddy Dhadi** - Full Stack Developer
+- **Pravalika Batchu** - UI/UX Designer (1602-23-733-308)
+- **Bhavana Vemula** - Backend Developer
+- **Vaishnavi Konda** - Frontend Developer
 
-## How can I deploy this project?
+## 📄 License
 
-Simply open [Lovable](https://lovable.dev/projects/82733390-1d5b-47e7-bf38-7276a84d80ac) and click on Share -> Publish.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## I want to use a custom domain - is that possible?
+## 🙏 Acknowledgements
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+- Icon library provided by [Lucide Icons](https://lucide.dev/)
+- UI components from [shadcn/ui](https://ui.shadcn.com/)
+- 3D visualizations powered by [Three.js](https://threejs.org/)
