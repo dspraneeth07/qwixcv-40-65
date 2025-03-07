@@ -117,55 +117,67 @@ const ResumePreview = () => {
       return;
     }
 
+    // Create a clone of the element for PDF generation
+    const clonedElement = resumeElement.cloneNode(true) as HTMLElement;
+    
+    // Apply additional styles to ensure the content fits on one page
+    clonedElement.style.width = "100%";
+    clonedElement.style.maxWidth = "700px";
+    clonedElement.style.fontSize = "9pt";
+    clonedElement.style.padding = "20px";
+    clonedElement.style.backgroundColor = "white";
+    
+    // Temporarily append to the document but make it invisible
+    clonedElement.style.position = "absolute";
+    clonedElement.style.left = "-9999px";
+    document.body.appendChild(clonedElement);
+
     const opt = {
-      margin: [10, 10, 10, 10],
+      margin: [10, 10, 10, 10], // Slightly increased margins for better readability
       filename: `${resumeData?.personalInfo?.firstName || ''}_${resumeData?.personalInfo?.lastName || ''}_Resume.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
+      image: { type: 'jpeg', quality: 1.0 },
       html2canvas: { 
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff'
+        scale: 2, 
+        useCORS: true, 
+        logging: false,
+        backgroundColor: "#ffffff" 
       },
       jsPDF: { 
         unit: 'mm', 
         format: 'a4', 
-        orientation: 'portrait',
-        compress: true 
-      }
+        orientation: 'portrait', 
+        compress: true,
+        background: '#ffffff'
+      },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
     toast({
       title: "Generating PDF",
-      description: "Your resume is being prepared for download..."
+      description: "Your resume is being prepared for download"
     });
 
-    // Clone the element and apply print-specific styles
-    const printElement = resumeElement.cloneNode(true) as HTMLElement;
-    printElement.style.width = '210mm';
-    printElement.style.padding = '15mm';
-    printElement.style.backgroundColor = '#ffffff';
-    document.body.appendChild(printElement);
-
-    html2pdf()
-      .from(printElement)
-      .set(opt)
-      .save()
-      .then(() => {
-        document.body.removeChild(printElement);
-        toast({
-          title: "Success",
-          description: "Your resume has been downloaded successfully!"
+    setTimeout(() => {
+      html2pdf().from(clonedElement).set(opt).save()
+        .then(() => {
+          // Remove the cloned element
+          document.body.removeChild(clonedElement);
+          toast({
+            title: "Download Complete",
+            description: "Your resume has been downloaded successfully"
+          });
+        })
+        .catch(err => {
+          console.error("PDF generation error:", err);
+          // Remove the cloned element
+          document.body.removeChild(clonedElement);
+          toast({
+            title: "Error",
+            description: "Failed to generate PDF. Please try again.",
+            variant: "destructive"
+          });
         });
-      })
-      .catch(err => {
-        console.error("PDF generation error:", err);
-        document.body.removeChild(printElement);
-        toast({
-          title: "Error",
-          description: "Failed to generate PDF. Please try again.",
-          variant: "destructive"
-        });
-      });
+    }, 500); // Add small delay to ensure proper rendering
   };
 
   const handleShareToMedia = async () => {
