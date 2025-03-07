@@ -117,12 +117,25 @@ const ResumePreview = () => {
       return;
     }
 
+    // Create a clone of the element for PDF generation
+    const clonedElement = resumeElement.cloneNode(true) as HTMLElement;
+    // Apply additional styles to ensure the content fits on one page
+    clonedElement.style.fontSize = "9pt";
+    clonedElement.style.padding = "10px";
+    clonedElement.style.maxWidth = "100%";
+    
+    // Temporarily append to the document
+    clonedElement.style.position = "absolute";
+    clonedElement.style.left = "-9999px";
+    document.body.appendChild(clonedElement);
+
     const opt = {
-      margin: 1,
+      margin: [5, 5, 5, 5], // Reduced margins (top, right, bottom, left)
       filename: `${resumeData?.personalInfo?.firstName || ''}_${resumeData?.personalInfo?.lastName || ''}_Resume.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } // Try to avoid page breaks
     };
 
     toast({
@@ -130,8 +143,10 @@ const ResumePreview = () => {
       description: "Your resume is being prepared for download"
     });
 
-    html2pdf().from(resumeElement).set(opt).save()
+    html2pdf().from(clonedElement).set(opt).save()
       .then(() => {
+        // Remove the cloned element
+        document.body.removeChild(clonedElement);
         toast({
           title: "Download Complete",
           description: "Your resume has been downloaded successfully"
@@ -139,6 +154,8 @@ const ResumePreview = () => {
       })
       .catch(err => {
         console.error("PDF generation error:", err);
+        // Remove the cloned element
+        document.body.removeChild(clonedElement);
         toast({
           title: "Error",
           description: "Failed to generate PDF. Please try again.",
@@ -334,14 +351,14 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
   const { personalInfo, education, experience, skills, objective, projects } = data;
   
   return (
-    <Card id="resume-content" className={`p-8 bg-white shadow-lg print:shadow-none ${isPreview ? 'max-h-full overflow-auto' : 'max-w-3xl w-full'}`}>
-      <div className="border-b pb-4 mb-4">
-        <h2 className="text-2xl font-bold text-center">
+    <Card id="resume-content" className={`p-6 bg-white shadow-lg print:shadow-none ${isPreview ? 'max-h-full overflow-auto' : 'max-w-3xl w-full'}`}>
+      <div className="border-b pb-3 mb-3">
+        <h2 className="text-xl font-bold text-center">
           {personalInfo?.firstName || ""} {personalInfo?.lastName || ""}
         </h2>
-        <p className="text-primary font-medium text-center">{personalInfo?.jobTitle || ""}</p>
+        <p className="text-primary font-medium text-center text-sm">{personalInfo?.jobTitle || ""}</p>
         
-        <div className="flex flex-wrap justify-center gap-3 text-sm text-muted-foreground mt-2">
+        <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground mt-1">
           {personalInfo?.email && (
             <span className="flex items-center">
               <Mail className="h-3 w-3 mr-1" />
@@ -365,9 +382,9 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
               href={personalInfo.githubUrl} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center text-sm text-primary hover:underline"
+              className="inline-flex items-center text-xs text-primary hover:underline"
             >
-              <Github className="h-3.5 w-3.5 mr-1" />
+              <Github className="h-3 w-3 mr-1" />
               {personalInfo.githubUrl}
             </a>
           )}
@@ -376,9 +393,9 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
               href={personalInfo.linkedinUrl} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center text-sm text-primary hover:underline"
+              className="inline-flex items-center text-xs text-primary hover:underline"
             >
-              <Linkedin className="h-3.5 w-3.5 mr-1" />
+              <Linkedin className="h-3 w-3 mr-1" />
               {personalInfo.linkedinUrl}
             </a>
           )}
@@ -386,26 +403,26 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
       </div>
       
       {objective && (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold border-b pb-1 mb-2">Career Objective</h3>
-          <p className="text-sm">{objective}</p>
+        <div className="mb-3">
+          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Career Objective</h3>
+          <p className="text-xs">{objective}</p>
         </div>
       )}
       
       {education && education.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold border-b pb-1 mb-2">Education</h3>
-          <div className="space-y-4">
+        <div className="mb-3">
+          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Education</h3>
+          <div className="space-y-1">
             {education.map((edu: any) => (
               <div key={edu.id}>
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-medium">{edu.school || "University/School"}</p>
-                    <p className="text-sm">{edu.degree || "Degree"}</p>
+                    <p className="font-medium text-xs">{edu.school || "University/School"}</p>
+                    <p className="text-xs">{edu.degree || "Degree"}</p>
                   </div>
-                  <p className="text-sm text-right">{edu.graduationDate || "Graduation Year"}</p>
+                  <p className="text-xs text-right">{edu.graduationDate || "Graduation Year"}</p>
                 </div>
-                {edu.score && <p className="text-sm text-muted-foreground mt-1">{edu.score}</p>}
+                {edu.score && <p className="text-xs text-muted-foreground">{edu.score}</p>}
               </div>
             ))}
           </div>
@@ -413,17 +430,17 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
       )}
       
       {projects && projects.length > 0 && projects[0].title && (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold border-b pb-1 mb-2">Projects</h3>
-          <div className="space-y-4">
+        <div className="mb-3">
+          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Projects</h3>
+          <div className="space-y-2">
             {projects
               .filter((proj: any) => proj.title.trim() !== "")
               .map((proj: any) => (
-              <div key={proj.id}>
+              <div key={proj.id} className="mb-1">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-medium">{proj.title}</p>
-                    {proj.technologies && <p className="text-sm text-muted-foreground">{proj.technologies}</p>}
+                    <p className="font-medium text-xs">{proj.title}</p>
+                    {proj.technologies && <p className="text-xs text-muted-foreground">{proj.technologies}</p>}
                   </div>
                 </div>
                 {proj.link && proj.link.trim() !== "" && (
@@ -431,15 +448,22 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
                     href={proj.link} 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="text-sm text-primary hover:underline flex items-center mt-1"
+                    className="text-xs text-primary hover:underline flex items-center"
                   >
-                    <LinkIcon className="h-3.5 w-3.5 mr-1" />
+                    <LinkIcon className="h-3 w-3 mr-1" />
                     {proj.link}
                   </a>
                 )}
                 {proj.description && (
-                  <div className="text-sm mt-1" 
-                       dangerouslySetInnerHTML={{ __html: proj.description.replace(/\n/g, '<br/>') }} />
+                  <div className="text-xs" 
+                       dangerouslySetInnerHTML={{ 
+                         __html: proj.description
+                                   .split('\n')
+                                   .filter((line: string) => line.trim() !== '')
+                                   .slice(0, 3)
+                                   .join('<br>')
+                       }} 
+                  />
                 )}
               </div>
             ))}
@@ -448,25 +472,32 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
       )}
       
       {experience && experience.length > 0 && experience[0].jobTitle && (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold border-b pb-1 mb-2">Work Experience</h3>
-          <div className="space-y-4">
+        <div className="mb-3">
+          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Work Experience</h3>
+          <div className="space-y-2">
             {experience
               .filter((exp: any) => exp.jobTitle.trim() !== "")
               .map((exp: any) => (
-              <div key={exp.id}>
+              <div key={exp.id} className="mb-1">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-medium">{exp.jobTitle}</p>
-                    <p className="text-sm text-muted-foreground">{exp.companyName}</p>
+                    <p className="font-medium text-xs">{exp.jobTitle}</p>
+                    <p className="text-xs text-muted-foreground">{exp.companyName}</p>
                   </div>
-                  <p className="text-sm text-right">
+                  <p className="text-xs text-right">
                     {exp.startDate} - {exp.endDate || "Present"}
                   </p>
                 </div>
                 {exp.description && (
-                  <div className="text-sm mt-1" 
-                       dangerouslySetInnerHTML={{ __html: exp.description.replace(/\n/g, '<br/>') }} />
+                  <div className="text-xs" 
+                       dangerouslySetInnerHTML={{ 
+                         __html: exp.description
+                                   .split('\n')
+                                   .filter((line: string) => line.trim() !== '')
+                                   .slice(0, 3)
+                                   .join('<br>')
+                       }} 
+                  />
                 )}
               </div>
             ))}
@@ -475,28 +506,28 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
       )}
       
       {skills && (
-        Object.values(skills as Skills).some(val => 
+        Object.values(skills).some(val => 
           typeof val === 'string' && val.trim() !== ""
         )) && (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold border-b pb-1 mb-2">Skills</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mb-2">
+          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Skills</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
             {skills.professional && (
               <div>
-                <p className="font-medium text-sm">Professional</p>
-                <p className="text-sm">{skills.professional}</p>
+                <p className="font-medium text-xs">Professional</p>
+                <p className="text-xs">{skills.professional}</p>
               </div>
             )}
             {skills.technical && (
               <div>
-                <p className="font-medium text-sm">Technical</p>
-                <p className="text-sm">{skills.technical}</p>
+                <p className="font-medium text-xs">Technical</p>
+                <p className="text-xs">{skills.technical}</p>
               </div>
             )}
             {skills.soft && (
               <div>
-                <p className="font-medium text-sm">Soft Skills</p>
-                <p className="text-sm">{skills.soft}</p>
+                <p className="font-medium text-xs">Soft Skills</p>
+                <p className="text-xs">{skills.soft}</p>
               </div>
             )}
           </div>

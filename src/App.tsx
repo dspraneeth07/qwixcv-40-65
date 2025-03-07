@@ -6,8 +6,8 @@ import ResumeBuilder from "./pages/ResumeBuilder";
 import ResumePreview from "./pages/ResumePreview";
 import ShareToCompany from "./pages/ShareToCompany";
 import JobBoard from "./pages/JobBoard";
-import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import ATSScanner from "./pages/ATSScanner";
 import { useEffect } from "react";
@@ -42,7 +42,7 @@ function App() {
           <Route path="/resume-preview" element={<ResumePreview />} />
           <Route path="/share-to-company" element={<ShareToCompany />} />
           <Route path="/job-board" element={<JobBoard />} />
-          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/ats-scanner" element={<ATSScanner />} />
           <Route path="*" element={<NotFound />} />

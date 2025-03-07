@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileText, Menu, Briefcase, Zap, BarChart2, CreditCard, MessageSquare } from "lucide-react";
+import { FileText, Menu, Briefcase, Zap, BarChart2, MessageSquare, User } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 
@@ -13,7 +13,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     { name: "Resume Builder", href: "/builder" },
     { name: "ATS Scanner", href: "/ats-scanner" },
     { name: "Job Board", href: "/job-board" },
-    { name: "Pricing", href: "/pricing" },
+    { name: "About", href: "/about" },
     { name: "Contact", href: "/contact" },
   ];
 
@@ -99,10 +99,6 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                 <BarChart2 className="h-4 w-4" />
                 ATS Scanner
               </Link>
-              <Link to="/pricing" className="text-sm text-gray-300 hover:text-white font-poppins flex items-center gap-2">
-                <CreditCard className="h-4 w-4" />
-                Pricing
-              </Link>
               <Link to="/job-board" className="text-sm text-gray-300 hover:text-white font-poppins flex items-center gap-2">
                 <Briefcase className="h-4 w-4" />
                 Job Board
@@ -112,24 +108,19 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
             <div className="flex flex-col gap-3">
               <p className="font-medium font-sf-pro">Company</p>
               <Link to="/about" className="text-sm text-gray-300 hover:text-white font-poppins flex items-center gap-2">
-                <Zap className="h-4 w-4" />
+                <User className="h-4 w-4" />
                 About
               </Link>
               <Link to="/contact" className="text-sm text-gray-300 hover:text-white font-poppins flex items-center gap-2">
                 <MessageSquare className="h-4 w-4" />
                 Contact
               </Link>
-              <Link to="/privacy" className="text-sm text-gray-300 hover:text-white font-poppins flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Privacy
-              </Link>
             </div>
             
             <div className="flex flex-col gap-3">
               <p className="font-medium font-sf-pro">Follow us</p>
-              <a href="#" className="text-sm text-gray-300 hover:text-white font-poppins">Twitter</a>
-              <a href="#" className="text-sm text-gray-300 hover:text-white font-poppins">LinkedIn</a>
-              <a href="#" className="text-sm text-gray-300 hover:text-white font-poppins">Instagram</a>
+              <a href="https://github.com/dspraneeth07" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-300 hover:text-white font-poppins">GitHub</a>
+              <a href="https://linkedin.com/in/dspraneeth07" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-300 hover:text-white font-poppins">LinkedIn</a>
             </div>
           </div>
         </div>
