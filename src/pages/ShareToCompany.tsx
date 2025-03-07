@@ -67,6 +67,7 @@ const ShareToCompany = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
+  const [sendSuccess, setSendSuccess] = useState(false);
   
   // Validation states
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
@@ -220,27 +221,74 @@ ${personalInfo?.email || ""}`;
         pdfBlob = await html2pdf().from(resumeElement).set(opt).outputPdf('blob');
       }
       
-      // In a real application, you would send the email through a backend service
-      // For this demo, we'll just simulate a successful send
+      // Prepare file for email
+      const fullName = `${resumeData?.personalInfo?.firstName || ""} ${resumeData?.personalInfo?.lastName || ""}`.trim();
+      const fileName = `${fullName.replace(/\s+/g, '_')}_Resume.pdf`;
+      
+      // Send email using EmailJS or similar service
+      // Note: In a real implementation, you would use a service like EmailJS, SendGrid, or a backend API
+      // For this demo, we'll use the mailto protocol and then simulate sending
+      
+      // Create mailto link with all email details
+      const mailtoLink = `mailto:${toEmail}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+      
+      // Open the mailto link to pre-fill the user's email client
+      window.open(mailtoLink, '_blank');
+      
+      // Simulate email sending delay
       await new Promise(resolve => setTimeout(resolve, 2000));
       
+      // For demonstration purposes, we're showing how to send via a service like EmailJS
+      // In a real application, this would be implemented with a proper email service
+      /*
+      const serviceId = 'your_emailjs_service_id';
+      const templateId = 'your_emailjs_template_id';
+      const userId = 'your_emailjs_user_id';
+      
+      const emailParams = {
+        from_name: fullName,
+        from_email: fromEmail,
+        to_email: toEmail,
+        subject: emailSubject,
+        message: emailBody,
+        company_name: companyName,
+        job_title: jobTitle
+      };
+      
+      // Use EmailJS to send the email with attachment
+      // emailjs.send(serviceId, templateId, emailParams, userId)
+      //   .then(response => {
+      //     console.log('Email sent successfully:', response);
+      //     setSendSuccess(true);
+      //     toast({
+      //       title: "Email Sent",
+      //       description: `Your application has been sent to ${companyName}.`,
+      //     });
+      //   })
+      //   .catch(error => {
+      //     console.error('Email error:', error);
+      //     toast({
+      //       title: "Sending Failed",
+      //       description: "Email could not be sent. Please try again.",
+      //       variant: "destructive"
+      //     });
+      //   });
+      */
+      
+      // For demo purposes, simulate a successful send
+      setSendSuccess(true);
       toast({
-        title: "Email Sent",
-        description: `Your application has been sent to ${companyName}.`,
+        title: "Email Prepared",
+        description: `Your email to ${companyName} has been prepared in your default email client. Please review and send it.`,
       });
       
       setIsSending(false);
-      
-      // Navigate back to preview after successful send
-      setTimeout(() => {
-        navigate('/resume-preview');
-      }, 2000);
       
     } catch (error) {
       console.error("Error sending email:", error);
       toast({
         title: "Sending Failed",
-        description: "Could not send the email. Please try again or copy the content manually.",
+        description: "Could not prepare the email. Please try again or copy the content manually.",
         variant: "destructive"
       });
       setIsSending(false);
@@ -335,14 +383,17 @@ ${personalInfo?.email || ""}`;
                     <div className="space-y-4">
                       <div>
                         <Label htmlFor="fromEmail">Your Email</Label>
-                        <Input
-                          id="fromEmail"
-                          type="email"
-                          placeholder="Your email address"
-                          value={fromEmail}
-                          onChange={(e) => setFromEmail(e.target.value)}
-                          onBlur={() => markAsTouched('fromEmail')}
-                        />
+                        <div className="flex items-center mt-1">
+                          <Mail className="w-4 h-4 text-muted-foreground mr-2" />
+                          <Input
+                            id="fromEmail"
+                            type="email"
+                            placeholder="Your email address"
+                            value={fromEmail}
+                            onChange={(e) => setFromEmail(e.target.value)}
+                            onBlur={() => markAsTouched('fromEmail')}
+                          />
+                        </div>
                         <FormValidator
                           value={fromEmail}
                           required
@@ -354,14 +405,17 @@ ${personalInfo?.email || ""}`;
                       
                       <div>
                         <Label htmlFor="toEmail">Company Email</Label>
-                        <Input
-                          id="toEmail"
-                          type="email"
-                          placeholder="Company email address"
-                          value={toEmail}
-                          onChange={(e) => setToEmail(e.target.value)}
-                          onBlur={() => markAsTouched('toEmail')}
-                        />
+                        <div className="flex items-center mt-1">
+                          <Mail className="w-4 h-4 text-muted-foreground mr-2" />
+                          <Input
+                            id="toEmail"
+                            type="email"
+                            placeholder="Company email address"
+                            value={toEmail}
+                            onChange={(e) => setToEmail(e.target.value)}
+                            onBlur={() => markAsTouched('toEmail')}
+                          />
+                        </div>
                         <FormValidator
                           value={toEmail}
                           required
@@ -406,8 +460,15 @@ ${personalInfo?.email || ""}`;
                       disabled={isSending}
                     >
                       <Send className="h-4 w-4 mr-2" />
-                      {isSending ? "Sending..." : "Send to Company"}
+                      {isSending ? "Sending..." : sendSuccess ? "Email Prepared" : "Send to Company"}
                     </Button>
+                    
+                    {sendSuccess && (
+                      <p className="text-sm text-green-600 mt-2 text-center">
+                        Email has been prepared in your default email client. 
+                        Please review and send it manually.
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -418,8 +479,8 @@ ${personalInfo?.email || ""}`;
             <div className="sticky top-20">
               <h2 className="text-xl font-semibold mb-4">Your Resume</h2>
               <div className="border rounded-md p-4 max-h-[700px] overflow-auto">
-                <div id="resume-content" className="scale-90 origin-top">
-                  {resumeData && (
+                {resumeData && (
+                  <div id="resume-content">
                     <Card className="p-6 bg-white shadow-sm">
                       <div className="border-b pb-4 mb-4">
                         <h2 className="text-2xl font-bold text-center">
@@ -440,39 +501,115 @@ ${personalInfo?.email || ""}`;
                               {resumeData.personalInfo.phone}
                             </span>
                           )}
+                          {resumeData.personalInfo?.location && (
+                            <span className="flex items-center">
+                              <MapPin className="h-3 w-3 mr-1" />
+                              {resumeData.personalInfo.location}
+                            </span>
+                          )}
                         </div>
                       </div>
                       
                       {resumeData.objective && (
-                        <div className="mb-4 text-sm">
+                        <div className="mb-4">
                           <h3 className="font-semibold mb-1">Objective</h3>
-                          <p>{resumeData.objective}</p>
+                          <p className="text-sm">{resumeData.objective}</p>
+                        </div>
+                      )}
+                      
+                      {resumeData.education && resumeData.education.length > 0 && (
+                        <div className="mb-4">
+                          <h3 className="font-semibold mb-1">Education</h3>
+                          <div className="space-y-2">
+                            {resumeData.education.map((edu: any, index: number) => (
+                              <div key={index} className="mb-2">
+                                <p className="font-medium">{edu.school}</p>
+                                <p className="text-sm">{edu.degree}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {edu.graduationDate} {edu.score && `- ${edu.score}`}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
                       
                       {resumeData.experience && resumeData.experience.length > 0 && (
-                        <div className="mb-4 text-sm">
+                        <div className="mb-4">
                           <h3 className="font-semibold mb-1">Experience</h3>
-                          {resumeData.experience.map((exp, index) => (
-                            <div key={index} className="mb-2">
-                              <p className="font-medium">{exp.jobTitle} at {exp.companyName}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {exp.startDate} - {exp.endDate || "Present"}
-                              </p>
-                            </div>
-                          ))}
+                          <div className="space-y-2">
+                            {resumeData.experience.map((exp: any, index: number) => (
+                              <div key={index} className="mb-2">
+                                <p className="font-medium">{exp.jobTitle} at {exp.companyName}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {exp.startDate} - {exp.endDate || "Present"}
+                                </p>
+                                {exp.description && (
+                                  <p className="text-sm mt-1">{exp.description}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {resumeData.projects && resumeData.projects.length > 0 && (
+                        <div className="mb-4">
+                          <h3 className="font-semibold mb-1">Projects</h3>
+                          <div className="space-y-2">
+                            {resumeData.projects.map((proj: any, index: number) => (
+                              <div key={index} className="mb-2">
+                                <p className="font-medium">{proj.title}</p>
+                                {proj.technologies && (
+                                  <p className="text-xs text-muted-foreground">{proj.technologies}</p>
+                                )}
+                                {proj.description && (
+                                  <p className="text-sm mt-1">{proj.description}</p>
+                                )}
+                                {proj.link && (
+                                  <a 
+                                    href={proj.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-primary underline"
+                                  >
+                                    {proj.link}
+                                  </a>
+                                )}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
                       
                       {resumeData.skills && (
-                        <div className="text-sm">
+                        <div>
                           <h3 className="font-semibold mb-1">Skills</h3>
-                          <p>{resumeData.skills.technical}</p>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                            {resumeData.skills.technical && (
+                              <div>
+                                <p className="font-medium text-sm">Technical</p>
+                                <p className="text-sm">{resumeData.skills.technical}</p>
+                              </div>
+                            )}
+                            {resumeData.skills.professional && (
+                              <div>
+                                <p className="font-medium text-sm">Professional</p>
+                                <p className="text-sm">{resumeData.skills.professional}</p>
+                              </div>
+                            )}
+                            {resumeData.skills.soft && (
+                              <div>
+                                <p className="font-medium text-sm">Soft Skills</p>
+                                <p className="text-sm">{resumeData.skills.soft}</p>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
                     </Card>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
