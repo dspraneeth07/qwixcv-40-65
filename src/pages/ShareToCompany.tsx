@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -248,36 +247,43 @@ const ShareToCompany = () => {
       }
     }
     
-    setIsSending(true);
-    
     try {
-      console.log("Sending email with PDF attachment...");
-      // Send email with Mailchimp
-      const success = await sendEmailWithMailchimp(
-        fromEmail,
-        toEmail,
-        emailSubject,
-        emailBody,
-        resumePdfBlob,
-        resumeFileName
-      );
+      // Create mailto URL with subject and body
+      const subject = encodeURIComponent(emailSubject);
+      const body = encodeURIComponent(emailBody);
+      const mailtoUrl = `mailto:${toEmail}?subject=${subject}&body=${body}`;
       
-      if (success) {
-        setSendSuccess(true);
-        toast({
-          title: "Email Sent",
-          description: `Your application has been sent to ${companyName}. Good luck!`,
-        });
+      // Create an invisible download link for the PDF
+      if (resumePdfUrl) {
+        // Open the default mail client
+        window.location.href = mailtoUrl;
+        
+        // Create a download link for the PDF
+        const downloadLink = document.createElement('a');
+        downloadLink.href = resumePdfUrl;
+        downloadLink.download = resumeFileName;
+        downloadLink.style.display = 'none';
+        document.body.appendChild(downloadLink);
+        
+        // Slight delay to ensure the email client has time to open
+        setTimeout(() => {
+          // Trigger the download of the PDF after email client has opened
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+          
+          toast({
+            title: "Email Ready",
+            description: "Your default email client has been opened with your message. The resume PDF has been downloaded for you to attach.",
+          });
+        }, 500);
       }
     } catch (error) {
-      console.error("Error in email process:", error);
+      console.error("Error opening email client:", error);
       toast({
-        title: "Email Sending Failed",
-        description: "Could not send the email. Please try again.",
+        title: "Email Opening Failed",
+        description: "Could not open your email client. Please try again or use a different method to send your email.",
         variant: "destructive"
       });
-    } finally {
-      setIsSending(false);
     }
   };
 

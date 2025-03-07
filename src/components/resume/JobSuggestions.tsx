@@ -3,10 +3,11 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Briefcase, Building, MapPin, ExternalLink, Search } from "lucide-react";
+import { Briefcase, Building, MapPin, ExternalLink, Search, Linkedin, Globe } from "lucide-react";
 import { Link } from "react-router-dom";
 import { JobListing } from "@/types/job";
 import { getJobRecommendations } from "@/utils/jobBoardApi";
+import { Badge } from "@/components/ui/badge";
 
 interface JobSuggestionsProps {
   skills: string[];
@@ -42,6 +43,48 @@ const JobSuggestions = ({ skills, jobTitle, location }: JobSuggestionsProps) => 
       setLoading(false);
     }
   }, [skills, jobTitle, location]);
+
+  // Function to get platform icon
+  const getPlatformIcon = (platform: string) => {
+    switch(platform) {
+      case 'linkedin':
+        return <Linkedin className="h-3 w-3" />;
+      case 'indeed':
+        return <Briefcase className="h-3 w-3" />;
+      case 'upwork':
+        return <Globe className="h-3 w-3" />;
+      default:
+        return <Briefcase className="h-3 w-3" />;
+    }
+  };
+
+  // Function to get platform color
+  const getPlatformColor = (platform: string) => {
+    switch(platform) {
+      case 'linkedin':
+        return "bg-blue-100 text-blue-800";
+      case 'indeed':
+        return "bg-blue-100 text-blue-800";
+      case 'upwork':
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  // Function to get platform label
+  const getPlatformLabel = (platform: string) => {
+    switch(platform) {
+      case 'linkedin':
+        return "LinkedIn";
+      case 'indeed':
+        return "Indeed";
+      case 'upwork':
+        return "Upwork";
+      default:
+        return "Other";
+    }
+  };
 
   if (loading) {
     return (
@@ -116,6 +159,15 @@ const JobSuggestions = ({ skills, jobTitle, location }: JobSuggestionsProps) => 
                   <MapPin className="h-3 w-3 mr-1" />
                   {job.location}
                 </span>
+                <Badge 
+                  variant="outline" 
+                  className={`text-xs px-1.5 py-0 h-5 ${getPlatformColor(job.platform)}`}
+                >
+                  <span className="flex items-center">
+                    {getPlatformIcon(job.platform)}
+                    <span className="ml-1">{getPlatformLabel(job.platform)}</span>
+                  </span>
+                </Badge>
               </div>
             </div>
           ))}

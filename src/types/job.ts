@@ -9,6 +9,7 @@ export interface JobListing {
   url: string;
   tags?: string[];
   salary?: string;
+  platform: 'indeed' | 'upwork' | 'linkedin' | 'other'; // Added platform field
 }
 
 export interface JobFilter {
@@ -16,7 +17,8 @@ export interface JobFilter {
   experience?: string[];
   datePosted?: string;
   remote?: boolean;
-  keywordMatch?: string[]; // Added for matching with resume skills
-  employmentType?: string; // Added to match FindWork API parameter
-  salary?: string; // Added for filtering by salary range
+  keywordMatch?: string[]; // For matching with resume skills
+  employmentType?: string; // For API parameter
+  salary?: string; // For filtering by salary range
+  platform?: 'indeed' | 'upwork' | 'linkedin' | 'all'; // Added platform filter
 }
