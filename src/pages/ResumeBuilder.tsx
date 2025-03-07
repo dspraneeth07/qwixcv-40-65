@@ -12,10 +12,13 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FormValidator } from "@/components/ui/form-validator";
 import { 
   Plus, Trash, ChevronLeft, ChevronRight, Sparkles, 
-  User, GraduationCap, Briefcase, Code, List, FileText
+  User, GraduationCap, Briefcase, Code, List, FileText, LineChart
 } from "lucide-react";
 import { ResumePreviewContent } from "./ResumePreview";
 import { getAISkillSuggestions, getAIObjectiveSuggestion, getAIProjectDescription, getAIExperienceDescription } from "@/utils/geminiApi";
+import { generateATSScore, ATSScoreData } from "@/utils/atsScoreApi";
+import { ATSScoreDisplay } from "@/components/resume/ATSScoreDisplay";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface PersonalInfo {
   firstName: string;
@@ -68,6 +71,9 @@ const STORAGE_KEY = "resumeData";
 const ResumeBuilder = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("personal");
+  const [displayMode, setDisplayMode] = useState<string[]>(["preview"]);
+  const [atsData, setAtsData] = useState<ATSScoreData | null>(null);
+  const [isAtsLoading, setIsAtsLoading] = useState(false);
   const [showLivePreview, setShowLivePreview] = useState(true);
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
     firstName: "",
@@ -486,6 +492,34 @@ const ResumeBuilder = () => {
     return regex.test(value);
   };
 
+  useEffect(() => {
+    if (displayMode.includes("ats")) {
+      updateATSScore();
+    }
+  }, [personalInfo.jobTitle, skills, objective, displayMode]);
+
+  const updateATSScore = useCallback(async () => {
+    if (!personalInfo.firstName || !personalInfo.jobTitle) {
+      return; // Don't attempt scoring if essential info is missing
+    }
+    
+    setIsAtsLoading(true);
+    try {
+      const resumeData = getResumeData();
+      const scoreData = await generateATSScore(resumeData);
+      setAtsData(scoreData);
+    } catch (error) {
+      console.error("Error updating ATS score:", error);
+      toast({
+        title: "ATS Score Error",
+        description: "Could not generate ATS score. Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAtsLoading(false);
+    }
+  }, [personalInfo, education, experience, skills, objective]);
+
   return (
     <MainLayout>
       <div className="container mx-auto py-8">
@@ -495,17 +529,27 @@ const ResumeBuilder = () => {
             <p className="text-gray-600">Create a professional resume in minutes</p>
           </div>
           
-          <Button 
-            variant="outline" 
-            onClick={() => setShowLivePreview(!showLivePreview)}
-            className="whitespace-nowrap"
-          >
-            {showLivePreview ? "Hide Preview" : "Show Preview"}
-          </Button>
+          <div className="flex items-center gap-3">
+            <ToggleGroup type="multiple" value={displayMode} onValueChange={(value) => {
+              if (value.length === 0) {
+                return;
+              }
+              setDisplayMode(value);
+            }}>
+              <ToggleGroupItem value="preview" aria-label="Toggle Preview">
+                <User className="h-4 w-4 mr-2" />
+                Preview
+              </ToggleGroupItem>
+              <ToggleGroupItem value="ats" aria-label="Toggle ATS Score">
+                <LineChart className="h-4 w-4 mr-2" />
+                ATS Score
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className={showLivePreview ? "lg:col-span-7" : "lg:col-span-12"}>
+          <div className={`lg:col-span-${displayMode.length === 0 ? '12' : '7'}`}>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <div className="border-b">
                 <TabsList className="w-full justify-start mb-2 bg-transparent p-0 h-auto">
@@ -1217,9 +1261,17 @@ const ResumeBuilder = () => {
             </Tabs>
           </div>
 
-          {showLivePreview && (
+          {displayMode.length > 0 && (
             <div className="lg:col-span-5">
-              <ResumePreviewContent data={getResumeData()} />
+              <div className="grid grid-cols-1 gap-6">
+                {displayMode.includes("preview") && (
+                  <ResumePreviewContent data={getResumeData()} />
+                )}
+                
+                {displayMode.includes("ats") && (
+                  <ATSScoreDisplay scoreData={atsData} isLoading={isAtsLoading} />
+                )}
+              </div>
             </div>
           )}
         </div>
