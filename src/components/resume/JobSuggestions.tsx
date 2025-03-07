@@ -97,7 +97,7 @@ const JobSuggestions = ({ skills, jobTitle, location }: JobSuggestionsProps) => 
           {jobs.map((job) => (
             <div key={job.id} className="border-b pb-3 last:border-0 last:pb-0">
               <div className="flex justify-between">
-                <h3 className="font-medium text-sm text-foreground dark:text-black">{job.title}</h3>
+                <h3 className="font-medium text-sm">{job.title}</h3>
                 <a 
                   href={job.url} 
                   target="_blank" 
@@ -108,7 +108,7 @@ const JobSuggestions = ({ skills, jobTitle, location }: JobSuggestionsProps) => 
                   <ExternalLink className="h-3 w-3 ml-1" />
                 </a>
               </div>
-              <div className="flex flex-wrap gap-2 text-xs text-muted-foreground dark:text-gray-600 mt-1">
+              <div className="flex flex-wrap gap-2 text-xs text-muted-foreground mt-1">
                 <span className="inline-flex items-center">
                   <Building className="h-3 w-3 mr-1" />
                   {job.company}
@@ -123,7 +123,7 @@ const JobSuggestions = ({ skills, jobTitle, location }: JobSuggestionsProps) => 
                 >
                   <span className="flex items-center">
                     <Briefcase className="h-3 w-3 mr-1" />
-                    <span className="ml-1">FindWork</span>
+                    <span className="ml-1">Indeed</span>
                   </span>
                 </Badge>
               </div>

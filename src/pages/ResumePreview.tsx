@@ -334,28 +334,28 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
   const { personalInfo, education, experience, skills, objective, projects } = data;
   
   return (
-    <Card id="resume-content" className={`p-8 bg-white text-black shadow-lg print:shadow-none ${isPreview ? 'max-h-full overflow-auto' : 'max-w-3xl w-full'}`}>
+    <Card id="resume-content" className={`p-8 bg-white shadow-lg print:shadow-none ${isPreview ? 'max-h-full overflow-auto' : 'max-w-3xl w-full'}`}>
       <div className="border-b pb-4 mb-4">
-        <h2 className="text-2xl font-bold text-center text-black">
+        <h2 className="text-2xl font-bold text-center">
           {personalInfo?.firstName || ""} {personalInfo?.lastName || ""}
         </h2>
         <p className="text-primary font-medium text-center">{personalInfo?.jobTitle || ""}</p>
         
         <div className="flex flex-wrap justify-center gap-3 text-sm text-muted-foreground mt-2">
           {personalInfo?.email && (
-            <span className="flex items-center text-gray-700">
+            <span className="flex items-center">
               <Mail className="h-3 w-3 mr-1" />
               {personalInfo.email}
             </span>
           )}
           {personalInfo?.phone && (
-            <span className="flex items-center text-gray-700">
+            <span className="flex items-center">
               <Phone className="h-3 w-3 mr-1" />
               {personalInfo.phone}
             </span>
           )}
           {personalInfo?.location && (
-            <span className="flex items-center text-gray-700">
+            <span className="flex items-center">
               <MapPin className="h-3 w-3 mr-1" />
               {personalInfo.location}
             </span>
@@ -387,25 +387,25 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
       
       {objective && (
         <div className="mb-6">
-          <h3 className="text-lg font-semibold border-b pb-1 mb-2 text-black">Career Objective</h3>
-          <p className="text-sm text-black">{objective}</p>
+          <h3 className="text-lg font-semibold border-b pb-1 mb-2">Career Objective</h3>
+          <p className="text-sm">{objective}</p>
         </div>
       )}
       
       {education && education.length > 0 && (
         <div className="mb-6">
-          <h3 className="text-lg font-semibold border-b pb-1 mb-2 text-black">Education</h3>
+          <h3 className="text-lg font-semibold border-b pb-1 mb-2">Education</h3>
           <div className="space-y-4">
             {education.map((edu: any) => (
               <div key={edu.id}>
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-medium text-black">{edu.school || "University/School"}</p>
-                    <p className="text-sm text-black">{edu.degree || "Degree"}</p>
+                    <p className="font-medium">{edu.school || "University/School"}</p>
+                    <p className="text-sm">{edu.degree || "Degree"}</p>
                   </div>
-                  <p className="text-sm text-right text-black">{edu.graduationDate || "Graduation Year"}</p>
+                  <p className="text-sm text-right">{edu.graduationDate || "Graduation Year"}</p>
                 </div>
-                {edu.score && <p className="text-sm text-gray-700 mt-1">{edu.score}</p>}
+                {edu.score && <p className="text-sm text-muted-foreground mt-1">{edu.score}</p>}
               </div>
             ))}
           </div>
@@ -414,7 +414,7 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
       
       {projects && projects.length > 0 && projects[0].title && (
         <div className="mb-6">
-          <h3 className="text-lg font-semibold border-b pb-1 mb-2 text-black">Projects</h3>
+          <h3 className="text-lg font-semibold border-b pb-1 mb-2">Projects</h3>
           <div className="space-y-4">
             {projects
               .filter((proj: any) => proj.title.trim() !== "")
@@ -422,7 +422,7 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
               <div key={proj.id}>
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-medium text-black">{proj.title}</p>
+                    <p className="font-medium">{proj.title}</p>
                     {proj.technologies && <p className="text-sm text-muted-foreground">{proj.technologies}</p>}
                   </div>
                 </div>
@@ -449,7 +449,7 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
       
       {experience && experience.length > 0 && experience[0].jobTitle && (
         <div className="mb-6">
-          <h3 className="text-lg font-semibold border-b pb-1 mb-2 text-black">Work Experience</h3>
+          <h3 className="text-lg font-semibold border-b pb-1 mb-2">Work Experience</h3>
           <div className="space-y-4">
             {experience
               .filter((exp: any) => exp.jobTitle.trim() !== "")
@@ -457,7 +457,7 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
               <div key={exp.id}>
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-medium text-black">{exp.jobTitle}</p>
+                    <p className="font-medium">{exp.jobTitle}</p>
                     <p className="text-sm text-muted-foreground">{exp.companyName}</p>
                   </div>
                   <p className="text-sm text-right">
@@ -479,7 +479,7 @@ const ResumeContent = ({ data, isPreview = false }: { data: any, isPreview?: boo
           typeof val === 'string' && val.trim() !== ""
         )) && (
         <div className="mb-6">
-          <h3 className="text-lg font-semibold border-b pb-1 mb-2 text-black">Skills</h3>
+          <h3 className="text-lg font-semibold border-b pb-1 mb-2">Skills</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {skills.professional && (
               <div>
@@ -539,26 +539,26 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: ResumeData, isPr
   return (
     <Card className={`p-4 bg-white shadow-lg print:shadow-none ${isPreview ? 'max-h-full overflow-auto' : 'max-w-3xl w-full'}`}>
       <div className="border-b pb-2 mb-3 text-center">
-        <h2 className="text-xl font-bold text-black">
+        <h2 className="text-xl font-bold">
           {personalInfo?.firstName || ""} {personalInfo?.lastName || ""}
         </h2>
         <p className="text-primary font-medium text-sm">{personalInfo?.jobTitle || ""}</p>
         
         <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground mt-1">
           {personalInfo?.email && (
-            <span className="flex items-center text-gray-700">
+            <span className="flex items-center">
               <Mail className="h-3 w-3 mr-1" />
               {personalInfo.email}
             </span>
           )}
           {personalInfo?.phone && (
-            <span className="flex items-center text-gray-700">
+            <span className="flex items-center">
               <Phone className="h-3 w-3 mr-1" />
               {countryCode || "+91"} {personalInfo.phone}
             </span>
           )}
           {personalInfo?.location && (
-            <span className="flex items-center text-gray-700">
+            <span className="flex items-center">
               <MapPin className="h-3 w-3 mr-1" />
               {personalInfo.location}
             </span>
@@ -580,14 +580,14 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: ResumeData, isPr
       
       {objective && (
         <div className="mb-3">
-          <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black">Career Objective</h3>
-          <p className="text-xs text-black">{objective}</p>
+          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Career Objective</h3>
+          <p className="text-xs">{objective}</p>
         </div>
       )}
       
       {education && education.length > 0 && (
         <div className="mb-3">
-          <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black">Education</h3>
+          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Education</h3>
           <div className="space-y-2">
             {education.map((edu: any) => (
               <div key={edu.id}>
@@ -598,7 +598,7 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: ResumeData, isPr
                   </div>
                   <p className="text-xs text-right">{edu.graduationDate || "Graduation Year"}</p>
                 </div>
-                {edu.score && <p className="text-xs text-gray-700 mt-1">{edu.score}</p>}
+                {edu.score && <p className="text-xs text-muted-foreground mt-1">{edu.score}</p>}
               </div>
             ))}
           </div>
@@ -607,7 +607,7 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: ResumeData, isPr
       
       {projects && projects.length > 0 && (
         <div className="mb-3">
-          <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black">Projects</h3>
+          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Projects</h3>
           <div className="space-y-2">
             {projects.map((proj: any) => (
               <div key={proj.id}>
@@ -636,7 +636,7 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: ResumeData, isPr
       
       {experience && experience.length > 0 && (
         <div className="mb-3">
-          <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black">Work Experience</h3>
+          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Work Experience</h3>
           <div className="space-y-2">
             {experience.map((exp: any) => (
               <div key={exp.id}>
@@ -662,7 +662,7 @@ const MiniResumeContent = ({ data, isPreview = false }: { data: ResumeData, isPr
       
       {skills && (Object.values(skills).some(val => val && val.trim() !== "")) && (
         <div className="mb-3">
-          <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black">Skills</h3>
+          <h3 className="text-sm font-semibold border-b pb-1 mb-1">Skills</h3>
           <div className="grid grid-cols-1 gap-2">
             {skills.professional && (
               <div>

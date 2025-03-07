@@ -9,7 +9,7 @@ export interface JobListing {
   url: string;
   tags?: string[];
   salary?: string;
-  platform: 'findwork';
+  platform: 'indeed'; // Simplified to only include Indeed
 }
 
 export interface JobFilter {

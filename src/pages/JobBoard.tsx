@@ -34,11 +34,8 @@ const JobBoard = () => {
   const loadJobs = async () => {
     setLoading(true);
     try {
-      // Make sure we always have a query parameter, default to "developer" if empty
-      const query = searchTerm || "developer";
-      
       const jobData = await fetchJobs({
-        query: query,
+        query: searchTerm,
         location: location,
         page: currentPage
       });
@@ -56,19 +53,12 @@ const JobBoard = () => {
   };
 
   const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) {
-        return "Recent";
-      }
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric"
-      });
-    } catch (e) {
-      return "Recent";
-    }
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    });
   };
 
   return (
@@ -171,7 +161,7 @@ const JobBoard = () => {
                     {jobs.map((job) => (
                       <Card key={job.id} className="hover:shadow-md transition-shadow">
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-xl text-foreground dark:text-foreground">{job.title}</CardTitle>
+                          <CardTitle className="text-xl">{job.title}</CardTitle>
                           <div className="flex flex-wrap text-muted-foreground text-sm gap-3 mt-1">
                             <div className="flex items-center">
                               <Building className="h-3.5 w-3.5 mr-1" />
@@ -188,12 +178,12 @@ const JobBoard = () => {
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-sm line-clamp-3 text-foreground dark:text-foreground">{job.description}</p>
+                          <p className="text-sm line-clamp-3">{job.description}</p>
                           <div className="flex flex-wrap gap-2 mt-3">
                             {job.tags?.map((tag, index) => (
                               <span 
                                 key={index} 
-                                className="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full"
+                                className="text-xs bg-slate-100 px-2 py-1 rounded-full"
                               >
                                 {tag}
                               </span>
@@ -201,7 +191,7 @@ const JobBoard = () => {
                           </div>
                         </CardContent>
                         <CardFooter className="flex justify-between pt-0">
-                          <span className="text-sm font-medium text-foreground dark:text-foreground">
+                          <span className="text-sm font-medium">
                             {job.salary ? job.salary : 'Salary not specified'}
                           </span>
                           <a 
