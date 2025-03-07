@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -18,7 +17,6 @@ const ATSScanner = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scannerRef = useRef<HTMLDivElement>(null);
   
-  // 3D animation for the document scanner
   useEffect(() => {
     if (!scannerRef.current) return;
     
@@ -33,7 +31,6 @@ const ATSScanner = () => {
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
     
-    // Create a 3D resume document
     const documentGeometry = new THREE.BoxGeometry(3, 4, 0.1);
     const documentMaterial = new THREE.MeshStandardMaterial({ 
       color: 0xffffff,
@@ -43,7 +40,6 @@ const ATSScanner = () => {
     const document = new THREE.Mesh(documentGeometry, documentMaterial);
     scene.add(document);
     
-    // Create lines for text on the resume
     const linesGroup = new THREE.Group();
     for (let i = 0; i < 20; i++) {
       const lineGeometry = new THREE.BoxGeometry(2, 0.08, 0.02);
@@ -51,13 +47,11 @@ const ATSScanner = () => {
       const line = new THREE.Mesh(lineGeometry, lineMaterial);
       line.position.y = 1.5 - (i * 0.2);
       line.position.z = 0.06;
-      // Random line lengths
       line.scale.x = 0.5 + Math.random() * 0.5;
       linesGroup.add(line);
     }
     document.add(linesGroup);
     
-    // Scanner beam
     const scannerGeometry = new THREE.PlaneGeometry(3.2, 0.1);
     const scannerMaterial = new THREE.MeshBasicMaterial({ 
       color: 0x4f46e5,
@@ -70,16 +64,13 @@ const ATSScanner = () => {
     scanner.visible = false;
     scene.add(scanner);
     
-    // Add ambient light
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
     
-    // Add directional light
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
     directionalLight.position.set(1, 1, 5);
     scene.add(directionalLight);
     
-    // Add point lights for a more dramatic effect
     const pointLight1 = new THREE.PointLight(0x4f46e5, 2, 10);
     pointLight1.position.set(3, 3, 3);
     scene.add(pointLight1);
@@ -88,22 +79,17 @@ const ATSScanner = () => {
     pointLight2.position.set(-3, -2, 3);
     scene.add(pointLight2);
     
-    // Position camera
     camera.position.z = 5;
     
-    // Animation state
     let scannerPosition = -2;
     let scannerDirection = 0.05;
     
-    // Animation loop
     const animate = () => {
       requestAnimationFrame(animate);
       
-      // Rotate document slightly based on mouse movement
       document.rotation.y = Math.sin(Date.now() * 0.001) * 0.2;
       document.rotation.x = Math.sin(Date.now() * 0.0005) * 0.1;
       
-      // Scanner beam animation when analyzing
       if (isAnalyzing) {
         scanner.visible = true;
         scanner.position.y = scannerPosition;
@@ -121,7 +107,6 @@ const ATSScanner = () => {
     
     animate();
     
-    // Handle resize
     const handleResize = () => {
       if (!container) return;
       
@@ -132,7 +117,6 @@ const ATSScanner = () => {
     
     window.addEventListener('resize', handleResize);
     
-    // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
       if (container && container.contains(renderer.domElement)) {
@@ -206,10 +190,8 @@ const ATSScanner = () => {
     
     setIsAnalyzing(true);
     
-    // Simulate file reading and ATS scoring
     try {
       setTimeout(async () => {
-        // Simulate resume data extraction
         const mockResumeData = {
           personalInfo: {
             firstName: "John",
@@ -240,7 +222,6 @@ const ATSScanner = () => {
           objective: "Experienced software engineer seeking a challenging role in a dynamic organization."
         };
         
-        // Generate ATS score from the extracted data
         const scoreData = await generateATSScore(mockResumeData);
         setAtsScore(scoreData);
         setIsAnalyzing(false);
@@ -265,23 +246,17 @@ const ATSScanner = () => {
   return (
     <MainLayout>
       <div className="min-h-screen py-12 relative">
-        {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-indigo-950 to-purple-950 z-0"></div>
-        
-        {/* Animated background elements */}
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-purple-600/20 blur-3xl animate-pulse"></div>
           <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full bg-blue-600/20 blur-3xl animate-pulse"></div>
         </div>
-        
-        {/* Grid pattern */}
         <div className="absolute inset-0 z-0 opacity-5">
           <div className="h-full w-full" style={{
             backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.7) 1px, transparent 1px)',
             backgroundSize: '30px 30px'
           }}></div>
         </div>
-        
         <div className="container mx-auto relative z-10">
           <div className="text-center mb-10">
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-purple-200 mb-4">
@@ -291,7 +266,6 @@ const ATSScanner = () => {
               Upload your resume and our AI will analyze it for ATS compatibility, giving you actionable insights to improve your chances of getting hired.
             </p>
           </div>
-          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             <div className="order-2 lg:order-1">
               <Card className="border shadow-sm h-full bg-black/20 backdrop-blur-lg border-white/10">
@@ -302,7 +276,6 @@ const ATSScanner = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* File upload area */}
                   <div 
                     className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 ${
                       isDragging ? 'border-primary bg-primary/10' : 'border-gray-600 hover:border-primary/70'
@@ -337,7 +310,6 @@ const ATSScanner = () => {
                     </div>
                   </div>
                   
-                  {/* File preview */}
                   {file && (
                     <div className="bg-white/5 rounded-lg p-4 backdrop-blur-sm border border-white/10 flex justify-between items-center">
                       <div className="flex items-center">
@@ -358,7 +330,6 @@ const ATSScanner = () => {
                     </div>
                   )}
                   
-                  {/* Analyze button */}
                   <Button 
                     onClick={analyzeResume} 
                     disabled={!file || isAnalyzing} 
@@ -379,7 +350,6 @@ const ATSScanner = () => {
                     )}
                   </Button>
                   
-                  {/* Info card */}
                   <div className="bg-blue-600/10 backdrop-blur-sm border border-blue-600/20 rounded-lg p-4 text-sm text-gray-300">
                     <div className="flex">
                       <Info className="h-5 w-5 text-blue-400 mr-2 flex-shrink-0 mt-0.5" />
@@ -407,7 +377,6 @@ const ATSScanner = () => {
                       ref={scannerRef}
                       className="flex flex-col items-center justify-center h-[400px] w-full"
                     >
-                      {/* 3D scanner animation is rendered here */}
                     </div>
                     <div className="text-center mt-4">
                       <p className="text-indigo-300 animate-pulse">Scanning and analyzing your resume...</p>
@@ -467,8 +436,6 @@ const ATSScanner = () => {
               )}
             </div>
           </div>
-          
-          {/* Call to action */}
           <div className="mt-16 text-center">
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-6">
               Ready to build a professional resume from scratch?

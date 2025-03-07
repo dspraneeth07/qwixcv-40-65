@@ -18,11 +18,18 @@ function App() {
     // Add Google Fonts to the document head
     const fontLink = document.createElement('link');
     fontLink.rel = 'stylesheet';
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap';
     document.head.appendChild(fontLink);
+
+    // Add SF Pro Display (or a similar font that mimics it)
+    const sfProLink = document.createElement('link');
+    sfProLink.rel = 'stylesheet';
+    sfProLink.href = 'https://fonts.cdnfonts.com/css/sf-pro-display';
+    document.head.appendChild(sfProLink);
 
     return () => {
       document.head.removeChild(fontLink);
+      document.head.removeChild(sfProLink);
     };
   }, []);
 
