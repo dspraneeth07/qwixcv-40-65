@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -1235,5 +1236,34 @@ const ResumeBuilder = () => {
             </Tabs>
           </div>
           
-          {
+          <div className={`lg:col-span-${displayMode.length === 2 ? '6' : '4'}`}>
+            <div className="sticky top-4 space-y-6">
+              {displayMode.includes("preview") && (
+                <Card className="border shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="aspect-[3/4] overflow-hidden border rounded-md bg-white">
+                      <ResumePreviewContent 
+                        resumeData={getResumeData()} 
+                        selectedTemplate={selectedTemplate}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
+              {displayMode.includes("ats") && (
+                <Card className="border shadow-sm">
+                  <CardContent className="p-4">
+                    <ATSScoreDisplay data={atsData} isLoading={isAtsLoading} />
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
+};
 
+export default ResumeBuilder;
