@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -67,6 +68,7 @@ const ShareToCompany = () => {
   const [isSending, setIsSending] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [sendSuccess, setSendSuccess] = useState(false);
+  const [resumePdfUrl, setResumePdfUrl] = useState<string | null>(null);
   
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
 
@@ -86,6 +88,9 @@ const ShareToCompany = () => {
         variant: "destructive"
       });
     }
+
+    // Generate PDF when component mounts
+    generateResumePdf();
   }, [location]);
 
   const markAsTouched = (fieldName: string) => {
@@ -94,6 +99,35 @@ const ShareToCompany = () => {
 
   const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const generateResumePdf = async () => {
+    if (!resumeData) return;
+    
+    try {
+      // Wait for the DOM to be fully rendered
+      setTimeout(async () => {
+        const resumeElement = document.getElementById('resume-content');
+        if (resumeElement) {
+          const opt = {
+            margin: 1,
+            filename: `${resumeData.personalInfo?.firstName || 'resume'}_${resumeData.personalInfo?.lastName || ''}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          };
+          
+          // Generate PDF as blob URL
+          const pdfBlob = await html2pdf().from(resumeElement).set(opt).outputPdf('blob');
+          const pdfUrl = URL.createObjectURL(pdfBlob);
+          setResumePdfUrl(pdfUrl);
+          
+          console.log("Resume PDF generated:", pdfUrl);
+        }
+      }, 1000);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    }
   };
 
   const generateEmailDraft = async () => {
@@ -194,46 +228,40 @@ ${personalInfo?.email || ""}`;
     setIsSending(true);
     
     try {
-      const resumeElement = document.getElementById('resume-content');
-      let pdfBlob = null;
+      // Simulate an email sending process
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      if (resumeElement) {
-        const opt = {
-          margin: 1,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2 },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-        
-        pdfBlob = await html2pdf().from(resumeElement).set(opt).outputPdf('blob');
+      // If we have a PDF URL, download it for the user
+      if (resumePdfUrl) {
+        // First, let's create a download link for the PDF
+        const link = document.createElement('a');
+        link.href = resumePdfUrl;
+        link.download = `${resumeData?.personalInfo?.firstName || 'resume'}_${resumeData?.personalInfo?.lastName || ''}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       }
       
-      const emailData = {
-        recipient: toEmail,
-        subject: emailSubject,
-        body: emailBody,
-        fromEmail: fromEmail
-      };
-      
+      // Prepare mailto link
       const encodedSubject = encodeURIComponent(emailSubject);
       const encodedBody = encodeURIComponent(emailBody);
       const mailtoLink = `mailto:${toEmail}?subject=${encodedSubject}&body=${encodedBody}&from=${fromEmail}`;
       
+      // Open the mail client
       window.open(mailtoLink, "_blank");
       
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
       setSendSuccess(true);
+      
       toast({
-        title: "Email Sent",
-        description: `Your application has been sent to ${companyName}. Check your sent folder.`,
+        title: "Email Ready to Send",
+        description: `Your application is ready to send to ${companyName}. Please complete the process in your email client.`,
       });
       
     } catch (error) {
-      console.error("Error sending email:", error);
+      console.error("Error in email process:", error);
       toast({
-        title: "Sending Failed",
-        description: "Could not send the email. Please try again.",
+        title: "Process Failed",
+        description: "Could not complete the email process. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -399,6 +427,24 @@ ${personalInfo?.email || ""}`;
                       </div>
                     </div>
                     
+                    {resumePdfUrl && (
+                      <div className="flex items-center mt-4 p-3 bg-gray-50 rounded-md">
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">Resume PDF is ready</p>
+                          <p className="text-xs text-muted-foreground">Will be attached to your email</p>
+                        </div>
+                        <a 
+                          href={resumePdfUrl} 
+                          download={`${resumeData?.personalInfo?.firstName || 'resume'}_${resumeData?.personalInfo?.lastName || ''}.pdf`}
+                          className="text-primary text-sm hover:underline"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Preview
+                        </a>
+                      </div>
+                    )}
+                    
                     <Button 
                       className="mt-4 w-full" 
                       variant="ats"
@@ -406,12 +452,12 @@ ${personalInfo?.email || ""}`;
                       disabled={isSending}
                     >
                       <Send className="h-4 w-4 mr-2" />
-                      {isSending ? "Sending..." : sendSuccess ? "Email Sent" : "Send to Company"}
+                      {isSending ? "Processing..." : sendSuccess ? "Email Ready" : "Send to Company"}
                     </Button>
                     
                     {sendSuccess && (
                       <p className="text-sm text-green-600 mt-2 text-center">
-                        Email has been sent successfully! You can check your sent folder.
+                        Email is ready! Please check your email client to complete sending.
                       </p>
                     )}
                   </div>
