@@ -3,9 +3,20 @@ import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Download, ArrowLeft, Github, Linkedin, Mail, Phone, MapPin, Link as LinkIcon } from "lucide-react";
+import { 
+  Download, 
+  ArrowLeft, 
+  Github, 
+  Linkedin, 
+  Mail, 
+  Phone, 
+  MapPin, 
+  Link as LinkIcon,
+  Share2
+} from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import html2pdf from 'html2pdf.js';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface Skills {
   professional?: string;
@@ -57,6 +68,7 @@ const ResumePreview = () => {
   const [resumeData, setResumeData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -134,6 +146,84 @@ const ResumePreview = () => {
       });
   };
 
+  const handleShareToMedia = async () => {
+    try {
+      const resumeElement = document.getElementById('resume-content');
+      if (!resumeElement) {
+        toast({
+          title: "Error",
+          description: "Could not generate PDF for sharing. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Preparing Resume",
+        description: "Getting your resume ready for sharing..."
+      });
+
+      const opt = {
+        margin: 1,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      const pdfBlob = await html2pdf().from(resumeElement).set(opt).outputPdf('blob');
+      
+      if (navigator.share) {
+        const file = new File([pdfBlob], `${resumeData?.personalInfo?.firstName || ''}_${resumeData?.personalInfo?.lastName || ''}_Resume.pdf`, { 
+          type: 'application/pdf' 
+        });
+        
+        await navigator.share({
+          title: `${resumeData?.personalInfo?.firstName || ''} ${resumeData?.personalInfo?.lastName || ''} Resume`,
+          files: [file]
+        });
+        
+        toast({
+          title: "Shared Successfully",
+          description: "Your resume has been shared"
+        });
+      } else {
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        setPdfUrl(pdfUrl);
+        
+        toast({
+          title: "Resume Ready",
+          description: "Your resume is ready to download and share manually"
+        });
+        
+        window.open(pdfUrl, '_blank');
+      }
+    } catch (error) {
+      console.error("Share error:", error);
+      toast({
+        title: "Sharing Failed",
+        description: "Could not share your resume. Please try downloading it instead.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleShareToCompany = () => {
+    if (!resumeData) {
+      toast({
+        title: "Error",
+        description: "Resume data not available. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    navigate('/share-to-company', { 
+      state: { 
+        resumeData 
+      } 
+    });
+  };
+
   if (loading) {
     return (
       <MainLayout>
@@ -176,6 +266,34 @@ const ResumePreview = () => {
               <Download className="h-4 w-4 mr-2" />
               Download PDF
             </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ats">
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-52 p-0" align="end">
+                <div className="flex flex-col">
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start rounded-none py-3 px-4"
+                    onClick={handleShareToMedia}
+                  >
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Share to Media
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    className="justify-start rounded-none py-3 px-4"
+                    onClick={handleShareToCompany}
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Share to Company
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
