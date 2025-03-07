@@ -1,7 +1,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import Sidebar from "@/components/ui/sidebar";
+import { Sidebar } from "@/components/ui/sidebar";
 import Footer from "@/components/layout/Footer";
 
 interface MainLayoutProps {
