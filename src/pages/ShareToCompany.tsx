@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Send, Building, Briefcase } from "lucide-react";
+import { ArrowLeft, Send, Building, Briefcase, Mail, Phone } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { FormValidator } from "@/components/ui/form-validator";
 import { Progress } from "@/components/ui/progress";
