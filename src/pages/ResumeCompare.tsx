@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
@@ -107,25 +106,41 @@ const ResumeCompare = () => {
           objective: "Frontend Developer with expertise in React seeking opportunities to build intuitive user experiences."
         };
 
-        // Generate ATS scores for both resumes
-        const scoreDataA = await generateATSScore(mockResumeDataA);
-        const scoreDataB = await generateATSScore(mockResumeDataB);
+        try {
+          // Generate ATS scores for both resumes
+          const scoreDataA = await generateATSScore(mockResumeDataA);
+          const scoreDataB = await generateATSScore(mockResumeDataB);
+          
+          console.log("Score data A:", scoreDataA);
+          console.log("Score data B:", scoreDataB);
 
-        // Use Gemini AI to generate comparison insights
-        const comparisonData = await generateComparisonReport(
-          mockResumeDataA, 
-          mockResumeDataB, 
-          scoreDataA, 
-          scoreDataB
-        );
+          // Generate comparison report
+          const comparisonData = await generateComparisonReport(
+            mockResumeDataA, 
+            mockResumeDataB, 
+            scoreDataA, 
+            scoreDataB
+          );
+          
+          console.log("Comparison data:", comparisonData);
 
-        setComparisonResults(comparisonData);
-        setIsComparing(false);
-        
-        toast({
-          title: "Analysis Complete",
-          description: "Both resumes have been analyzed and compared successfully."
-        });
+          setComparisonResults(comparisonData);
+          setIsComparing(false);
+          
+          toast({
+            title: "Analysis Complete",
+            description: "Both resumes have been analyzed and compared successfully."
+          });
+        } catch (error) {
+          console.error("Error in ATS scoring or comparison:", error);
+          setIsComparing(false);
+          
+          toast({
+            title: "Analysis Error",
+            description: "There was a problem analyzing your resumes. Please try again.",
+            variant: "destructive"
+          });
+        }
       }, 3000);
     } catch (error) {
       console.error("Error comparing resumes:", error);
@@ -142,56 +157,75 @@ const ResumeCompare = () => {
   const downloadComparisonReport = () => {
     if (!reportRef.current || !comparisonResults) return;
     
-    const opt = {
-      margin: [10, 10, 10, 10],
-      filename: 'resume-comparison-report.pdf',
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['avoid-all'] }
-    };
-    
     toast({
       title: "Generating PDF",
       description: "Your comparison report is being prepared for download..."
     });
     
-    // Clone the report div to modify it for PDF
+    // Get the report content
     const reportElement = reportRef.current.cloneNode(true) as HTMLElement;
     
-    // Adjust styles for better PDF rendering
-    const styles = document.createElement('style');
-    styles.innerHTML = `
-      body { font-family: 'SF Pro Display', 'Poppins', sans-serif; color: #333; }
-      .pdf-header { text-align: center; margin-bottom: 20px; }
-      .pdf-header h1 { font-size: 24px; color: #4338ca; margin-bottom: 10px; }
-      .resume-card { margin-bottom: 20px; page-break-inside: avoid; }
-      .resume-title { font-size: 18px; font-weight: bold; color: #4338ca; margin-bottom: 10px; }
-      .score-item { margin-bottom: 8px; }
-      .score-label { font-weight: bold; }
-      .winner-badge { color: #10b981; font-weight: bold; }
-      .section-title { font-size: 16px; font-weight: bold; margin: 15px 0 10px 0; }
-      .suggestion-item { margin-bottom: 5px; }
-      .footer { text-align: center; font-size: 12px; margin-top: 20px; color: #6b7280; }
-    `;
-    reportElement.appendChild(styles);
+    // Configure the PDF options with more forgiving settings
+    const opt = {
+      margin: [15, 15, 15, 15],
+      filename: 'resume-comparison-report.pdf',
+      image: { type: 'jpeg', quality: 0.9 },
+      html2canvas: { 
+        scale: 1.5, 
+        useCORS: true,
+        logging: false,
+        letterRendering: true,
+        allowTaint: true // Allow tainted canvas
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
     
-    html2pdf().from(reportElement).set(opt).save().then(() => {
-      toast({
-        title: "PDF Downloaded",
-        description: "Your comparison report has been successfully downloaded."
-      });
-    }).catch(error => {
-      console.error("Error generating PDF:", error);
+    // Try to generate the PDF with better error handling
+    try {
+      html2pdf()
+        .from(reportElement)
+        .set(opt)
+        .outputPdf('dataurlnewwindow')
+        .then(() => {
+          toast({
+            title: "PDF Generated",
+            description: "Your comparison report has been generated in a new window."
+          });
+        })
+        .catch(error => {
+          console.error("PDF generation error:", error);
+          // Fallback to print
+          const printWindow = window.open('', '_blank');
+          if (printWindow) {
+            printWindow.document.write('<html><head><title>Resume Comparison Report</title>');
+            printWindow.document.write('<style>body{font-family:Arial;padding:20px}</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write(reportElement.innerHTML);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+            toast({
+              title: "Report Generated",
+              description: "Your report opened in a new window. Please use your browser's print function."
+            });
+          } else {
+            toast({
+              title: "PDF Generation Failed",
+              description: "Please try again or check browser popup settings.",
+              variant: "destructive"
+            });
+          }
+        });
+    } catch (error) {
+      console.error("PDF generation outer error:", error);
       toast({
         title: "PDF Generation Failed",
         description: "There was a problem creating your PDF. Please try again.",
         variant: "destructive"
       });
-    });
+    }
   };
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
@@ -228,7 +262,6 @@ const ResumeCompare = () => {
         </motion.div>
 
         <div className="grid md:grid-cols-2 gap-8 mb-8">
-          {/* Resume A Upload */}
           <motion.div 
             variants={itemVariants}
             initial="hidden"
@@ -269,7 +302,6 @@ const ResumeCompare = () => {
             </div>
           </motion.div>
 
-          {/* Resume B Upload */}
           <motion.div 
             variants={itemVariants}
             initial="hidden"
@@ -358,7 +390,6 @@ const ResumeCompare = () => {
             <h2 className="text-3xl font-sf-pro font-bold text-center mb-8 gradient-text">Comparison Results</h2>
             
             <div className="grid md:grid-cols-2 gap-8 mb-8">
-              {/* Resume A Results */}
               <Card className={`overflow-hidden ${comparisonResults.winner === 'resumeA' ? 'border-2 border-green-500' : ''}`}>
                 {comparisonResults.winner === 'resumeA' && (
                   <div className="absolute -right-12 top-10 bg-green-500 text-white py-2 px-12 transform rotate-45 flex items-center justify-center z-10">
@@ -376,12 +407,12 @@ const ResumeCompare = () => {
                       <div>
                         <div className="flex justify-between mb-1">
                           <span className="text-sm font-medium">Overall ATS Score</span>
-                          <span className="text-sm font-medium">{comparisonResults.resumeA.atsScore}%</span>
+                          <span className="text-sm font-medium">{comparisonResults.resumeA.atsScore || 0}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
                           <div 
                             className="h-2.5 rounded-full bg-gradient-to-r from-modern-blue-500 to-soft-purple" 
-                            style={{ width: `${comparisonResults.resumeA.atsScore}%` }}
+                            style={{ width: `${comparisonResults.resumeA.atsScore || 0}%` }}
                           ></div>
                         </div>
                       </div>
@@ -389,12 +420,12 @@ const ResumeCompare = () => {
                       <div>
                         <div className="flex justify-between mb-1">
                           <span className="text-sm font-medium">Keyword Score</span>
-                          <span className="text-sm font-medium">{comparisonResults.resumeA.keywordScore}%</span>
+                          <span className="text-sm font-medium">{comparisonResults.resumeA.keywordScore || 0}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
                           <div 
                             className="h-2.5 rounded-full bg-gradient-to-r from-modern-blue-500 to-soft-purple" 
-                            style={{ width: `${comparisonResults.resumeA.keywordScore}%` }}
+                            style={{ width: `${comparisonResults.resumeA.keywordScore || 0}%` }}
                           ></div>
                         </div>
                       </div>
@@ -402,12 +433,12 @@ const ResumeCompare = () => {
                       <div>
                         <div className="flex justify-between mb-1">
                           <span className="text-sm font-medium">Format Score</span>
-                          <span className="text-sm font-medium">{comparisonResults.resumeA.formatScore}%</span>
+                          <span className="text-sm font-medium">{comparisonResults.resumeA.formatScore || 0}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
                           <div 
                             className="h-2.5 rounded-full bg-gradient-to-r from-modern-blue-500 to-soft-purple" 
-                            style={{ width: `${comparisonResults.resumeA.formatScore}%` }}
+                            style={{ width: `${comparisonResults.resumeA.formatScore || 0}%` }}
                           ></div>
                         </div>
                       </div>
@@ -415,12 +446,12 @@ const ResumeCompare = () => {
                       <div>
                         <div className="flex justify-between mb-1">
                           <span className="text-sm font-medium">Content Score</span>
-                          <span className="text-sm font-medium">{comparisonResults.resumeA.contentScore}%</span>
+                          <span className="text-sm font-medium">{comparisonResults.resumeA.contentScore || 0}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
                           <div 
                             className="h-2.5 rounded-full bg-gradient-to-r from-modern-blue-500 to-soft-purple" 
-                            style={{ width: `${comparisonResults.resumeA.contentScore}%` }}
+                            style={{ width: `${comparisonResults.resumeA.contentScore || 0}%` }}
                           ></div>
                         </div>
                       </div>
@@ -457,7 +488,6 @@ const ResumeCompare = () => {
                 </CardContent>
               </Card>
               
-              {/* Resume B Results */}
               <Card className={`overflow-hidden ${comparisonResults.winner === 'resumeB' ? 'border-2 border-green-500' : ''}`}>
                 {comparisonResults.winner === 'resumeB' && (
                   <div className="absolute -right-12 top-10 bg-green-500 text-white py-2 px-12 transform rotate-45 flex items-center justify-center z-10">
@@ -475,12 +505,12 @@ const ResumeCompare = () => {
                       <div>
                         <div className="flex justify-between mb-1">
                           <span className="text-sm font-medium">Overall ATS Score</span>
-                          <span className="text-sm font-medium">{comparisonResults.resumeB.atsScore}%</span>
+                          <span className="text-sm font-medium">{comparisonResults.resumeB.atsScore || 0}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
                           <div 
                             className="h-2.5 rounded-full bg-gradient-to-r from-soft-purple to-modern-blue-500" 
-                            style={{ width: `${comparisonResults.resumeB.atsScore}%` }}
+                            style={{ width: `${comparisonResults.resumeB.atsScore || 0}%` }}
                           ></div>
                         </div>
                       </div>
@@ -488,12 +518,12 @@ const ResumeCompare = () => {
                       <div>
                         <div className="flex justify-between mb-1">
                           <span className="text-sm font-medium">Keyword Score</span>
-                          <span className="text-sm font-medium">{comparisonResults.resumeB.keywordScore}%</span>
+                          <span className="text-sm font-medium">{comparisonResults.resumeB.keywordScore || 0}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
                           <div 
                             className="h-2.5 rounded-full bg-gradient-to-r from-soft-purple to-modern-blue-500" 
-                            style={{ width: `${comparisonResults.resumeB.keywordScore}%` }}
+                            style={{ width: `${comparisonResults.resumeB.keywordScore || 0}%` }}
                           ></div>
                         </div>
                       </div>
@@ -501,12 +531,12 @@ const ResumeCompare = () => {
                       <div>
                         <div className="flex justify-between mb-1">
                           <span className="text-sm font-medium">Format Score</span>
-                          <span className="text-sm font-medium">{comparisonResults.resumeB.formatScore}%</span>
+                          <span className="text-sm font-medium">{comparisonResults.resumeB.formatScore || 0}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
                           <div 
                             className="h-2.5 rounded-full bg-gradient-to-r from-soft-purple to-modern-blue-500" 
-                            style={{ width: `${comparisonResults.resumeB.formatScore}%` }}
+                            style={{ width: `${comparisonResults.resumeB.formatScore || 0}%` }}
                           ></div>
                         </div>
                       </div>
@@ -514,12 +544,12 @@ const ResumeCompare = () => {
                       <div>
                         <div className="flex justify-between mb-1">
                           <span className="text-sm font-medium">Content Score</span>
-                          <span className="text-sm font-medium">{comparisonResults.resumeB.contentScore}%</span>
+                          <span className="text-sm font-medium">{comparisonResults.resumeB.contentScore || 0}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
                           <div 
                             className="h-2.5 rounded-full bg-gradient-to-r from-soft-purple to-modern-blue-500" 
-                            style={{ width: `${comparisonResults.resumeB.contentScore}%` }}
+                            style={{ width: `${comparisonResults.resumeB.contentScore || 0}%` }}
                           ></div>
                         </div>
                       </div>
@@ -557,7 +587,6 @@ const ResumeCompare = () => {
               </Card>
             </div>
             
-            {/* Expert Recommendation */}
             <Card className="glassmorphism my-8">
               <CardHeader>
                 <CardTitle className="flex items-center text-modern-blue-600">
@@ -570,7 +599,6 @@ const ResumeCompare = () => {
               </CardContent>
             </Card>
             
-            {/* Improvement Suggestions */}
             <Card className="mb-10">
               <CardHeader className="bg-gradient-to-r from-modern-blue-600 to-soft-purple text-white">
                 <CardTitle>Improvement Suggestions for Both Resumes</CardTitle>
@@ -589,7 +617,6 @@ const ResumeCompare = () => {
               </CardContent>
             </Card>
             
-            {/* Hidden div for PDF generation */}
             <div className="hidden">
               <div ref={reportRef} className="p-8 bg-white">
                 <div className="pdf-header">
@@ -600,16 +627,16 @@ const ResumeCompare = () => {
                 <div className="resume-card">
                   <div className="resume-title">Resume A Analysis</div>
                   <div className="score-item">
-                    <span className="score-label">Overall ATS Score:</span> {comparisonResults.resumeA.atsScore}%
+                    <span className="score-label">Overall ATS Score:</span> {comparisonResults.resumeA.atsScore || 0}%
                   </div>
                   <div className="score-item">
-                    <span className="score-label">Keyword Score:</span> {comparisonResults.resumeA.keywordScore}%
+                    <span className="score-label">Keyword Score:</span> {comparisonResults.resumeA.keywordScore || 0}%
                   </div>
                   <div className="score-item">
-                    <span className="score-label">Format Score:</span> {comparisonResults.resumeA.formatScore}%
+                    <span className="score-label">Format Score:</span> {comparisonResults.resumeA.formatScore || 0}%
                   </div>
                   <div className="score-item">
-                    <span className="score-label">Content Score:</span> {comparisonResults.resumeA.contentScore}%
+                    <span className="score-label">Content Score:</span> {comparisonResults.resumeA.contentScore || 0}%
                   </div>
                   
                   <div className="section-title">Strengths:</div>
@@ -630,16 +657,16 @@ const ResumeCompare = () => {
                 <div className="resume-card">
                   <div className="resume-title">Resume B Analysis</div>
                   <div className="score-item">
-                    <span className="score-label">Overall ATS Score:</span> {comparisonResults.resumeB.atsScore}%
+                    <span className="score-label">Overall ATS Score:</span> {comparisonResults.resumeB.atsScore || 0}%
                   </div>
                   <div className="score-item">
-                    <span className="score-label">Keyword Score:</span> {comparisonResults.resumeB.keywordScore}%
+                    <span className="score-label">Keyword Score:</span> {comparisonResults.resumeB.keywordScore || 0}%
                   </div>
                   <div className="score-item">
-                    <span className="score-label">Format Score:</span> {comparisonResults.resumeB.formatScore}%
+                    <span className="score-label">Format Score:</span> {comparisonResults.resumeB.formatScore || 0}%
                   </div>
                   <div className="score-item">
-                    <span className="score-label">Content Score:</span> {comparisonResults.resumeB.contentScore}%
+                    <span className="score-label">Content Score:</span> {comparisonResults.resumeB.contentScore || 0}%
                   </div>
                   
                   <div className="section-title">Strengths:</div>
