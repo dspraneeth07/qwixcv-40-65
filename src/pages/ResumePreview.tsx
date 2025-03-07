@@ -17,6 +17,9 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import html2pdf from 'html2pdf.js';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ATSScoreDisplay } from "@/components/resume/ATSScoreDisplay";
+import JobSuggestions from "@/components/resume/JobSuggestions";
+import { generateATSScore, ATSScoreData } from "@/utils/atsScoreApi";
 
 interface Skills {
   professional?: string;
@@ -69,6 +72,8 @@ const ResumePreview = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [atsScoreData, setAtsScoreData] = useState<ATSScoreData | null>(null);
+  const [atsLoading, setAtsLoading] = useState(false);
 
   useEffect(() => {
     try {
@@ -104,6 +109,26 @@ const ResumePreview = () => {
       setLoading(false);
     }
   }, [location]);
+
+  useEffect(() => {
+    if (resumeData && !atsScoreData && !atsLoading) {
+      analyzeResumeATS();
+    }
+  }, [resumeData]);
+
+  const analyzeResumeATS = async () => {
+    if (!resumeData) return;
+    
+    setAtsLoading(true);
+    try {
+      const scoreData = await generateATSScore(resumeData);
+      setAtsScoreData(scoreData);
+    } catch (error) {
+      console.error("Error generating ATS score:", error);
+    } finally {
+      setAtsLoading(false);
+    }
+  };
 
   const handleDownload = () => {
     const resumeElement = document.getElementById('resume-content');
@@ -224,6 +249,18 @@ const ResumePreview = () => {
     });
   };
 
+  const getAllSkills = () => {
+    if (!resumeData?.skills) return [];
+    
+    const skillsObj = resumeData.skills;
+    return Object.values(skillsObj)
+      .filter(Boolean)
+      .map((skillSet: any) => skillSet.toString())
+      .join(", ")
+      .split(/[,;]\s*/)
+      .filter(Boolean);
+  };
+
   if (loading) {
     return (
       <MainLayout>
@@ -297,8 +334,22 @@ const ResumePreview = () => {
           </div>
         </div>
 
-        <div className="flex justify-center">
-          <ResumeContent data={resumeData} />
+        <div className="grid md:grid-cols-12 gap-6">
+          <div className="md:col-span-4 space-y-6">
+            <JobSuggestions 
+              skills={getAllSkills()} 
+              jobTitle={resumeData?.personalInfo?.jobTitle || ""}
+              location={resumeData?.personalInfo?.location}
+            />
+            <ATSScoreDisplay 
+              scoreData={atsScoreData}
+              isLoading={atsLoading}
+            />
+          </div>
+          
+          <div className="md:col-span-8">
+            <ResumeContent data={resumeData} />
+          </div>
         </div>
       </div>
     </MainLayout>

@@ -1,10 +1,10 @@
 
 import { JobListing } from "@/types/job";
 
-// We're using the Findwork API which offers a free tier with a reasonable request limit
+// Using the FindWork.dev API
 const API_URL = "https://findwork.dev/api/jobs/";
-// Note: In a real production app, this would be stored securely
-const API_KEY = "21d8d83fbf2b8a8bff9e1c62f45e4cd24ea57e1b";
+// Using the provided API key
+const API_KEY = "5f58f90d8f7cf996bfb59b82141c2020c107a88a";
 
 interface JobSearchParams {
   query?: string;
@@ -17,17 +17,6 @@ interface JobSearchParams {
 
 export const fetchJobs = async (params: JobSearchParams): Promise<JobListing[]> => {
   try {
-    // For development purposes, simulate API call with mock data
-    // In production, use the commented code to make real API calls
-    
-    // Simulating API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Generate mock data based on search parameters
-    return generateMockJobs(params);
-    
-    /* 
-    // Real API implementation:
     const queryParams = new URLSearchParams();
     if (params.query) queryParams.append('search', params.query);
     if (params.location) queryParams.append('location', params.location);
@@ -43,24 +32,47 @@ export const fetchJobs = async (params: JobSearchParams): Promise<JobListing[]> 
     });
     
     if (!response.ok) {
-      throw new Error(`API error with status: ${response.status}`);
+      console.error(`API error with status: ${response.status}`);
+      // Fallback to mock data if API fails
+      return generateMockJobs(params);
     }
     
     const data = await response.json();
     return data.results.map((job: any) => ({
-      id: job.id,
+      id: job.id.toString(),
       title: job.role,
       company: job.company_name,
-      location: job.location,
+      location: job.location || "Remote",
       description: job.text,
       date: job.date_posted,
       url: job.url,
-      tags: job.keywords,
-      salary: job.salary || null
+      tags: job.keywords || [],
+      salary: job.salary || "Not specified"
     }));
-    */
   } catch (error) {
     console.error("Error fetching jobs:", error);
+    // Fallback to mock data if API fails
+    return generateMockJobs(params);
+  }
+};
+
+// Create a function to get job recommendations based on resume skills
+export const getJobRecommendations = async (skills: string[], jobTitle: string, location?: string): Promise<JobListing[]> => {
+  // Extract keywords from skills
+  const skillsArray = skills.join(" ").split(/[,;]\s*|\s+/).filter(skill => skill.length > 3);
+  
+  // Use job title as primary search and supplement with top skills
+  const searchQuery = jobTitle || skillsArray.slice(0, 3).join(" ");
+  
+  try {
+    return await fetchJobs({
+      query: searchQuery,
+      location: location,
+      page: 1,
+      remote: true
+    });
+  } catch (error) {
+    console.error("Error fetching job recommendations:", error);
     return [];
   }
 };
