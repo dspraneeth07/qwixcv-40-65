@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -98,4 +99,19 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Resume text will always be black regardless of theme */
+.resume-text {
+  @apply text-black !important;
+}
+
+/* Resume buttons will be visible in both themes */
+.resume-btn {
+  @apply bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:text-white dark:hover:bg-blue-600 !important;
+}
+
+/* Make sure Next/Previous buttons in resume builder are visible */
+.dark .resume-nav-btn {
+  @apply bg-blue-500 text-white hover:bg-blue-600 !important;
 }

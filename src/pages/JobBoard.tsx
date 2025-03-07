@@ -66,12 +66,18 @@ const JobBoard = () => {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric"
-    });
+    if (!dateString) return "Recently";
+    
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+      });
+    } catch (e) {
+      return "Recently";
+    }
   };
 
   return (
@@ -79,7 +85,7 @@ const JobBoard = () => {
       <div className="container py-12">
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight mb-2">Find Your Next Opportunity</h1>
-          <p className="text-muted-foreground">Browse job listings and apply with your resume</p>
+          <p className="text-muted-foreground">Browse Indeed job listings and apply with your resume</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -98,7 +104,7 @@ const JobBoard = () => {
                   />
                   <Button 
                     variant="ats" 
-                    className="w-full mt-4"
+                    className="w-full mt-4 resume-btn"
                     onClick={handleSearch}
                   >
                     Apply Filters
@@ -139,7 +145,7 @@ const JobBoard = () => {
               <Button 
                 variant="ats" 
                 onClick={handleSearch}
-                className="bg-primary text-white hover:bg-primary/90"
+                className="bg-primary text-white hover:bg-primary/90 resume-btn"
               >
                 Search Jobs
               </Button>
@@ -170,7 +176,7 @@ const JobBoard = () => {
                   <AlertCircle className="h-12 w-12 mx-auto text-orange-500 mb-3" />
                   <h2 className="font-medium text-xl mb-2">Error Loading Jobs</h2>
                   <p className="text-muted-foreground mb-4">{error}</p>
-                  <Button onClick={loadJobs} variant="ats">Try Again</Button>
+                  <Button onClick={loadJobs} variant="ats" className="resume-btn">Try Again</Button>
                 </div>
               </Card>
             ) : (
@@ -187,24 +193,24 @@ const JobBoard = () => {
                     {jobs.map((job) => (
                       <Card key={job.id} className="hover:shadow-md transition-shadow">
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-xl text-black dark:text-black">{job.title}</CardTitle>
+                          <CardTitle className="text-xl resume-text">{job.title}</CardTitle>
                           <div className="flex flex-wrap text-muted-foreground text-sm gap-3 mt-1">
-                            <div className="flex items-center text-black dark:text-black">
+                            <div className="flex items-center resume-text">
                               <Building className="h-3.5 w-3.5 mr-1" />
                               {job.company}
                             </div>
-                            <div className="flex items-center text-black dark:text-black">
+                            <div className="flex items-center resume-text">
                               <MapPin className="h-3.5 w-3.5 mr-1" />
                               {job.location}
                             </div>
-                            <div className="flex items-center text-black dark:text-black">
+                            <div className="flex items-center resume-text">
                               <Calendar className="h-3.5 w-3.5 mr-1" />
                               Posted {formatDate(job.date)}
                             </div>
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-sm line-clamp-3 text-black dark:text-black">{job.description}</p>
+                          <p className="text-sm line-clamp-3 resume-text">{job.description}</p>
                           <div className="flex flex-wrap gap-2 mt-3">
                             {job.tags?.map((tag, index) => (
                               <span 
@@ -217,7 +223,7 @@ const JobBoard = () => {
                           </div>
                         </CardContent>
                         <CardFooter className="flex justify-between pt-0">
-                          <span className="text-sm font-medium text-black dark:text-black">
+                          <span className="text-sm font-medium resume-text">
                             {job.salary ? job.salary : 'Salary not specified'}
                           </span>
                           <a 
@@ -226,7 +232,7 @@ const JobBoard = () => {
                             rel="noopener noreferrer" 
                             className="inline-flex"
                           >
-                            <Button variant="outline" size="sm" className="gap-1 bg-white text-black hover:bg-gray-100">
+                            <Button variant="outline" size="sm" className="gap-1 bg-white text-black hover:bg-gray-100 dark:bg-blue-500 dark:text-white dark:hover:bg-blue-600">
                               Apply Now
                               <ArrowUpRight className="h-3.5 w-3.5" />
                             </Button>
@@ -242,7 +248,7 @@ const JobBoard = () => {
                     variant="outline" 
                     disabled={currentPage === 1} 
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    className="bg-white text-black hover:bg-gray-100"
+                    className="bg-white text-black hover:bg-gray-100 dark:bg-blue-500 dark:text-white dark:hover:bg-blue-600 resume-nav-btn"
                   >
                     Previous
                   </Button>
@@ -253,7 +259,7 @@ const JobBoard = () => {
                     variant="outline" 
                     onClick={() => setCurrentPage(prev => prev + 1)}
                     disabled={jobs.length === 0}
-                    className="bg-white text-black hover:bg-gray-100"
+                    className="bg-white text-black hover:bg-gray-100 dark:bg-blue-500 dark:text-white dark:hover:bg-blue-600 resume-nav-btn"
                   >
                     Next
                   </Button>

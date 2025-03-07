@@ -1,8 +1,9 @@
 
 import { JobListing } from "@/types/job";
 
-// API key for FindWork
-const FINDWORK_API_KEY = "5f58f90d8f7cf996bfb59b82141c2020c107a88a";
+// API key for RapidAPI - Indeed API
+const RAPID_API_KEY = "9515e48d1bmsh7a2462135b3d8e9p1755e7jsn7759e1a20e89";
+const RAPID_API_HOST = "indeed12.p.rapidapi.com";
 
 interface JobSearchParams {
   query?: string;
@@ -13,42 +14,46 @@ interface JobSearchParams {
   experience?: string;
 }
 
-// Function to search for jobs using the FindWork API
+// Function to search for jobs using the Indeed API
 export const fetchJobs = async (params: JobSearchParams): Promise<JobListing[]> => {
   try {
-    const query = params.query || "";
-    console.log(`Fetching jobs from FindWork API: https://findwork.dev/api/jobs/?search=${encodeURIComponent(query)}`);
+    const query = params.query || "developer";
+    const location = params.location || "";
+    const page = params.page || 1;
     
-    const url = `https://findwork.dev/api/jobs/?search=${encodeURIComponent(query)}`;
+    console.log(`Fetching jobs from Indeed API for: ${query} in ${location}`);
+    
+    const url = `https://indeed12.p.rapidapi.com/jobs/search?query=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}&page_id=${page}&locality=us`;
     
     const response = await fetch(url, {
       headers: {
-        'Authorization': `Token ${FINDWORK_API_KEY}`
+        'x-rapidapi-host': RAPID_API_HOST,
+        'x-rapidapi-key': RAPID_API_KEY
       }
     });
 
     if (!response.ok) {
-      console.error(`FindWork API error with status: ${response.status}`);
+      console.error(`Indeed API error with status: ${response.status}`);
       throw new Error(`API returned ${response.status}`);
     }
 
     const data = await response.json();
     
-    if (!data.results || data.results.length === 0) {
+    if (!data.hits || data.hits.length === 0) {
       return [];
     }
     
-    return data.results.map((job: any) => ({
-      id: job.id || `job-${Math.random().toString(36).substring(7)}`,
-      title: job.role || "Job Position",
+    return data.hits.map((job: any) => ({
+      id: job.job_id || `job-${Math.random().toString(36).substring(7)}`,
+      title: job.job_title || "Job Position",
       company: job.company_name || "Company",
-      location: job.location || params.location || "Remote",
-      description: job.text || "No description available",
-      date: job.date_posted || new Date().toISOString(),
-      url: job.url || job.apply_url || "https://findwork.dev",
-      tags: job.keywords || [],
-      salary: job.salary || "Not specified",
-      platform: 'indeed' // We'll keep this as 'indeed' to maintain compatibility
+      location: job.job_location || params.location || "Remote",
+      description: job.job_description || "No description available",
+      date: job.job_posted_at_datetime_utc || new Date().toISOString(),
+      url: job.job_apply_link || "https://indeed.com",
+      tags: job.job_required_skills?.split(",") || [],
+      salary: job.job_min_salary ? `$${job.job_min_salary} - $${job.job_max_salary}` : "Not specified",
+      platform: 'indeed'
     }));
   } catch (error) {
     console.error("Error fetching jobs:", error);
@@ -60,10 +65,11 @@ export const fetchJobs = async (params: JobSearchParams): Promise<JobListing[]> 
 export const getJobDetails = async (jobId: string): Promise<any> => {
   try {
     const response = await fetch(
-      `https://findwork.dev/api/jobs/${jobId}/`,
+      `https://indeed12.p.rapidapi.com/job/${jobId}?locality=us`,
       {
         headers: {
-          'Authorization': `Token ${FINDWORK_API_KEY}`
+          'x-rapidapi-host': RAPID_API_HOST,
+          'x-rapidapi-key': RAPID_API_KEY
         }
       }
     );
@@ -76,6 +82,81 @@ export const getJobDetails = async (jobId: string): Promise<any> => {
     return await response.json();
   } catch (error) {
     console.error("Error fetching job details:", error);
+    throw error;
+  }
+};
+
+// Get company details
+export const getCompanyDetails = async (companyName: string): Promise<any> => {
+  try {
+    const response = await fetch(
+      `https://indeed12.p.rapidapi.com/company/${encodeURIComponent(companyName)}?locality=us`,
+      {
+        headers: {
+          'x-rapidapi-host': RAPID_API_HOST,
+          'x-rapidapi-key': RAPID_API_KEY
+        }
+      }
+    );
+
+    if (!response.ok) {
+      console.error(`Company details API error with status: ${response.status}`);
+      throw new Error(`API returned ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching company details:", error);
+    throw error;
+  }
+};
+
+// Search for companies
+export const searchCompanies = async (companyName: string): Promise<any> => {
+  try {
+    const response = await fetch(
+      `https://indeed12.p.rapidapi.com/companies/search?company_name=${encodeURIComponent(companyName)}&locality=us`,
+      {
+        headers: {
+          'x-rapidapi-host': RAPID_API_HOST,
+          'x-rapidapi-key': RAPID_API_KEY
+        }
+      }
+    );
+
+    if (!response.ok) {
+      console.error(`Company search API error with status: ${response.status}`);
+      throw new Error(`API returned ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error searching companies:", error);
+    throw error;
+  }
+};
+
+// Get company jobs
+export const getCompanyJobs = async (companyName: string, start: number = 1): Promise<any> => {
+  try {
+    const response = await fetch(
+      `https://indeed12.p.rapidapi.com/company/${encodeURIComponent(companyName)}/jobs?locality=us&start=${start}`,
+      {
+        headers: {
+          'x-rapidapi-host': RAPID_API_HOST,
+          'x-rapidapi-key': RAPID_API_KEY
+        }
+      }
+    );
+
+    if (!response.ok) {
+      console.error(`Company jobs API error with status: ${response.status}`);
+      throw new Error(`API returned ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching company jobs:", error);
     throw error;
   }
 };
