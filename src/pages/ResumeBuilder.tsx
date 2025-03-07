@@ -549,7 +549,7 @@ const ResumeBuilder = () => {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className={`lg:col-span-${displayMode.length === 0 ? '12' : '7'}`}>
+          <div className="lg:col-span-7">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <div className="border-b">
                 <TabsList className="w-full justify-start mb-2 bg-transparent p-0 h-auto">
@@ -1263,13 +1263,17 @@ const ResumeBuilder = () => {
 
           {displayMode.length > 0 && (
             <div className="lg:col-span-5">
-              <div className="grid grid-cols-1 gap-6">
+              <div className="flex flex-col gap-6">
                 {displayMode.includes("preview") && (
-                  <ResumePreviewContent data={getResumeData()} />
+                  <div className="mb-6">
+                    <ResumePreviewContent data={getResumeData()} />
+                  </div>
                 )}
                 
                 {displayMode.includes("ats") && (
-                  <ATSScoreDisplay scoreData={atsData} isLoading={isAtsLoading} />
+                  <div>
+                    <ATSScoreDisplay scoreData={atsData} isLoading={isAtsLoading} />
+                  </div>
                 )}
               </div>
             </div>
