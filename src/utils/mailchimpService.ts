@@ -1,9 +1,8 @@
 
 import { toast } from "@/components/ui/use-toast";
 
-const API_KEY = "3ca0826360552c85cc023eef3ff7ec72-us19";
-const SERVER_PREFIX = API_KEY.split("-")[1]; // us19
-const MAILCHIMP_API_URL = `https://${SERVER_PREFIX}.api.mailchimp.com/3.0/`;
+// Use a different API key - this is a sample Mandrill API key format
+const API_KEY = "YOUR_MANDRILL_API_KEY";
 const MAILCHIMP_MANDRILL_URL = "https://mandrillapp.com/api/1.0/";
 
 /**
@@ -18,7 +17,7 @@ export const sendEmailWithMailchimp = async (
   fileName?: string
 ): Promise<boolean> => {
   try {
-    console.log("Sending email via Mailchimp with API key:", API_KEY);
+    console.log("Sending email via Mandrill with API key:", API_KEY);
     
     // Convert PDF Blob to base64 if provided
     let attachments = [];
@@ -70,14 +69,14 @@ export const sendEmailWithMailchimp = async (
     console.log("Mailchimp API Response:", responseData);
 
     // Check if call was successful
-    if (response.ok) {
+    if (responseData && responseData[0] && responseData[0].status === "sent") {
       toast({
         title: "Email Sent Successfully",
         description: `Your application has been sent to ${toEmail}.`,
       });
       return true;
     } else {
-      console.error("Mailchimp API Error:", responseData);
+      console.error("Mandrill API Error:", responseData);
       
       // Show error message
       toast({
