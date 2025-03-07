@@ -5,9 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, FileCheck, AlertTriangle, Award, ArrowRight, Download, FileText, Scan } from "lucide-react";
 import { motion } from "framer-motion";
 import { generateATSScore } from "@/utils/atsScoreApi";
-import { generateComparisonReport } from "@/utils/comparisonReportApi";
+import { generateComparisonReport, downloadPDF } from "@/utils/comparisonReportApi";
 import { toast } from "@/components/ui/use-toast";
-import html2pdf from "html2pdf.js";
 import { ResumeComparisonScanner } from "@/components/resume/ResumeComparisonScanner";
 
 const ResumeCompare = () => {
@@ -42,106 +41,99 @@ const ResumeCompare = () => {
     setIsComparing(true);
     
     try {
-      // In a real application, this would parse the resume files
-      // Here we'll simulate the process with mock data
-      setTimeout(async () => {
-        // Mock resume data that would normally be extracted from files
-        const mockResumeDataA = {
-          personalInfo: {
-            firstName: "John",
-            lastName: "Doe",
-            jobTitle: "Software Engineer",
-            email: "john.doe@example.com",
-            phone: "+1 123-456-7890",
-            location: "San Francisco, CA"
-          },
-          education: [{
-            id: "1",
-            school: "University of Technology",
-            degree: "Bachelor of Science in Computer Science",
-            graduationDate: "2019"
-          }],
-          experience: [{
-            id: "1",
-            jobTitle: "Software Engineer",
-            companyName: "Tech Corp",
-            startDate: "Jan 2020",
-            description: "Developed and maintained web applications using React and Node.js."
-          }],
-          skills: {
-            professional: "Project Management, Business Analysis",
-            technical: "JavaScript, React, Node.js, TypeScript",
-            soft: "Communication, Teamwork, Problem Solving"
-          },
-          objective: "Experienced software engineer seeking a challenging role in a dynamic organization."
-        };
+      const mockResumeDataA = {
+        personalInfo: {
+          firstName: "John",
+          lastName: "Doe",
+          jobTitle: "Software Engineer",
+          email: "john.doe@example.com",
+          phone: "+1 123-456-7890",
+          location: "San Francisco, CA"
+        },
+        education: [{
+          id: "1",
+          school: "University of Technology",
+          degree: "Bachelor of Science in Computer Science",
+          graduationDate: "2019"
+        }],
+        experience: [{
+          id: "1",
+          jobTitle: "Software Engineer",
+          companyName: "Tech Corp",
+          startDate: "Jan 2020",
+          description: "Developed and maintained web applications using React and Node.js."
+        }],
+        skills: {
+          professional: "Project Management, Business Analysis",
+          technical: "JavaScript, React, Node.js, TypeScript",
+          soft: "Communication, Teamwork, Problem Solving"
+        },
+        objective: "Experienced software engineer seeking a challenging role in a dynamic organization."
+      };
 
-        const mockResumeDataB = {
-          personalInfo: {
-            firstName: "Jane",
-            lastName: "Smith",
-            jobTitle: "Frontend Developer",
-            email: "jane.smith@example.com",
-            phone: "+1 987-654-3210",
-            location: "New York, NY"
-          },
-          education: [{
-            id: "1",
-            school: "State University",
-            degree: "Master of Computer Science",
-            graduationDate: "2020"
-          }],
-          experience: [{
-            id: "1",
-            jobTitle: "Frontend Developer",
-            companyName: "Web Solutions Inc",
-            startDate: "Mar 2021",
-            description: "Built responsive web interfaces using React, improved site performance by 40%."
-          }],
-          skills: {
-            professional: "UI/UX Design, Project Planning",
-            technical: "React, TypeScript, CSS, HTML5, Redux",
-            soft: "Leadership, Communication, Time Management"
-          },
-          objective: "Frontend Developer with expertise in React seeking opportunities to build intuitive user experiences."
-        };
+      const mockResumeDataB = {
+        personalInfo: {
+          firstName: "Jane",
+          lastName: "Smith",
+          jobTitle: "Frontend Developer",
+          email: "jane.smith@example.com",
+          phone: "+1 987-654-3210",
+          location: "New York, NY"
+        },
+        education: [{
+          id: "1",
+          school: "State University",
+          degree: "Master of Computer Science",
+          graduationDate: "2020"
+        }],
+        experience: [{
+          id: "1",
+          jobTitle: "Frontend Developer",
+          companyName: "Web Solutions Inc",
+          startDate: "Mar 2021",
+          description: "Built responsive web interfaces using React, improved site performance by 40%."
+        }],
+        skills: {
+          professional: "UI/UX Design, Project Planning",
+          technical: "React, TypeScript, CSS, HTML5, Redux",
+          soft: "Leadership, Communication, Time Management"
+        },
+        objective: "Frontend Developer with expertise in React seeking opportunities to build intuitive user experiences."
+      };
 
-        try {
-          // Generate ATS scores for both resumes
-          const scoreDataA = await generateATSScore(mockResumeDataA);
-          const scoreDataB = await generateATSScore(mockResumeDataB);
-          
-          console.log("Score data A:", scoreDataA);
-          console.log("Score data B:", scoreDataB);
+      try {
+        const scoreDataA = await generateATSScore(mockResumeDataA);
+        const scoreDataB = await generateATSScore(mockResumeDataB);
+        
+        console.log("Score data A:", scoreDataA);
+        console.log("Score data B:", scoreDataB);
 
-          // Generate comparison report
-          const comparisonData = await generateComparisonReport(
-            mockResumeDataA, 
-            mockResumeDataB, 
-            scoreDataA, 
-            scoreDataB
-          );
-          
-          console.log("Comparison data:", comparisonData);
+        const comparisonData = await generateComparisonReport(
+          mockResumeDataA, 
+          mockResumeDataB, 
+          scoreDataA, 
+          scoreDataB
+        );
+        
+        console.log("Comparison data:", comparisonData);
 
-          setComparisonResults(comparisonData);
-          setIsComparing(false);
-          
-          toast({
-            title: "Analysis Complete",
-            description: "Both resumes have been analyzed and compared successfully."
-          });
-        } catch (error) {
-          console.error("Error in ATS scoring or comparison:", error);
-          setIsComparing(false);
-          
-          toast({
-            title: "Analysis Error",
-            description: "There was a problem analyzing your resumes. Please try again.",
-            variant: "destructive"
-          });
-        }
-      }, 3000);
+        setComparisonResults(comparisonData);
+        setIsComparing(false);
+        
+        toast({
+          title: "Analysis Complete",
+          description: "Both resumes have been analyzed and compared successfully."
+        });
+      } catch (error) {
+        console.error("Error in ATS scoring or comparison:", error);
+        setIsComparing(false);
+        
+        toast({
+          title: "Analysis Error",
+          description: "There was a problem analyzing your resumes. Please try again.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       console.error("Error comparing resumes:", error);
       setIsComparing(false);
@@ -162,68 +154,21 @@ const ResumeCompare = () => {
       description: "Your comparison report is being prepared for download..."
     });
     
-    // Get the report content
-    const reportElement = reportRef.current.cloneNode(true) as HTMLElement;
-    
-    // Configure the PDF options with more forgiving settings
-    const opt = {
-      margin: [15, 15, 15, 15],
-      filename: 'resume-comparison-report.pdf',
-      image: { type: 'jpeg', quality: 0.9 },
-      html2canvas: { 
-        scale: 1.5, 
-        useCORS: true,
-        logging: false,
-        letterRendering: true,
-        allowTaint: true // Allow tainted canvas
-      },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-    
-    // Try to generate the PDF with better error handling
-    try {
-      html2pdf()
-        .from(reportElement)
-        .set(opt)
-        .outputPdf('dataurlnewwindow')
-        .then(() => {
-          toast({
-            title: "PDF Generated",
-            description: "Your comparison report has been generated in a new window."
-          });
-        })
-        .catch(error => {
-          console.error("PDF generation error:", error);
-          // Fallback to print
-          const printWindow = window.open('', '_blank');
-          if (printWindow) {
-            printWindow.document.write('<html><head><title>Resume Comparison Report</title>');
-            printWindow.document.write('<style>body{font-family:Arial;padding:20px}</style>');
-            printWindow.document.write('</head><body>');
-            printWindow.document.write(reportElement.innerHTML);
-            printWindow.document.write('</body></html>');
-            printWindow.document.close();
-            printWindow.print();
-            toast({
-              title: "Report Generated",
-              description: "Your report opened in a new window. Please use your browser's print function."
-            });
-          } else {
-            toast({
-              title: "PDF Generation Failed",
-              description: "Please try again or check browser popup settings.",
-              variant: "destructive"
-            });
-          }
+    downloadPDF(reportRef.current)
+      .then(() => {
+        toast({
+          title: "PDF Downloaded",
+          description: "Your comparison report has been saved successfully."
         });
-    } catch (error) {
-      console.error("PDF generation outer error:", error);
-      toast({
-        title: "PDF Generation Failed",
-        description: "There was a problem creating your PDF. Please try again.",
-        variant: "destructive"
+      })
+      .catch(error => {
+        console.error("PDF generation error:", error);
+        toast({
+          title: "PDF Generation Failed",
+          description: "There was a problem creating your PDF. Please try again.",
+          variant: "destructive"
+        });
       });
-    }
   };
 
   const containerVariants = {
@@ -620,91 +565,91 @@ const ResumeCompare = () => {
             <div className="hidden">
               <div ref={reportRef} className="p-8 bg-white">
                 <div className="pdf-header">
-                  <h1>Resume Comparison Report</h1>
-                  <p>Detailed analysis and recommendations powered by AI</p>
+                  <h1 className="text-3xl font-bold text-center mb-2">Resume Comparison Report</h1>
+                  <p className="text-center text-gray-600 mb-6">Detailed analysis and recommendations powered by AI</p>
                 </div>
                 
-                <div className="resume-card">
-                  <div className="resume-title">Resume A Analysis</div>
-                  <div className="score-item">
-                    <span className="score-label">Overall ATS Score:</span> {comparisonResults.resumeA.atsScore || 0}%
+                <div className="mb-6 p-4 border rounded-lg">
+                  <div className="text-xl font-bold mb-3">Resume A Analysis</div>
+                  <div className="mb-1">
+                    <span className="font-semibold">Overall ATS Score:</span> {comparisonResults.resumeA.atsScore}%
                   </div>
-                  <div className="score-item">
-                    <span className="score-label">Keyword Score:</span> {comparisonResults.resumeA.keywordScore || 0}%
+                  <div className="mb-1">
+                    <span className="font-semibold">Keyword Score:</span> {comparisonResults.resumeA.keywordScore}%
                   </div>
-                  <div className="score-item">
-                    <span className="score-label">Format Score:</span> {comparisonResults.resumeA.formatScore || 0}%
+                  <div className="mb-1">
+                    <span className="font-semibold">Format Score:</span> {comparisonResults.resumeA.formatScore}%
                   </div>
-                  <div className="score-item">
-                    <span className="score-label">Content Score:</span> {comparisonResults.resumeA.contentScore || 0}%
+                  <div className="mb-4">
+                    <span className="font-semibold">Content Score:</span> {comparisonResults.resumeA.contentScore}%
                   </div>
                   
-                  <div className="section-title">Strengths:</div>
-                  <ul>
+                  <div className="font-bold mt-3 mb-2">Strengths:</div>
+                  <ul className="list-disc pl-6 mb-4">
                     {comparisonResults.resumeA.strengths.map((strength: string, index: number) => (
-                      <li key={index} className="suggestion-item">{strength}</li>
+                      <li key={index}>{strength}</li>
                     ))}
                   </ul>
                   
-                  <div className="section-title">Areas to Improve:</div>
-                  <ul>
+                  <div className="font-bold mt-3 mb-2">Areas to Improve:</div>
+                  <ul className="list-disc pl-6 mb-2">
                     {comparisonResults.resumeA.weaknesses.map((weakness: string, index: number) => (
-                      <li key={index} className="suggestion-item">{weakness}</li>
+                      <li key={index}>{weakness}</li>
                     ))}
                   </ul>
                 </div>
                 
-                <div className="resume-card">
-                  <div className="resume-title">Resume B Analysis</div>
-                  <div className="score-item">
-                    <span className="score-label">Overall ATS Score:</span> {comparisonResults.resumeB.atsScore || 0}%
+                <div className="mb-6 p-4 border rounded-lg">
+                  <div className="text-xl font-bold mb-3">Resume B Analysis</div>
+                  <div className="mb-1">
+                    <span className="font-semibold">Overall ATS Score:</span> {comparisonResults.resumeB.atsScore}%
                   </div>
-                  <div className="score-item">
-                    <span className="score-label">Keyword Score:</span> {comparisonResults.resumeB.keywordScore || 0}%
+                  <div className="mb-1">
+                    <span className="font-semibold">Keyword Score:</span> {comparisonResults.resumeB.keywordScore}%
                   </div>
-                  <div className="score-item">
-                    <span className="score-label">Format Score:</span> {comparisonResults.resumeB.formatScore || 0}%
+                  <div className="mb-1">
+                    <span className="font-semibold">Format Score:</span> {comparisonResults.resumeB.formatScore}%
                   </div>
-                  <div className="score-item">
-                    <span className="score-label">Content Score:</span> {comparisonResults.resumeB.contentScore || 0}%
+                  <div className="mb-4">
+                    <span className="font-semibold">Content Score:</span> {comparisonResults.resumeB.contentScore}%
                   </div>
                   
-                  <div className="section-title">Strengths:</div>
-                  <ul>
+                  <div className="font-bold mt-3 mb-2">Strengths:</div>
+                  <ul className="list-disc pl-6 mb-4">
                     {comparisonResults.resumeB.strengths.map((strength: string, index: number) => (
-                      <li key={index} className="suggestion-item">{strength}</li>
+                      <li key={index}>{strength}</li>
                     ))}
                   </ul>
                   
-                  <div className="section-title">Areas to Improve:</div>
-                  <ul>
+                  <div className="font-bold mt-3 mb-2">Areas to Improve:</div>
+                  <ul className="list-disc pl-6 mb-2">
                     {comparisonResults.resumeB.weaknesses.map((weakness: string, index: number) => (
-                      <li key={index} className="suggestion-item">{weakness}</li>
+                      <li key={index}>{weakness}</li>
                     ))}
                   </ul>
                 </div>
                 
-                <div className="resume-card">
-                  <div className="section-title">Expert Recommendation:</div>
+                <div className="mb-6 p-4 border rounded-lg">
+                  <div className="font-bold mb-3">Expert Recommendation:</div>
                   <p>
                     {comparisonResults.winner === 'resumeA' ? 
-                      <span className="winner-badge">Resume A is the winner. </span> : 
-                      <span className="winner-badge">Resume B is the winner. </span>
+                      <span className="font-bold">Resume A is the winner. </span> : 
+                      <span className="font-bold">Resume B is the winner. </span>
                     }
                     {comparisonResults.reason}
                   </p>
                 </div>
                 
-                <div className="resume-card">
-                  <div className="section-title">Improvement Suggestions for Both Resumes:</div>
-                  <ol>
+                <div className="mb-6 p-4 border rounded-lg">
+                  <div className="font-bold mb-3">Improvement Suggestions for Both Resumes:</div>
+                  <ol className="list-decimal pl-6">
                     {comparisonResults.improvementSuggestions.map((suggestion: string, index: number) => (
-                      <li key={index} className="suggestion-item">{suggestion}</li>
+                      <li key={index} className="mb-2">{suggestion}</li>
                     ))}
                   </ol>
                 </div>
                 
-                <div className="footer">
+                <div className="text-center text-sm text-gray-500 mt-8 pt-4 border-t">
                   <p>Generated by QwiX CV | ATS Resume Scanner and Optimizer</p>
                   <p>https://qwixcv.com | © {new Date().getFullYear()} QwikZen</p>
                 </div>

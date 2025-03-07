@@ -7,18 +7,15 @@ export const generateComparisonReport = async (
   scoreDataA: any,
   scoreDataB: any
 ) => {
-  // Instead of trying to generate a PDF and return it, we'll return structured data
-  // that the component can use to display the comparison and generate PDF as needed
-  
   // Extract scores from the generated ATS data
-  const atsScoreA = scoreDataA.overallScore || 70;
-  const atsScoreB = scoreDataB.overallScore || 70;
-  const keywordScoreA = scoreDataA.keywordScore || 65;
-  const keywordScoreB = scoreDataB.keywordScore || 65;
-  const formatScoreA = scoreDataA.formatScore || 75;
-  const formatScoreB = scoreDataB.formatScore || 75;
-  const contentScoreA = scoreDataA.contentScore || 70;
-  const contentScoreB = scoreDataB.contentScore || 70;
+  const atsScoreA = scoreDataA?.overallScore || 70;
+  const atsScoreB = scoreDataB?.overallScore || 70;
+  const keywordScoreA = scoreDataA?.keywordScore || 65;
+  const keywordScoreB = scoreDataB?.keywordScore || 65;
+  const formatScoreA = scoreDataA?.formatScore || 75;
+  const formatScoreB = scoreDataB?.formatScore || 75;
+  const contentScoreA = scoreDataA?.contentScore || 70;
+  const contentScoreB = scoreDataB?.contentScore || 70;
   
   // Determine which resume has the higher score
   const winner = atsScoreA >= atsScoreB ? 'resumeA' : 'resumeB';
@@ -36,8 +33,8 @@ export const generateComparisonReport = async (
   
   // Combine recommendations from both resumes
   const allSuggestions = [
-    ...(scoreDataA.suggestions || []),
-    ...(scoreDataB.suggestions || [])
+    ...(scoreDataA?.suggestions || []),
+    ...(scoreDataB?.suggestions || [])
   ];
   
   // Deduplicate suggestions (removing similar ones)
@@ -53,10 +50,10 @@ export const generateComparisonReport = async (
       strengths: [
         "Good overall structure with clear sections",
         "Contains relevant technical skills for the position",
-        scoreDataA.jobMatch ? "Well aligned with target job requirements" : "Includes relevant background information"
+        scoreDataA?.jobMatch ? "Well aligned with target job requirements" : "Includes relevant background information"
       ],
       weaknesses: [
-        ...(scoreDataA.suggestions || []).slice(0, 3)
+        ...(scoreDataA?.suggestions || []).slice(0, 3)
       ]
     },
     resumeB: {
@@ -67,10 +64,10 @@ export const generateComparisonReport = async (
       strengths: [
         "Clear presentation of skills and experience",
         "Quantifies achievements with metrics",
-        scoreDataB.jobMatch ? "Contains good keyword optimization" : "Includes relevant technical skills"
+        scoreDataB?.jobMatch ? "Contains good keyword optimization" : "Includes relevant technical skills"
       ],
       weaknesses: [
-        ...(scoreDataB.suggestions || []).slice(0, 3)
+        ...(scoreDataB?.suggestions || []).slice(0, 3)
       ]
     },
     winner: winner,
@@ -79,8 +76,28 @@ export const generateComparisonReport = async (
   };
 };
 
+// Function to generate and download PDF directly
+export const downloadPDF = (reportElement: HTMLElement, fileName: string = 'resume-comparison-report.pdf') => {
+  const opt = {
+    margin: [10, 10, 10, 10],
+    filename: fileName,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { 
+      scale: 2, 
+      useCORS: true,
+      logging: false,
+      allowTaint: true,
+      backgroundColor: '#ffffff'
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  
+  // Return a promise to allow for proper handling
+  return html2pdf().set(opt).from(reportElement).save();
+};
+
 // Helper function to get color based on score
-const getScoreColor = (score: number): string => {
+export const getScoreColor = (score: number): string => {
   if (score >= 80) return '#059669'; // Green
   if (score >= 60) return '#0891b2'; // Teal
   if (score >= 40) return '#d97706'; // Amber
