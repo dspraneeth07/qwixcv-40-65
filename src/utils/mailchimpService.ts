@@ -1,12 +1,8 @@
 
 import { toast } from "@/components/ui/use-toast";
 
-// Use a different API key - this is a sample Mandrill API key format
-const API_KEY = "YOUR_MANDRILL_API_KEY";
-const MAILCHIMP_MANDRILL_URL = "https://mandrillapp.com/api/1.0/";
-
 /**
- * Send an email using Mailchimp Transactional API (formerly Mandrill)
+ * Send an email using the local mail client and attach a PDF
  */
 export const sendEmailWithMailchimp = async (
   fromEmail: string,
@@ -17,41 +13,42 @@ export const sendEmailWithMailchimp = async (
   fileName?: string
 ): Promise<boolean> => {
   try {
-    console.log("Preparing email draft");
+    console.log("Preparing email with PDF attachment");
     
-    // Convert PDF Blob to base64 if provided
-    let base64pdf = '';
-    if (pdfBlob && fileName) {
-      base64pdf = await blobToBase64(pdfBlob);
-      console.log("PDF converted to base64");
+    if (!pdfBlob || !fileName) {
+      console.error("Missing PDF data for attachment");
+      toast({
+        title: "Error",
+        description: "Could not prepare PDF for attachment",
+        variant: "destructive"
+      });
+      return false;
     }
 
-    // Create mailto URL with subject and body
+    // First, download the PDF file
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    const downloadLink = document.createElement('a');
+    downloadLink.href = pdfUrl;
+    downloadLink.download = fileName;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+    
+    // Create a delay to ensure the file downloads
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Then create the mailto URL with the subject and body
     const encodedSubject = encodeURIComponent(subject);
-    const encodedBody = encodeURIComponent(body);
+    const encodedBody = encodeURIComponent(body + "\n\n-----\nIMPORTANT: Please attach the resume PDF file that was just downloaded to your device.");
     const mailtoUrl = `mailto:${toEmail}?subject=${encodedSubject}&body=${encodedBody}`;
     
-    // First, trigger download of the PDF
-    if (pdfBlob && fileName) {
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-      const downloadLink = document.createElement('a');
-      downloadLink.href = pdfUrl;
-      downloadLink.download = fileName;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-      URL.revokeObjectURL(pdfUrl);
-    }
+    // Open the mail client
+    window.location.href = mailtoUrl;
     
-    // Then open the mail client
-    setTimeout(() => {
-      window.location.href = mailtoUrl;
-      
-      toast({
-        title: "Email draft created",
-        description: "Your email draft has been opened in your mail app. The resume PDF has been downloaded - please attach it to your email.",
-      });
-    }, 500);
+    toast({
+      title: "Email Ready",
+      description: "Your email draft has been created. Please attach the resume PDF that was just downloaded to your device.",
+    });
     
     return true;
   } catch (error) {
@@ -59,7 +56,7 @@ export const sendEmailWithMailchimp = async (
     
     toast({
       title: "Error Creating Email",
-      description: "There was a problem creating your email draft.",
+      description: "There was a problem creating your email draft. Please try again.",
       variant: "destructive"
     });
     return false;

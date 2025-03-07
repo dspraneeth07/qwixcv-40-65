@@ -38,6 +38,7 @@ export const fetchJobs = async (params: JobSearchParams): Promise<JobListing[]> 
     }
 
     const data = await response.json();
+    console.log("Indeed API response:", data);
     
     if (!data.hits || data.hits.length === 0) {
       return [];
@@ -64,22 +65,24 @@ export const fetchJobs = async (params: JobSearchParams): Promise<JobListing[]> 
 // Function to get job details
 export const getJobDetails = async (jobId: string): Promise<any> => {
   try {
-    const response = await fetch(
-      `https://indeed12.p.rapidapi.com/job/${jobId}?locality=us`,
-      {
-        headers: {
-          'x-rapidapi-host': RAPID_API_HOST,
-          'x-rapidapi-key': RAPID_API_KEY
-        }
+    const url = `https://indeed12.p.rapidapi.com/job/${jobId}?locality=us`;
+    console.log("Fetching job details from:", url);
+    
+    const response = await fetch(url, {
+      headers: {
+        'x-rapidapi-host': RAPID_API_HOST,
+        'x-rapidapi-key': RAPID_API_KEY
       }
-    );
+    });
 
     if (!response.ok) {
       console.error(`Job details API error with status: ${response.status}`);
       throw new Error(`API returned ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log("Job details response:", data);
+    return data;
   } catch (error) {
     console.error("Error fetching job details:", error);
     throw error;
@@ -89,22 +92,24 @@ export const getJobDetails = async (jobId: string): Promise<any> => {
 // Get company details
 export const getCompanyDetails = async (companyName: string): Promise<any> => {
   try {
-    const response = await fetch(
-      `https://indeed12.p.rapidapi.com/company/${encodeURIComponent(companyName)}?locality=us`,
-      {
-        headers: {
-          'x-rapidapi-host': RAPID_API_HOST,
-          'x-rapidapi-key': RAPID_API_KEY
-        }
+    const url = `https://indeed12.p.rapidapi.com/company/${encodeURIComponent(companyName)}?locality=us`;
+    console.log("Fetching company details from:", url);
+    
+    const response = await fetch(url, {
+      headers: {
+        'x-rapidapi-host': RAPID_API_HOST,
+        'x-rapidapi-key': RAPID_API_KEY
       }
-    );
+    });
 
     if (!response.ok) {
       console.error(`Company details API error with status: ${response.status}`);
       throw new Error(`API returned ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log("Company details response:", data);
+    return data;
   } catch (error) {
     console.error("Error fetching company details:", error);
     throw error;
@@ -114,22 +119,24 @@ export const getCompanyDetails = async (companyName: string): Promise<any> => {
 // Search for companies
 export const searchCompanies = async (companyName: string): Promise<any> => {
   try {
-    const response = await fetch(
-      `https://indeed12.p.rapidapi.com/companies/search?company_name=${encodeURIComponent(companyName)}&locality=us`,
-      {
-        headers: {
-          'x-rapidapi-host': RAPID_API_HOST,
-          'x-rapidapi-key': RAPID_API_KEY
-        }
+    const url = `https://indeed12.p.rapidapi.com/companies/search?company_name=${encodeURIComponent(companyName)}&locality=us`;
+    console.log("Searching companies from:", url);
+    
+    const response = await fetch(url, {
+      headers: {
+        'x-rapidapi-host': RAPID_API_HOST,
+        'x-rapidapi-key': RAPID_API_KEY
       }
-    );
+    });
 
     if (!response.ok) {
       console.error(`Company search API error with status: ${response.status}`);
       throw new Error(`API returned ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log("Company search response:", data);
+    return data;
   } catch (error) {
     console.error("Error searching companies:", error);
     throw error;
@@ -139,22 +146,24 @@ export const searchCompanies = async (companyName: string): Promise<any> => {
 // Get company jobs
 export const getCompanyJobs = async (companyName: string, start: number = 1): Promise<any> => {
   try {
-    const response = await fetch(
-      `https://indeed12.p.rapidapi.com/company/${encodeURIComponent(companyName)}/jobs?locality=us&start=${start}`,
-      {
-        headers: {
-          'x-rapidapi-host': RAPID_API_HOST,
-          'x-rapidapi-key': RAPID_API_KEY
-        }
+    const url = `https://indeed12.p.rapidapi.com/company/${encodeURIComponent(companyName)}/jobs?locality=us&start=${start}`;
+    console.log("Fetching company jobs from:", url);
+    
+    const response = await fetch(url, {
+      headers: {
+        'x-rapidapi-host': RAPID_API_HOST,
+        'x-rapidapi-key': RAPID_API_KEY
       }
-    );
+    });
 
     if (!response.ok) {
       console.error(`Company jobs API error with status: ${response.status}`);
       throw new Error(`API returned ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log("Company jobs response:", data);
+    return data;
   } catch (error) {
     console.error("Error fetching company jobs:", error);
     throw error;
