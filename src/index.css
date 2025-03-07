@@ -35,36 +35,6 @@
  
     --radius: 0.5rem;
   }
- 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
- 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
- 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
- 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
- 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
- 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
- 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
- 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
- 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-  }
 }
  
 @layer base {
@@ -82,14 +52,14 @@
 }
 
 .resume-btn {
-  @apply bg-primary text-white hover:bg-primary/90 !important;
+  @apply bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white !important;
 }
 
 .resume-nav-btn {
-  @apply bg-white text-black dark:bg-blue-600 dark:text-white hover:bg-gray-100 dark:hover:bg-blue-700 !important;
+  @apply bg-white text-black hover:bg-gray-100 !important;
 }
 
-/* Force resume preview content to always have black text in all themes */
+/* Force resume preview content to always have black text */
 #resume-content {
   @apply text-black bg-white !important;
 }
@@ -106,14 +76,52 @@
   @apply text-black !important;
 }
 
-/* Ensure navigation buttons in dark theme are visible */
+/* Ensure navigation buttons are visible */
 .pagination-button {
-  @apply dark:bg-blue-600 dark:text-white !important;
+  @apply bg-indigo-600 text-white !important;
 }
 
-/* Make builder buttons visible in dark mode */
-.dark .bg-gray-900 {
-  @apply bg-blue-600 hover:bg-blue-700 !important;
+/* Common UI components */
+.glass-card {
+  @apply backdrop-blur-xl bg-white/95 border border-white/20 shadow-lg rounded-xl;
+}
+
+.gradient-bg {
+  @apply bg-gradient-to-r from-indigo-600 to-purple-600;
+}
+
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 font-playfair;
+}
+
+.gradient-border {
+  @apply border-l-4 border-indigo-500;
+}
+
+.floating-card {
+  @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+}
+
+/* Form field styles */
+.form-input-enhanced {
+  @apply rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 font-poppins;
+}
+
+.form-label-enhanced {
+  @apply block text-sm font-medium text-gray-700 mb-1 font-poppins;
+}
+
+/* Headings */
+.heading-primary {
+  @apply text-3xl font-bold mb-4 font-playfair;
+}
+
+.heading-secondary {
+  @apply text-2xl font-semibold mb-3 font-playfair;
+}
+
+.heading-tertiary {
+  @apply text-xl font-medium mb-2 font-playfair;
 }
 
 /* 3D and animation styles */
@@ -186,10 +194,6 @@
   
   /* Glassmorphism */
   .glass {
-    @apply backdrop-blur-xl bg-white/10 border border-white/20;
-  }
-  
-  .glass-dark {
-    @apply backdrop-blur-xl bg-black/30 border border-white/10;
+    @apply backdrop-blur-xl bg-white/80 border border-white/20 shadow-lg;
   }
 }

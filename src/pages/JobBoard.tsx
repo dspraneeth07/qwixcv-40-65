@@ -14,7 +14,11 @@ import {
   Search,
   ArrowUpRight,
   Filter,
-  AlertCircle
+  AlertCircle,
+  FileText,
+  Clock,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { fetchJobs } from "@/utils/jobBoardApi";
 import JobSearchFilters from "@/components/jobs/JobSearchFilters";
@@ -25,7 +29,7 @@ const JobBoard = () => {
   const [jobs, setJobs] = useState<JobListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("software developer");
   const [location, setLocation] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
@@ -39,17 +43,28 @@ const JobBoard = () => {
     setError(null);
     
     try {
-      // If searchTerm is empty, we'll search for a default term like "jobs" to get some results
-      const query = searchTerm || "developer";
+      // Always use a default search term to get results
+      const query = searchTerm || "software developer";
       const jobData = await fetchJobs({
         query: query,
         location: location,
         page: currentPage
       });
-      setJobs(jobData);
+      
+      if (jobData && jobData.length > 0) {
+        setJobs(jobData);
+      } else {
+        // If no results, set a more user-friendly message
+        setJobs([]);
+        toast({
+          title: "No jobs found",
+          description: "Try adjusting your search criteria for better results.",
+          variant: "default"
+        });
+      }
     } catch (error) {
       console.error("Error loading jobs:", error);
-      setError("Failed to load jobs. Please try again later.");
+      setError("Failed to load jobs. Our servers might be busy, please try again in a moment.");
       toast({
         title: "Error loading jobs",
         description: "There was a problem loading job listings. Please check your connection and try again.",
@@ -70,6 +85,14 @@ const JobBoard = () => {
     
     try {
       const date = new Date(dateString);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - date.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays <= 1) return "Today";
+      if (diffDays <= 2) return "Yesterday";
+      if (diffDays <= 7) return `${diffDays} days ago`;
+      
       return date.toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
@@ -82,29 +105,67 @@ const JobBoard = () => {
 
   return (
     <MainLayout>
-      <div className="container py-12">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Find Your Next Opportunity</h1>
-          <p className="text-muted-foreground">Browse Indeed job listings and apply with your resume</p>
+      <div className="bg-gradient-to-b from-indigo-600 to-purple-700 text-white py-12">
+        <div className="container">
+          <h1 className="text-4xl font-bold tracking-tight mb-4 font-playfair">Find Your Next Opportunity</h1>
+          <p className="text-indigo-100 text-lg font-poppins">
+            Browse through thousands of jobs and apply with your QwiX CV resume
+          </p>
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      </div>
+      
+      <div className="container py-12">
+        <div className="flex flex-col md:flex-row gap-4 mb-8 -mt-16 relative z-10">
+          <div className="flex-1 bg-white rounded-xl shadow-xl p-3 flex space-x-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-3 h-5 w-5 text-indigo-400" />
+              <Input
+                type="text"
+                placeholder="Job title, keywords, or company"
+                className="pl-10 h-12 font-poppins border-0 ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              />
+            </div>
+            <div className="relative flex-1">
+              <MapPin className="absolute left-3 top-3 h-5 w-5 text-indigo-400" />
+              <Input
+                type="text"
+                placeholder="Location"
+                className="pl-10 h-12 font-poppins border-0 ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              />
+            </div>
+            <Button 
+              size="lg"
+              onClick={handleSearch}
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 font-poppins"
+            >
+              <Search className="h-4 w-4 mr-2" />
+              Search
+            </Button>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-8">
           <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filters
+            <Card className="sticky top-6 shadow-lg border-0">
+              <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-t-lg">
+                <CardTitle className="text-lg flex items-center font-playfair">
+                  <Filter className="h-5 w-5 mr-2" />
+                  Refine Search
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="p-4">
+                <div className="space-y-4 font-poppins">
                   <JobSearchFilters 
                     onFilterChange={(filters) => console.log("Filters changed:", filters)} 
                   />
                   <Button 
-                    variant="ats" 
-                    className="w-full mt-4 resume-btn"
+                    className="w-full mt-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
                     onClick={handleSearch}
                   >
                     Apply Filters
@@ -115,46 +176,10 @@ const JobBoard = () => {
           </div>
 
           <div className="lg:col-span-3">
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
-              <div className="flex-1">
-                <div className="flex space-x-2">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="text"
-                      placeholder="Job title, keywords, or company"
-                      className="pl-8"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                    />
-                  </div>
-                  <div className="relative flex-1">
-                    <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="text"
-                      placeholder="Location"
-                      className="pl-8"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                    />
-                  </div>
-                </div>
-              </div>
-              <Button 
-                variant="ats" 
-                onClick={handleSearch}
-                className="bg-primary text-white hover:bg-primary/90 resume-btn"
-              >
-                Search Jobs
-              </Button>
-            </div>
-
             {loading ? (
               <div className="space-y-4">
                 {[...Array(5)].map((_, index) => (
-                  <Card key={index}>
+                  <Card key={index} className="border-0 shadow-md hover:shadow-lg transition-shadow overflow-hidden">
                     <CardContent className="p-6">
                       <div className="space-y-3">
                         <Skeleton className="h-6 w-2/3" />
@@ -171,68 +196,110 @@ const JobBoard = () => {
                 ))}
               </div>
             ) : error ? (
-              <Card className="p-6">
-                <div className="text-center py-12">
-                  <AlertCircle className="h-12 w-12 mx-auto text-orange-500 mb-3" />
-                  <h2 className="font-medium text-xl mb-2">Error Loading Jobs</h2>
-                  <p className="text-muted-foreground mb-4">{error}</p>
-                  <Button onClick={loadJobs} variant="ats" className="resume-btn">Try Again</Button>
+              <Card className="border-0 shadow-lg p-6 text-center bg-white">
+                <div className="py-12">
+                  <div className="mx-auto w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mb-6">
+                    <AlertCircle className="h-12 w-12 text-orange-500" />
+                  </div>
+                  <h2 className="font-medium text-2xl mb-3 font-playfair">Error Loading Jobs</h2>
+                  <p className="text-gray-600 mb-6 max-w-md mx-auto font-poppins">{error}</p>
+                  <Button 
+                    onClick={loadJobs} 
+                    className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-poppins"
+                  >
+                    Try Again
+                  </Button>
                 </div>
               </Card>
             ) : (
               <>
                 {jobs.length === 0 ? (
-                  <Card className="p-6">
-                    <div className="text-center py-12">
-                      <h2 className="font-medium text-xl mb-2">No jobs found</h2>
-                      <p className="text-muted-foreground">Try adjusting your search criteria or location</p>
+                  <Card className="border-0 shadow-lg p-6 text-center bg-white">
+                    <div className="py-12">
+                      <div className="mx-auto w-24 h-24 bg-indigo-100 rounded-full flex items-center justify-center mb-6">
+                        <Briefcase className="h-12 w-12 text-indigo-500" />
+                      </div>
+                      <h2 className="font-medium text-2xl mb-3 font-playfair">No jobs found</h2>
+                      <p className="text-gray-600 mb-6 max-w-md mx-auto font-poppins">
+                        Try adjusting your search criteria or location to find more opportunities
+                      </p>
+                      <Button 
+                        onClick={() => {
+                          setSearchTerm("software developer");
+                          setLocation("");
+                          handleSearch();
+                        }} 
+                        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-poppins"
+                      >
+                        Reset Search
+                      </Button>
                     </div>
                   </Card>
                 ) : (
                   <div className="space-y-4">
                     {jobs.map((job) => (
-                      <Card key={job.id} className="hover:shadow-md transition-shadow">
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-xl resume-text">{job.title}</CardTitle>
-                          <div className="flex flex-wrap text-muted-foreground text-sm gap-3 mt-1">
-                            <div className="flex items-center resume-text">
-                              <Building className="h-3.5 w-3.5 mr-1" />
-                              {job.company}
+                      <Card key={job.id} className="border-0 shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-purple-500"></div>
+                        <CardHeader className="pb-2 pt-5">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <CardTitle className="text-xl font-playfair text-indigo-900">{job.title}</CardTitle>
+                              <div className="flex flex-wrap text-gray-600 text-sm gap-3 mt-1 font-poppins">
+                                <div className="flex items-center">
+                                  <Building className="h-3.5 w-3.5 mr-1 text-indigo-500" />
+                                  {job.company}
+                                </div>
+                                <div className="flex items-center">
+                                  <MapPin className="h-3.5 w-3.5 mr-1 text-indigo-500" />
+                                  {job.location}
+                                </div>
+                                <div className="flex items-center">
+                                  <Clock className="h-3.5 w-3.5 mr-1 text-indigo-500" />
+                                  Posted {formatDate(job.date)}
+                                </div>
+                              </div>
                             </div>
-                            <div className="flex items-center resume-text">
-                              <MapPin className="h-3.5 w-3.5 mr-1" />
-                              {job.location}
-                            </div>
-                            <div className="flex items-center resume-text">
-                              <Calendar className="h-3.5 w-3.5 mr-1" />
-                              Posted {formatDate(job.date)}
+                            
+                            <div className="flex flex-col items-end">
+                              <span className="text-sm font-medium text-indigo-900 font-poppins">
+                                {job.salary ? job.salary : 'Salary not specified'}
+                              </span>
                             </div>
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-sm line-clamp-3 resume-text">{job.description}</p>
+                          <p className="text-sm line-clamp-3 text-gray-700 font-poppins">{job.description}</p>
                           <div className="flex flex-wrap gap-2 mt-3">
                             {job.tags?.map((tag, index) => (
                               <span 
                                 key={index} 
-                                className="text-xs bg-slate-100 px-2 py-1 rounded-full text-black"
+                                className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full font-poppins"
                               >
                                 {tag}
                               </span>
                             ))}
                           </div>
                         </CardContent>
-                        <CardFooter className="flex justify-between pt-0">
-                          <span className="text-sm font-medium resume-text">
-                            {job.salary ? job.salary : 'Salary not specified'}
-                          </span>
+                        <CardFooter className="flex justify-between pt-0 pb-5">
+                          <div className="flex items-center">
+                            <FileText className="h-4 w-4 mr-1 text-indigo-500" />
+                            <Link 
+                              to="/builder" 
+                              className="text-sm text-indigo-600 hover:text-indigo-800 font-poppins"
+                            >
+                              Create Resume
+                            </Link>
+                          </div>
                           <a 
                             href={job.url} 
                             target="_blank" 
                             rel="noopener noreferrer" 
                             className="inline-flex"
                           >
-                            <Button variant="outline" size="sm" className="gap-1 bg-white text-black hover:bg-gray-100 dark:bg-blue-500 dark:text-white dark:hover:bg-blue-600">
+                            <Button 
+                              size="sm" 
+                              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white gap-1 rounded-full font-poppins"
+                            >
                               Apply Now
                               <ArrowUpRight className="h-3.5 w-3.5" />
                             </Button>
@@ -243,25 +310,27 @@ const JobBoard = () => {
                   </div>
                 )}
 
-                <div className="flex justify-between mt-6">
+                <div className="flex justify-between items-center mt-8 font-poppins">
                   <Button 
                     variant="outline" 
                     disabled={currentPage === 1} 
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    className="bg-white text-black hover:bg-gray-100 dark:bg-blue-500 dark:text-white dark:hover:bg-blue-600 resume-nav-btn"
+                    className="flex items-center gap-1 border border-indigo-200 hover:bg-indigo-50"
                   >
+                    <ChevronLeft className="h-4 w-4" /> 
                     Previous
                   </Button>
-                  <span className="flex items-center text-sm">
+                  <span className="flex items-center text-sm bg-indigo-100 text-indigo-800 px-4 py-2 rounded-full">
                     Page {currentPage}
                   </span>
                   <Button 
                     variant="outline" 
                     onClick={() => setCurrentPage(prev => prev + 1)}
                     disabled={jobs.length === 0}
-                    className="bg-white text-black hover:bg-gray-100 dark:bg-blue-500 dark:text-white dark:hover:bg-blue-600 resume-nav-btn"
+                    className="flex items-center gap-1 border border-indigo-200 hover:bg-indigo-50"
                   >
                     Next
+                    <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
               </>

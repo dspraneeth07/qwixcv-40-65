@@ -10,8 +10,22 @@ import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import ATSScanner from "./pages/ATSScanner";
+import { useEffect } from "react";
 
 function App() {
+  // Load fonts
+  useEffect(() => {
+    // Add Google Fonts to the document head
+    const fontLink = document.createElement('link');
+    fontLink.rel = 'stylesheet';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap';
+    document.head.appendChild(fontLink);
+
+    return () => {
+      document.head.removeChild(fontLink);
+    };
+  }, []);
+
   return (
     <ThemeProvider>
       <BrowserRouter>

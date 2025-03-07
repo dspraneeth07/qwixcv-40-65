@@ -1,7 +1,7 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
-	darkMode: ["class"],
 	content: [
 		"./pages/**/*.{ts,tsx}",
 		"./components/**/*.{ts,tsx}",
@@ -18,6 +18,11 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				'playfair': ['"Playfair Display"', 'serif'],
+				'poppins': ['Poppins', 'sans-serif'],
+				'montserrat': ['Montserrat', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -84,11 +89,46 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				float: {
+					'0%, 100%': {
+						transform: 'translateY(0)'
+					},
+					'50%': {
+						transform: 'translateY(-20px)'
+					}
+				},
+				blob: {
+					'0%, 100%': {
+						transform: 'translate(0, 0) scale(1)'
+					},
+					'25%': {
+						transform: 'translate(20px, -30px) scale(1.1)'
+					},
+					'50%': {
+						transform: 'translate(-20px, 20px) scale(0.9)'
+					},
+					'75%': {
+						transform: 'translate(30px, 30px) scale(1.2)'
+					}
+				},
+				'pulse-glow': {
+					'0%, 100%': {
+						opacity: '0.7',
+						boxShadow: '0 0 20px 10px rgba(79, 70, 229, 0.3)'
+					},
+					'50%': {
+						opacity: '1',
+						boxShadow: '0 0 30px 15px rgba(79, 70, 229, 0.5)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'float': 'float 5s ease-in-out infinite',
+				'blob': 'blob 15s ease-in-out infinite',
+				'pulse-glow': 'pulse-glow 3s ease-in-out infinite'
 			}
 		}
 	},
