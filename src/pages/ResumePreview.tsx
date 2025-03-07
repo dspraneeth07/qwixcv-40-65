@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -137,12 +138,31 @@ const ResumePreview = () => {
         filename: fileName,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        fontFaces: [
+          { family: 'Arial', style: 'normal' },
+          { family: 'Helvetica', style: 'normal' },
+          { family: 'sans-serif', style: 'normal' }
+        ]
       };
       
-      console.log("Generating PDF from resume element");
+      // Make sure all text is properly styled before generating PDF
+      const originalElement = resumeRef.current;
       
-      const pdfBlob = await html2pdf().from(resumeRef.current).set(opt).outputPdf('blob');
+      // Ensure all text elements have proper styling for PDF generation
+      const textElements = originalElement.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, div, a, li');
+      textElements.forEach(el => {
+        const element = el as HTMLElement;
+        if (!element.style.color) {
+          element.style.color = 'black';
+        }
+        if (!element.style.fontFamily) {
+          element.style.fontFamily = 'Arial, Helvetica, sans-serif';
+        }
+      });
+      
+      console.log("Generating PDF from resume element");
+      const pdfBlob = await html2pdf().from(originalElement).set(opt).outputPdf('blob');
       console.log("PDF blob generated:", pdfBlob);
       
       setPdfBlob(pdfBlob);
@@ -404,26 +424,28 @@ const ResumePreview = () => {
               }}
             >
               <div className="border-b pb-3 mb-3">
-                <h2 className="text-xl font-bold text-center text-black">
+                <h2 className="text-xl font-bold text-center text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
                   {resumeData?.personalInfo?.firstName || ""} {resumeData?.personalInfo?.lastName || ""}
                 </h2>
-                <p className="text-primary font-medium text-center text-sm">{resumeData?.personalInfo?.jobTitle || ""}</p>
+                <p className="text-primary font-medium text-center text-sm" style={{fontFamily: "Arial, sans-serif", color: "#3B82F6"}}>
+                  {resumeData?.personalInfo?.jobTitle || ""}
+                </p>
                 
                 <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-600 mt-1">
                   {resumeData?.personalInfo?.email && (
-                    <span className="flex items-center">
+                    <span className="flex items-center" style={{fontFamily: "Arial, sans-serif", color: "#4B5563"}}>
                       <Mail className="h-3 w-3 mr-1" />
                       {resumeData.personalInfo.email}
                     </span>
                   )}
                   {resumeData?.personalInfo?.phone && (
-                    <span className="flex items-center">
+                    <span className="flex items-center" style={{fontFamily: "Arial, sans-serif", color: "#4B5563"}}>
                       <Phone className="h-3 w-3 mr-1" />
                       {resumeData.personalInfo.phone}
                     </span>
                   )}
                   {resumeData?.personalInfo?.location && (
-                    <span className="flex items-center">
+                    <span className="flex items-center" style={{fontFamily: "Arial, sans-serif", color: "#4B5563"}}>
                       <MapPin className="h-3 w-3 mr-1" />
                       {resumeData.personalInfo.location}
                     </span>
@@ -434,6 +456,7 @@ const ResumePreview = () => {
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="inline-flex items-center text-xs text-primary hover:underline"
+                      style={{fontFamily: "Arial, sans-serif", color: "#3B82F6"}}
                     >
                       <Github className="h-3 w-3 mr-1" />
                       {resumeData.personalInfo.githubUrl}
@@ -445,6 +468,7 @@ const ResumePreview = () => {
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="inline-flex items-center text-xs text-primary hover:underline"
+                      style={{fontFamily: "Arial, sans-serif", color: "#3B82F6"}}
                     >
                       <Linkedin className="h-3 w-3 mr-1" />
                       {resumeData.personalInfo.linkedinUrl}
@@ -455,25 +479,41 @@ const ResumePreview = () => {
               
               {resumeData?.objective && (
                 <div className="mb-3">
-                  <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black">Career Objective</h3>
-                  <p className="text-xs text-black">{resumeData.objective}</p>
+                  <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
+                    Career Objective
+                  </h3>
+                  <p className="text-xs text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
+                    {resumeData.objective}
+                  </p>
                 </div>
               )}
               
               {resumeData?.education && resumeData.education.length > 0 && (
                 <div className="mb-3">
-                  <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black">Education</h3>
+                  <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
+                    Education
+                  </h3>
                   <div className="space-y-1">
                     {resumeData.education.map((edu: any) => (
                       <div key={edu.id}>
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="font-medium text-xs text-black">{edu.school || "University/School"}</p>
-                            <p className="text-xs text-black">{edu.degree || "Degree"}</p>
+                            <p className="font-medium text-xs text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
+                              {edu.school || "University/School"}
+                            </p>
+                            <p className="text-xs text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
+                              {edu.degree || "Degree"}
+                            </p>
                           </div>
-                          <p className="text-xs text-right text-black">{edu.graduationDate || "Graduation Year"}</p>
+                          <p className="text-xs text-right text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
+                            {edu.graduationDate || "Graduation Year"}
+                          </p>
                         </div>
-                        {edu.score && <p className="text-xs text-gray-600">{edu.score}</p>}
+                        {edu.score && (
+                          <p className="text-xs text-gray-600" style={{fontFamily: "Arial, sans-serif", color: "#4B5563"}}>
+                            {edu.score}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -482,7 +522,9 @@ const ResumePreview = () => {
               
               {resumeData?.projects && resumeData.projects.length > 0 && resumeData.projects[0].title && (
                 <div className="mb-3">
-                  <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black">Projects</h3>
+                  <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
+                    Projects
+                  </h3>
                   <div className="space-y-2">
                     {resumeData.projects
                       .filter((proj: any) => proj.title.trim() !== "")
@@ -490,8 +532,14 @@ const ResumePreview = () => {
                       <div key={proj.id} className="mb-1">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="font-medium text-xs text-black">{proj.title}</p>
-                            {proj.technologies && <p className="text-xs text-muted-foreground">{proj.technologies}</p>}
+                            <p className="font-medium text-xs text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
+                              {proj.title}
+                            </p>
+                            {proj.technologies && (
+                              <p className="text-xs text-muted-foreground" style={{fontFamily: "Arial, sans-serif", color: "#6B7280"}}>
+                                {proj.technologies}
+                              </p>
+                            )}
                           </div>
                         </div>
                         {proj.link && proj.link.trim() !== "" && (
@@ -500,20 +548,23 @@ const ResumePreview = () => {
                             target="_blank" 
                             rel="noopener noreferrer" 
                             className="text-xs text-primary hover:underline flex items-center"
+                            style={{fontFamily: "Arial, sans-serif", color: "#3B82F6"}}
                           >
                             <LinkIcon className="h-3 w-3 mr-1" />
                             {proj.link}
                           </a>
                         )}
                         {proj.description && (
-                          <div className="text-xs text-black" 
-                               dangerouslySetInnerHTML={{ 
-                                 __html: proj.description
-                                           .split('\n')
-                                           .filter((line: string) => line.trim() !== '')
-                                           .slice(0, 3)
-                                           .join('<br>')
-                               }} 
+                          <div 
+                            className="text-xs text-black" 
+                            style={{fontFamily: "Arial, sans-serif", color: "black"}}
+                            dangerouslySetInnerHTML={{ 
+                              __html: proj.description
+                                        .split('\n')
+                                        .filter((line: string) => line.trim() !== '')
+                                        .slice(0, 3)
+                                        .join('<br>')
+                            }} 
                           />
                         )}
                       </div>
@@ -524,7 +575,9 @@ const ResumePreview = () => {
               
               {resumeData?.experience && resumeData.experience.length > 0 && resumeData.experience[0].jobTitle && (
                 <div className="mb-3">
-                  <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black">Work Experience</h3>
+                  <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
+                    Work Experience
+                  </h3>
                   <div className="space-y-2">
                     {resumeData.experience
                       .filter((exp: any) => exp.jobTitle.trim() !== "")
@@ -532,22 +585,28 @@ const ResumePreview = () => {
                       <div key={exp.id} className="mb-1">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="font-medium text-xs text-black">{exp.jobTitle}</p>
-                            <p className="text-xs text-black">{exp.companyName}</p>
+                            <p className="font-medium text-xs text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
+                              {exp.jobTitle}
+                            </p>
+                            <p className="text-xs text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
+                              {exp.companyName}
+                            </p>
                           </div>
-                          <p className="text-xs text-black text-right">
+                          <p className="text-xs text-black text-right" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
                             {exp.startDate} - {exp.endDate || "Present"}
                           </p>
                         </div>
                         {exp.description && (
-                          <div className="text-xs text-black" 
-                               dangerouslySetInnerHTML={{ 
-                                 __html: exp.description
-                                           .split('\n')
-                                           .filter((line: string) => line.trim() !== '')
-                                           .slice(0, 3)
-                                           .join('<br>')
-                               }} 
+                          <div 
+                            className="text-xs text-black" 
+                            style={{fontFamily: "Arial, sans-serif", color: "black"}}
+                            dangerouslySetInnerHTML={{ 
+                              __html: exp.description
+                                        .split('\n')
+                                        .filter((line: string) => line.trim() !== '')
+                                        .slice(0, 3)
+                                        .join('<br>')
+                            }} 
                           />
                         )}
                       </div>
@@ -561,24 +620,38 @@ const ResumePreview = () => {
                   typeof val === 'string' && val.trim() !== ""
                 )) && (
                 <div className="mb-2">
-                  <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black">Skills</h3>
+                  <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
+                    Skills
+                  </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                     {resumeData.skills.professional && (
                       <div>
-                        <p className="font-medium text-xs text-black">Professional</p>
-                        <p className="text-xs text-black">{resumeData.skills.professional}</p>
+                        <p className="font-medium text-xs text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
+                          Professional
+                        </p>
+                        <p className="text-xs text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
+                          {resumeData.skills.professional}
+                        </p>
                       </div>
                     )}
                     {resumeData.skills.technical && (
                       <div>
-                        <p className="font-medium text-xs text-black">Technical</p>
-                        <p className="text-xs text-black">{resumeData.skills.technical}</p>
+                        <p className="font-medium text-xs text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
+                          Technical
+                        </p>
+                        <p className="text-xs text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
+                          {resumeData.skills.technical}
+                        </p>
                       </div>
                     )}
                     {resumeData.skills.soft && (
                       <div>
-                        <p className="font-medium text-xs text-black">Soft Skills</p>
-                        <p className="text-xs text-black">{resumeData.skills.soft}</p>
+                        <p className="font-medium text-xs text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
+                          Soft Skills
+                        </p>
+                        <p className="text-xs text-black" style={{fontFamily: "Arial, sans-serif", color: "black"}}>
+                          {resumeData.skills.soft}
+                        </p>
                       </div>
                     )}
                   </div>

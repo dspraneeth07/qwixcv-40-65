@@ -105,6 +105,7 @@
 /* Force resume preview content to always have black text */
 #resume-content {
   @apply text-black bg-white !important;
+  font-family: Arial, Helvetica, sans-serif !important;
 }
 
 #resume-content h1, 
@@ -117,6 +118,31 @@
 #resume-content li,
 #resume-content a {
   @apply text-black !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+/* PDF specific font styles to ensure consistency */
+.pdf-export-content {
+  font-family: Arial, Helvetica, sans-serif !important;
+  color: black !important;
+}
+
+.pdf-export-content * {
+  font-family: Arial, Helvetica, sans-serif !important;
+  color: black !important;
+}
+
+.pdf-export-content .job-title {
+  color: #3B82F6 !important;
+}
+
+.pdf-export-content .contact-info {
+  color: #4B5563 !important;
+}
+
+.pdf-export-content .section-heading {
+  color: black !important;
+  font-weight: 600 !important;
 }
 
 /* Ensure navigation buttons are visible */
