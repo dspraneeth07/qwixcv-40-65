@@ -236,28 +236,63 @@ export const getAIEmailDraft = async (
   companyName: string, 
   jobTitle: string
 ): Promise<{ subject: string; body: string }> => {
-  const { personalInfo, skills, experience, objective } = resumeData;
+  const { personalInfo, skills, experience, education, projects, objective } = resumeData;
   const fullName = `${personalInfo?.firstName || ""} ${personalInfo?.lastName || ""}`.trim();
-  const relevantSkills = skills?.technical || "";
-  const relevantExperience = experience && experience.length > 0 
-    ? `${experience[0].jobTitle} at ${experience[0].companyName}` 
-    : "";
+  
+  // Extract key details from resume to help AI generate a better email
+  const experienceDetails = experience && experience.length > 0 
+    ? experience.map((exp: any) => 
+        `${exp.jobTitle} at ${exp.companyName} (${exp.startDate} - ${exp.endDate || "Present"}): ${exp.description || ""}`)
+    : ["No experience provided"];
+  
+  const educationDetails = education && education.length > 0
+    ? education.map((edu: any) => 
+        `${edu.degree} from ${edu.school} (${edu.graduationDate})`)
+    : ["No education details provided"];
+  
+  const skillDetails = [
+    skills?.technical ? `Technical skills: ${skills.technical}` : "",
+    skills?.professional ? `Professional skills: ${skills.professional}` : "",
+    skills?.soft ? `Soft skills: ${skills.soft}` : ""
+  ].filter(Boolean).join("; ");
+  
+  const projectDetails = projects && projects.length > 0
+    ? projects.map((proj: any) => 
+        `${proj.title}${proj.technologies ? ` (${proj.technologies})` : ""}: ${proj.description || ""}`)
+    : ["No project details provided"];
 
   const prompt = `
     You're a professional resume writer. Generate an email to apply for a job.
     
     The person applying is ${fullName} for a ${jobTitle} position at ${companyName}.
     
-    Their experience includes: ${relevantExperience || "relevant professional experience"}.
-    Their skills include: ${relevantSkills || "relevant technical skills"}.
-    Their objective is: ${objective || "to find a challenging position that leverages their skills"}.
+    Here's their complete resume information:
+    
+    Objective: ${objective || "Not provided"}
+    
+    Experience:
+    ${experienceDetails.join("\n")}
+    
+    Education:
+    ${educationDetails.join("\n")}
+    
+    Skills:
+    ${skillDetails || "No skills provided"}
+    
+    Projects:
+    ${projectDetails.join("\n")}
+    
+    Contact Information:
+    Email: ${personalInfo?.email || "Not provided"}
+    Phone: ${personalInfo?.phone || "Not provided"}
+    Location: ${personalInfo?.location || "Not provided"}
     
     Generate:
     1. An email subject line that is professional and specific to the position.
     2. A professional email body that:
        - Opens with a formal greeting to the hiring team
        - States the position they're applying for
-       - Briefly mentions their relevant qualifications
+       - Briefly highlights their most relevant qualifications based on the resume
        - References their attached resume
        - Closes with a thank you and request for an interview
        - Includes their name and contact info in the signature
@@ -300,7 +335,7 @@ export const getAIEmailDraft = async (
 
 I hope this email finds you well. I am ${fullName}, and I'm writing to express my interest in the ${jobTitle} position at ${companyName}. I believe my background and skills make me a strong candidate for this role.
 
-My experience as ${relevantExperience || "a professional in this field"} has equipped me with the necessary skills for this position, including ${relevantSkills || "relevant technical capabilities"}. ${objective || "I am passionate about delivering high-quality work and contributing to team success."} 
+${objective || "I am passionate about delivering high-quality work and contributing to team success."} My experience includes ${experienceDetails[0]?.split(':')[0] || "relevant professional work"}, which has equipped me with the necessary skills for this position.
 
 I have attached my resume for your review, which provides more details about my qualifications and experience. I would welcome the opportunity to discuss how my background, skills, and qualifications would be a good match for this position.
 
@@ -323,7 +358,7 @@ ${personalInfo?.email || ""}`
 
 I hope this email finds you well. I am ${fullName}, and I'm writing to express my interest in the ${jobTitle} position at ${companyName}. I believe my background and skills make me a strong candidate for this role.
 
-My experience as ${relevantExperience || "a professional in this field"} has equipped me with the necessary skills for this position, including ${relevantSkills || "relevant technical capabilities"}. ${objective || "I am passionate about delivering high-quality work and contributing to team success."} 
+${objective || "I am passionate about delivering high-quality work and contributing to team success."} My experience includes ${experienceDetails[0]?.split(':')[0] || "relevant professional work"}, which has equipped me with the necessary skills for this position.
 
 I have attached my resume for your review, which provides more details about my qualifications and experience. I would welcome the opportunity to discuss how my background, skills, and qualifications would be a good match for this position.
 

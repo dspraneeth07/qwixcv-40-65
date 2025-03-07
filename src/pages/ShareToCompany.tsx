@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
@@ -73,6 +74,8 @@ const ShareToCompany = () => {
   const [resumePdfBlob, setResumePdfBlob] = useState<Blob | null>(null);
   const [resumeFileName, setResumeFileName] = useState<string>("");
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
+  const resumeRef = useRef<HTMLDivElement>(null);
+  const pdfGeneratedRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (location.state && location.state.resumeData) {
@@ -90,10 +93,16 @@ const ShareToCompany = () => {
         variant: "destructive"
       });
     }
-
-    // Generate PDF when component mounts
-    generateResumePdf();
   }, [location]);
+
+  // Generate PDF once the component has fully mounted and DOM is ready
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      generateResumePdf();
+    }, 1500); // Delay to ensure DOM rendering is complete
+
+    return () => clearTimeout(timer);
+  }, [resumeData]);
 
   const markAsTouched = (fieldName: string) => {
     setTouchedFields(prev => ({ ...prev, [fieldName]: true }));
@@ -104,35 +113,42 @@ const ShareToCompany = () => {
   };
 
   const generateResumePdf = async () => {
-    if (!resumeData) return;
+    if (!resumeData || !resumeRef.current || pdfGeneratedRef.current) return;
     
     try {
-      // Wait for the DOM to be fully rendered
-      setTimeout(async () => {
-        const resumeElement = document.getElementById('resume-content');
-        if (resumeElement) {
-          const fileName = `${resumeData.personalInfo?.firstName || 'resume'}_${resumeData.personalInfo?.lastName || ''}.pdf`;
-          setResumeFileName(fileName);
-          
-          const opt = {
-            margin: 1,
-            filename: fileName,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-          };
-          
-          // Generate PDF as blob URL and keep the blob
-          const pdfBlob = await html2pdf().from(resumeElement).set(opt).outputPdf('blob');
-          setResumePdfBlob(pdfBlob);
-          const pdfUrl = URL.createObjectURL(pdfBlob);
-          setResumePdfUrl(pdfUrl);
-          
-          console.log("Resume PDF generated:", pdfUrl);
-        }
-      }, 1000);
+      const fileName = `${resumeData.personalInfo?.firstName || 'resume'}_${resumeData.personalInfo?.lastName || ''}.pdf`;
+      setResumeFileName(fileName);
+      
+      const opt = {
+        margin: 1,
+        filename: fileName,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      
+      console.log("Generating PDF from resume element");
+      
+      // Generate PDF as blob
+      const pdfBlob = await html2pdf().from(resumeRef.current).set(opt).outputPdf('blob');
+      setResumePdfBlob(pdfBlob);
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      setResumePdfUrl(pdfUrl);
+      
+      console.log("Resume PDF generated successfully:", pdfUrl);
+      pdfGeneratedRef.current = true;
+      
+      toast({
+        title: "Resume PDF Ready",
+        description: "Your resume has been converted to PDF and is ready to attach to your email."
+      });
     } catch (error) {
       console.error("Error generating PDF:", error);
+      toast({
+        title: "PDF Generation Failed",
+        description: "Could not generate the PDF resume. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -212,6 +228,22 @@ const ShareToCompany = () => {
       return;
     }
     
+    // Ensure PDF is generated
+    if (!resumePdfBlob) {
+      toast({
+        title: "Resume PDF Not Ready",
+        description: "Please wait for the resume PDF to be generated.",
+        variant: "destructive"
+      });
+      
+      // Try to generate PDF again
+      await generateResumePdf();
+      
+      if (!resumePdfBlob) {
+        return;
+      }
+    }
+    
     setIsSending(true);
     
     try {
@@ -221,7 +253,7 @@ const ShareToCompany = () => {
         toEmail,
         emailSubject,
         emailBody,
-        resumePdfBlob || undefined,
+        resumePdfBlob,
         resumeFileName
       );
       
@@ -410,7 +442,7 @@ const ShareToCompany = () => {
                         </div>
                         <a 
                           href={resumePdfUrl} 
-                          download={`${resumeData?.personalInfo?.firstName || 'resume'}_${resumeData?.personalInfo?.lastName || ''}.pdf`}
+                          download={resumeFileName}
                           className="text-primary text-sm hover:underline"
                           target="_blank"
                           rel="noopener noreferrer"
@@ -424,15 +456,15 @@ const ShareToCompany = () => {
                       className="mt-4 w-full" 
                       variant="ats"
                       onClick={handleSendEmail}
-                      disabled={isSending}
+                      disabled={isSending || !resumePdfBlob}
                     >
                       <Send className="h-4 w-4 mr-2" />
-                      {isSending ? "Processing..." : sendSuccess ? "Email Ready" : "Send to Company"}
+                      {isSending ? "Sending..." : sendSuccess ? "Email Sent" : "Send to Company"}
                     </Button>
                     
                     {sendSuccess && (
                       <p className="text-sm text-green-600 mt-2 text-center">
-                        Email is ready! Please check your email client to complete sending.
+                        Email has been sent directly to the company!
                       </p>
                     )}
                   </div>
@@ -446,7 +478,7 @@ const ShareToCompany = () => {
               <h2 className="text-xl font-semibold mb-4">Your Resume</h2>
               <div className="border rounded-md p-4 max-h-[700px] overflow-auto">
                 {resumeData && (
-                  <div id="resume-content">
+                  <div id="resume-content" ref={resumeRef}>
                     <Card className="p-6 bg-white shadow-sm">
                       <div className="border-b pb-4 mb-4">
                         <h2 className="text-2xl font-bold text-center">
