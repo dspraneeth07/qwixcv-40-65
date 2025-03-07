@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -114,10 +113,10 @@ const ResumePreview = () => {
 
   useEffect(() => {
     if (resumeData && !pdfGeneratedRef.current) {
-      // Wait for DOM to render
+      // Wait a bit longer for DOM to render completely
       const timer = setTimeout(() => {
         generateResumePdf();
-      }, 1500);
+      }, 2000);
       
       return () => clearTimeout(timer);
     }
@@ -134,46 +133,30 @@ const ResumePreview = () => {
       const fileName = `${fullName.replace(/\s+/g, '_')}.pdf`;
       setResumeFileName(fileName);
       
-      // Create a clone of the resume element to maintain styling
-      const clonedElement = resumeRef.current.cloneNode(true) as HTMLElement;
+      // Get the content directly without cloning
+      const contentElement = resumeRef.current;
       
-      // Apply styles for PDF rendering
-      clonedElement.style.width = "700px";
-      clonedElement.style.padding = "20px";
-      clonedElement.style.backgroundColor = "white";
-      clonedElement.style.color = "black";
-      clonedElement.style.fontFamily = "Arial, sans-serif";
-      clonedElement.style.fontSize = "12pt";
-      
-      // Position offscreen for rendering
-      clonedElement.style.position = "absolute";
-      clonedElement.style.left = "-9999px";
-      document.body.appendChild(clonedElement);
-      
+      // This is critical: use the direct content approach that works in ShareToCompany
       const opt = {
-        margin: [10, 10, 10, 10],
+        margin: 10,
         filename: fileName,
-        image: { type: 'jpeg', quality: 1.0 },
+        image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
           scale: 2, 
-          useCORS: true, 
-          logging: false,
-          backgroundColor: "#ffffff" 
+          useCORS: true,
+          logging: true,
+          backgroundColor: "#ffffff"
         },
         jsPDF: { 
           unit: 'mm', 
           format: 'a4', 
-          orientation: 'portrait',
-          compress: true
+          orientation: 'portrait'
         }
       };
       
-      const pdfBlobResult = await html2pdf().from(clonedElement).set(opt).outputPdf('blob');
+      // Using direct PDF generation without cloning
+      const pdfBlobResult = await html2pdf().from(contentElement).set(opt).outputPdf('blob');
       
-      // Clean up the DOM
-      document.body.removeChild(clonedElement);
-      
-      // Store the PDF blob and URL
       setPdfBlob(pdfBlobResult);
       const url = URL.createObjectURL(pdfBlobResult);
       setPdfUrl(url);
@@ -221,6 +204,8 @@ const ResumePreview = () => {
         description: "Your resume is being prepared for download"
       });
       
+      // Reset PDF generation flag to force regeneration
+      pdfGeneratedRef.current = false;
       await generateResumePdf();
       
       if (pdfUrl) {
@@ -431,14 +416,19 @@ const ResumePreview = () => {
               id="resume-content" 
               ref={resumeRef} 
               className="p-6 bg-white shadow-lg print:shadow-none"
+              style={{
+                color: "black", // Ensure text is visible in PDF
+                fontFamily: "Arial, sans-serif", // Use common PDF-compatible font
+              }}
             >
+              {/* Keep the same Card content structure */}
               <div className="border-b pb-3 mb-3">
-                <h2 className="text-xl font-bold text-center">
+                <h2 className="text-xl font-bold text-center text-black">
                   {resumeData?.personalInfo?.firstName || ""} {resumeData?.personalInfo?.lastName || ""}
                 </h2>
                 <p className="text-primary font-medium text-center text-sm">{resumeData?.personalInfo?.jobTitle || ""}</p>
                 
-                <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground mt-1">
+                <div className="flex flex-wrap justify-center gap-2 text-xs text-gray-600 mt-1">
                   {resumeData?.personalInfo?.email && (
                     <span className="flex items-center">
                       <Mail className="h-3 w-3 mr-1" />
@@ -484,25 +474,25 @@ const ResumePreview = () => {
               
               {resumeData?.objective && (
                 <div className="mb-3">
-                  <h3 className="text-sm font-semibold border-b pb-1 mb-1">Career Objective</h3>
-                  <p className="text-xs">{resumeData.objective}</p>
+                  <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black">Career Objective</h3>
+                  <p className="text-xs text-black">{resumeData.objective}</p>
                 </div>
               )}
               
               {resumeData?.education && resumeData.education.length > 0 && (
                 <div className="mb-3">
-                  <h3 className="text-sm font-semibold border-b pb-1 mb-1">Education</h3>
+                  <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black">Education</h3>
                   <div className="space-y-1">
                     {resumeData.education.map((edu: any) => (
                       <div key={edu.id}>
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="font-medium text-xs">{edu.school || "University/School"}</p>
-                            <p className="text-xs">{edu.degree || "Degree"}</p>
+                            <p className="font-medium text-xs text-black">{edu.school || "University/School"}</p>
+                            <p className="text-xs text-black">{edu.degree || "Degree"}</p>
                           </div>
-                          <p className="text-xs text-right">{edu.graduationDate || "Graduation Year"}</p>
+                          <p className="text-xs text-right text-black">{edu.graduationDate || "Graduation Year"}</p>
                         </div>
-                        {edu.score && <p className="text-xs text-muted-foreground">{edu.score}</p>}
+                        {edu.score && <p className="text-xs text-gray-600">{edu.score}</p>}
                       </div>
                     ))}
                   </div>
@@ -511,7 +501,7 @@ const ResumePreview = () => {
               
               {resumeData?.projects && resumeData.projects.length > 0 && resumeData.projects[0].title && (
                 <div className="mb-3">
-                  <h3 className="text-sm font-semibold border-b pb-1 mb-1">Projects</h3>
+                  <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black">Projects</h3>
                   <div className="space-y-2">
                     {resumeData.projects
                       .filter((proj: any) => proj.title.trim() !== "")
@@ -519,7 +509,7 @@ const ResumePreview = () => {
                       <div key={proj.id} className="mb-1">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="font-medium text-xs">{proj.title}</p>
+                            <p className="font-medium text-xs text-black">{proj.title}</p>
                             {proj.technologies && <p className="text-xs text-muted-foreground">{proj.technologies}</p>}
                           </div>
                         </div>
@@ -553,7 +543,7 @@ const ResumePreview = () => {
               
               {resumeData?.experience && resumeData.experience.length > 0 && resumeData.experience[0].jobTitle && (
                 <div className="mb-3">
-                  <h3 className="text-sm font-semibold border-b pb-1 mb-1">Work Experience</h3>
+                  <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black">Work Experience</h3>
                   <div className="space-y-2">
                     {resumeData.experience
                       .filter((exp: any) => exp.jobTitle.trim() !== "")
@@ -561,7 +551,7 @@ const ResumePreview = () => {
                       <div key={exp.id} className="mb-1">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="font-medium text-xs">{exp.jobTitle}</p>
+                            <p className="font-medium text-xs text-black">{exp.jobTitle}</p>
                             <p className="text-xs text-muted-foreground">{exp.companyName}</p>
                           </div>
                           <p className="text-xs text-right">
@@ -590,7 +580,7 @@ const ResumePreview = () => {
                   typeof val === 'string' && val.trim() !== ""
                 )) && (
                 <div className="mb-2">
-                  <h3 className="text-sm font-semibold border-b pb-1 mb-1">Skills</h3>
+                  <h3 className="text-sm font-semibold border-b pb-1 mb-1 text-black">Skills</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                     {resumeData.skills.professional && (
                       <div>
@@ -620,8 +610,6 @@ const ResumePreview = () => {
     </MainLayout>
   );
 };
-
-// Removed the duplicate ResumeContent component since we're now using a direct approach
 
 export const ResumePreviewContent = ({ 
   data, 
