@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -12,6 +11,8 @@ import { toast } from "@/components/ui/use-toast";
 import { FormValidator } from "@/components/ui/form-validator";
 import { Progress } from "@/components/ui/progress";
 import html2pdf from "html2pdf.js";
+import { sendEmailWithMailchimp } from "@/utils/mailchimpService";
+import { getAIEmailDraft } from "@/utils/geminiApi";
 
 interface ResumeData {
   personalInfo?: {
@@ -69,7 +70,8 @@ const ShareToCompany = () => {
   const [generationProgress, setGenerationProgress] = useState(0);
   const [sendSuccess, setSendSuccess] = useState(false);
   const [resumePdfUrl, setResumePdfUrl] = useState<string | null>(null);
-  
+  const [resumePdfBlob, setResumePdfBlob] = useState<Blob | null>(null);
+  const [resumeFileName, setResumeFileName] = useState<string>("");
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -109,16 +111,20 @@ const ShareToCompany = () => {
       setTimeout(async () => {
         const resumeElement = document.getElementById('resume-content');
         if (resumeElement) {
+          const fileName = `${resumeData.personalInfo?.firstName || 'resume'}_${resumeData.personalInfo?.lastName || ''}.pdf`;
+          setResumeFileName(fileName);
+          
           const opt = {
             margin: 1,
-            filename: `${resumeData.personalInfo?.firstName || 'resume'}_${resumeData.personalInfo?.lastName || ''}.pdf`,
+            filename: fileName,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
           };
           
-          // Generate PDF as blob URL
+          // Generate PDF as blob URL and keep the blob
           const pdfBlob = await html2pdf().from(resumeElement).set(opt).outputPdf('blob');
+          setResumePdfBlob(pdfBlob);
           const pdfUrl = URL.createObjectURL(pdfBlob);
           setResumePdfUrl(pdfUrl);
           
@@ -148,33 +154,14 @@ const ShareToCompany = () => {
         setGenerationProgress(prev => Math.min(prev + 10, 90));
       }, 300);
 
-      const { personalInfo, skills, experience } = resumeData;
-      const fullName = `${personalInfo?.firstName || ""} ${personalInfo?.lastName || ""}`.trim();
-      const relevantSkills = skills?.technical || "";
-      const relevantExperience = experience && experience.length > 0 
-        ? `${experience[0].jobTitle} at ${experience[0].companyName}` 
-        : "";
-
-      const subject = `Application for ${jobTitle} position at ${companyName}`;
+      // Use Gemini API for email draft generation
+      const { subject, body } = await getAIEmailDraft(
+        resumeData, 
+        companyName, 
+        jobTitle
+      );
+      
       setEmailSubject(subject);
-      
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const body = `Dear ${companyName} Hiring Team,
-
-I hope this email finds you well. I am ${fullName}, and I'm writing to express my interest in the ${jobTitle} position at ${companyName}. I believe my background and skills make me a strong candidate for this role.
-
-My experience as ${relevantExperience || "a professional in this field"} has equipped me with the necessary skills for this position, including ${relevantSkills || "relevant technical capabilities"}. ${resumeData.objective || "I am passionate about delivering high-quality work and contributing to team success."} 
-
-I have attached my resume for your review, which provides more details about my qualifications and experience. I would welcome the opportunity to discuss how my background, skills, and qualifications would be a good match for this position.
-
-Thank you for considering my application. I look forward to the possibility of working with the team at ${companyName}.
-
-Best regards,
-${fullName}
-${personalInfo?.phone || ""}
-${personalInfo?.email || ""}`;
-
       setEmailBody(body);
       
       clearInterval(progressInterval);
@@ -228,40 +215,28 @@ ${personalInfo?.email || ""}`;
     setIsSending(true);
     
     try {
-      // Simulate an email sending process
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Send email with Mailchimp
+      const success = await sendEmailWithMailchimp(
+        fromEmail,
+        toEmail,
+        emailSubject,
+        emailBody,
+        resumePdfBlob || undefined,
+        resumeFileName
+      );
       
-      // If we have a PDF URL, download it for the user
-      if (resumePdfUrl) {
-        // First, let's create a download link for the PDF
-        const link = document.createElement('a');
-        link.href = resumePdfUrl;
-        link.download = `${resumeData?.personalInfo?.firstName || 'resume'}_${resumeData?.personalInfo?.lastName || ''}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      if (success) {
+        setSendSuccess(true);
+        toast({
+          title: "Email Sent",
+          description: `Your application has been sent to ${companyName}. Good luck!`,
+        });
       }
-      
-      // Prepare mailto link
-      const encodedSubject = encodeURIComponent(emailSubject);
-      const encodedBody = encodeURIComponent(emailBody);
-      const mailtoLink = `mailto:${toEmail}?subject=${encodedSubject}&body=${encodedBody}&from=${fromEmail}`;
-      
-      // Open the mail client
-      window.open(mailtoLink, "_blank");
-      
-      setSendSuccess(true);
-      
-      toast({
-        title: "Email Ready to Send",
-        description: `Your application is ready to send to ${companyName}. Please complete the process in your email client.`,
-      });
-      
     } catch (error) {
       console.error("Error in email process:", error);
       toast({
-        title: "Process Failed",
-        description: "Could not complete the email process. Please try again.",
+        title: "Email Sending Failed",
+        description: "Could not send the email. Please try again.",
         variant: "destructive"
       });
     } finally {

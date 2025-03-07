@@ -1,4 +1,3 @@
-
 // This file contains API functions to interact with Google's Gemini API
 
 const API_KEY = "AIzaSyDRuULswOC1iFSJr83VqRaeP1g8p0Vn4Lc";
@@ -225,6 +224,118 @@ export const getAIExperienceDescription = async (jobTitle: string, companyName?:
     return limitToFourLines(textResponse) || `Led cross-functional teams and implemented innovative solutions as a ${jobTitle} ${company}, improving overall efficiency by 30%. Utilized industry best practices and cutting-edge technologies to solve complex problems, while consistently delivering projects on time and under budget.`;
   } catch (error) {
     console.error("Error getting AI experience description:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get an AI-generated email draft to send to companies
+ */
+export const getAIEmailDraft = async (
+  resumeData: any, 
+  companyName: string, 
+  jobTitle: string
+): Promise<{ subject: string; body: string }> => {
+  const { personalInfo, skills, experience, objective } = resumeData;
+  const fullName = `${personalInfo?.firstName || ""} ${personalInfo?.lastName || ""}`.trim();
+  const relevantSkills = skills?.technical || "";
+  const relevantExperience = experience && experience.length > 0 
+    ? `${experience[0].jobTitle} at ${experience[0].companyName}` 
+    : "";
+
+  const prompt = `
+    You're a professional resume writer. Generate an email to apply for a job.
+    
+    The person applying is ${fullName} for a ${jobTitle} position at ${companyName}.
+    
+    Their experience includes: ${relevantExperience || "relevant professional experience"}.
+    Their skills include: ${relevantSkills || "relevant technical skills"}.
+    Their objective is: ${objective || "to find a challenging position that leverages their skills"}.
+    
+    Generate:
+    1. An email subject line that is professional and specific to the position.
+    2. A professional email body that:
+       - Opens with a formal greeting to the hiring team
+       - States the position they're applying for
+       - Briefly mentions their relevant qualifications
+       - References their attached resume
+       - Closes with a thank you and request for an interview
+       - Includes their name and contact info in the signature
+    
+    Return the response in JSON format with two properties: subject and body.
+    The body should be properly formatted with line breaks.
+    DO NOT include any additional text, explanations or formatting.
+  `;
+
+  try {
+    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: prompt }]
+        }]
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`API error: ${errorData.error?.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    const textResponse = data.candidates[0].content.parts[0].text;
+    
+    // Extract the JSON from the response
+    try {
+      // The response might contain markdown code blocks, so we need to extract just the JSON
+      const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const emailData = JSON.parse(jsonMatch[0]);
+        return {
+          subject: emailData.subject || `Application for ${jobTitle} position at ${companyName}`,
+          body: emailData.body || `Dear ${companyName} Hiring Team,
+
+I hope this email finds you well. I am ${fullName}, and I'm writing to express my interest in the ${jobTitle} position at ${companyName}. I believe my background and skills make me a strong candidate for this role.
+
+My experience as ${relevantExperience || "a professional in this field"} has equipped me with the necessary skills for this position, including ${relevantSkills || "relevant technical capabilities"}. ${objective || "I am passionate about delivering high-quality work and contributing to team success."} 
+
+I have attached my resume for your review, which provides more details about my qualifications and experience. I would welcome the opportunity to discuss how my background, skills, and qualifications would be a good match for this position.
+
+Thank you for considering my application. I look forward to the possibility of working with the team at ${companyName}.
+
+Best regards,
+${fullName}
+${personalInfo?.phone || ""}
+${personalInfo?.email || ""}`
+        };
+      }
+    } catch (parseError) {
+      console.error("Error parsing email JSON:", parseError);
+    }
+    
+    // Fallback values in case the parsing fails
+    return {
+      subject: `Application for ${jobTitle} position at ${companyName}`,
+      body: `Dear ${companyName} Hiring Team,
+
+I hope this email finds you well. I am ${fullName}, and I'm writing to express my interest in the ${jobTitle} position at ${companyName}. I believe my background and skills make me a strong candidate for this role.
+
+My experience as ${relevantExperience || "a professional in this field"} has equipped me with the necessary skills for this position, including ${relevantSkills || "relevant technical capabilities"}. ${objective || "I am passionate about delivering high-quality work and contributing to team success."} 
+
+I have attached my resume for your review, which provides more details about my qualifications and experience. I would welcome the opportunity to discuss how my background, skills, and qualifications would be a good match for this position.
+
+Thank you for considering my application. I look forward to the possibility of working with the team at ${companyName}.
+
+Best regards,
+${fullName}
+${personalInfo?.phone || ""}
+${personalInfo?.email || ""}`
+    };
+  } catch (error) {
+    console.error("Error getting AI email draft:", error);
     throw error;
   }
 };
