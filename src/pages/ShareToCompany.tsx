@@ -94,7 +94,6 @@ const ShareToCompany = () => {
     }
   }, [location]);
 
-  // Generate PDF once the component has fully mounted and DOM is ready
   useEffect(() => {
     const timer = setTimeout(() => {
       generateResumePdf();
@@ -130,7 +129,6 @@ const ShareToCompany = () => {
       
       console.log("Generating PDF from resume element");
       
-      // Generate PDF as blob
       const pdfBlob = await html2pdf().from(resumeRef.current).set(opt).outputPdf('blob');
       console.log("PDF blob generated:", pdfBlob);
       
@@ -173,7 +171,6 @@ const ShareToCompany = () => {
         setGenerationProgress(prev => Math.min(prev + 10, 90));
       }, 300);
 
-      // Use Gemini API for email draft generation
       const { subject, body } = await getAIEmailDraft(
         resumeData, 
         companyName, 
@@ -231,7 +228,6 @@ const ShareToCompany = () => {
       return;
     }
     
-    // Ensure PDF is generated
     if (!resumePdfBlob) {
       toast({
         title: "Resume PDF Not Ready",
@@ -239,7 +235,6 @@ const ShareToCompany = () => {
         variant: "destructive"
       });
       
-      // Try to generate PDF again
       await generateResumePdf();
       
       if (!resumePdfBlob) {
@@ -248,35 +243,32 @@ const ShareToCompany = () => {
     }
     
     try {
-      // Create mailto URL with subject and body
-      const subject = encodeURIComponent(emailSubject);
-      const body = encodeURIComponent(emailBody);
-      const mailtoUrl = `mailto:${toEmail}?subject=${subject}&body=${body}`;
+      setIsSending(true);
       
-      // Create an invisible download link for the PDF
       if (resumePdfUrl) {
-        // Open the default mail client
-        window.location.href = mailtoUrl;
-        
-        // Create a download link for the PDF
         const downloadLink = document.createElement('a');
         downloadLink.href = resumePdfUrl;
         downloadLink.download = resumeFileName;
-        downloadLink.style.display = 'none';
         document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
         
-        // Slight delay to ensure the email client has time to open
-        setTimeout(() => {
-          // Trigger the download of the PDF after email client has opened
-          downloadLink.click();
-          document.body.removeChild(downloadLink);
-          
-          toast({
-            title: "Email Ready",
-            description: "Your default email client has been opened with your message. The resume PDF has been downloaded for you to attach.",
-          });
-        }, 500);
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
+      
+      const subject = encodeURIComponent(emailSubject);
+      const body = encodeURIComponent(emailBody + "\n\n[Please attach the resume PDF that was just downloaded]");
+      const mailtoUrl = `mailto:${toEmail}?subject=${subject}&body=${body}`;
+      
+      window.location.href = mailtoUrl;
+      
+      toast({
+        title: "Email Ready",
+        description: "Your default email client has been opened with your message. Please attach the resume PDF that was just downloaded.",
+      });
+      
+      setSendSuccess(true);
+      setIsSending(false);
     } catch (error) {
       console.error("Error opening email client:", error);
       toast({
@@ -284,6 +276,7 @@ const ShareToCompany = () => {
         description: "Could not open your email client. Please try again or use a different method to send your email.",
         variant: "destructive"
       });
+      setIsSending(false);
     }
   };
 
@@ -449,7 +442,7 @@ const ShareToCompany = () => {
                       <div className="flex items-center mt-4 p-3 bg-gray-50 rounded-md">
                         <div className="flex-1">
                           <p className="text-sm font-medium">Resume PDF is ready</p>
-                          <p className="text-xs text-muted-foreground">Will be attached to your email</p>
+                          <p className="text-xs text-muted-foreground mt-1">Will be attached to your email</p>
                         </div>
                         <a 
                           href={resumePdfUrl} 
@@ -487,17 +480,17 @@ const ShareToCompany = () => {
           <div>
             <div className="sticky top-20">
               <h2 className="text-xl font-semibold mb-4">Your Resume</h2>
-              <div className="border rounded-md p-4 max-h-[700px] overflow-auto">
+              <div className="border rounded-md p-4 max-h-[700px] overflow-auto bg-white">
                 {resumeData && (
                   <div id="resume-content" ref={resumeRef}>
                     <Card className="p-6 bg-white shadow-sm">
                       <div className="border-b pb-4 mb-4">
-                        <h2 className="text-2xl font-bold text-center">
+                        <h2 className="text-2xl font-bold text-center text-black">
                           {resumeData.personalInfo?.firstName || ""} {resumeData.personalInfo?.lastName || ""}
                         </h2>
                         <p className="text-primary font-medium text-center">{resumeData.personalInfo?.jobTitle || ""}</p>
                         
-                        <div className="flex flex-wrap justify-center gap-3 text-sm text-muted-foreground mt-2">
+                        <div className="flex flex-wrap justify-center gap-3 text-sm text-gray-600 mt-2">
                           {resumeData.personalInfo?.email && (
                             <span className="flex items-center">
                               <Mail className="h-3 w-3 mr-1" />
@@ -521,20 +514,20 @@ const ShareToCompany = () => {
                       
                       {resumeData.objective && (
                         <div className="mb-4">
-                          <h3 className="font-semibold mb-1">Objective</h3>
-                          <p className="text-sm">{resumeData.objective}</p>
+                          <h3 className="font-semibold mb-1 text-black">Objective</h3>
+                          <p className="text-sm text-black">{resumeData.objective}</p>
                         </div>
                       )}
                       
                       {resumeData.education && resumeData.education.length > 0 && (
                         <div className="mb-4">
-                          <h3 className="font-semibold mb-1">Education</h3>
+                          <h3 className="font-semibold mb-1 text-black">Education</h3>
                           <div className="space-y-2">
                             {resumeData.education.map((edu: any, index: number) => (
                               <div key={index} className="mb-2">
-                                <p className="font-medium">{edu.school}</p>
-                                <p className="text-sm">{edu.degree}</p>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="font-medium text-black">{edu.school}</p>
+                                <p className="text-sm text-black">{edu.degree}</p>
+                                <p className="text-xs text-gray-600">
                                   {edu.graduationDate} {edu.score && `- ${edu.score}`}
                                 </p>
                               </div>
@@ -545,16 +538,16 @@ const ShareToCompany = () => {
                       
                       {resumeData.experience && resumeData.experience.length > 0 && (
                         <div className="mb-4">
-                          <h3 className="font-semibold mb-1">Experience</h3>
+                          <h3 className="font-semibold mb-1 text-black">Experience</h3>
                           <div className="space-y-2">
                             {resumeData.experience.map((exp: any, index: number) => (
                               <div key={index} className="mb-2">
-                                <p className="font-medium">{exp.jobTitle} at {exp.companyName}</p>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="font-medium text-black">{exp.jobTitle} at {exp.companyName}</p>
+                                <p className="text-xs text-gray-600">
                                   {exp.startDate} - {exp.endDate || "Present"}
                                 </p>
                                 {exp.description && (
-                                  <p className="text-sm mt-1">{exp.description}</p>
+                                  <p className="text-sm mt-1 text-black">{exp.description}</p>
                                 )}
                               </div>
                             ))}
@@ -564,16 +557,16 @@ const ShareToCompany = () => {
                       
                       {resumeData.projects && resumeData.projects.length > 0 && (
                         <div className="mb-4">
-                          <h3 className="font-semibold mb-1">Projects</h3>
+                          <h3 className="font-semibold mb-1 text-black">Projects</h3>
                           <div className="space-y-2">
                             {resumeData.projects.map((proj: any, index: number) => (
                               <div key={index} className="mb-2">
-                                <p className="font-medium">{proj.title}</p>
+                                <p className="font-medium text-black">{proj.title}</p>
                                 {proj.technologies && (
-                                  <p className="text-xs text-muted-foreground">{proj.technologies}</p>
+                                  <p className="text-xs text-gray-600">{proj.technologies}</p>
                                 )}
                                 {proj.description && (
-                                  <p className="text-sm mt-1">{proj.description}</p>
+                                  <p className="text-sm mt-1 text-black">{proj.description}</p>
                                 )}
                                 {proj.link && (
                                   <a 
@@ -593,24 +586,24 @@ const ShareToCompany = () => {
                       
                       {resumeData.skills && (
                         <div>
-                          <h3 className="font-semibold mb-1">Skills</h3>
+                          <h3 className="font-semibold mb-1 text-black">Skills</h3>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                             {resumeData.skills.technical && (
                               <div>
-                                <p className="font-medium text-sm">Technical</p>
-                                <p className="text-sm">{resumeData.skills.technical}</p>
+                                <p className="font-medium text-sm text-black">Technical</p>
+                                <p className="text-sm text-black">{resumeData.skills.technical}</p>
                               </div>
                             )}
                             {resumeData.skills.professional && (
                               <div>
-                                <p className="font-medium text-sm">Professional</p>
-                                <p className="text-sm">{resumeData.skills.professional}</p>
+                                <p className="font-medium text-sm text-black">Professional</p>
+                                <p className="text-sm text-black">{resumeData.skills.professional}</p>
                               </div>
                             )}
                             {resumeData.skills.soft && (
                               <div>
-                                <p className="font-medium text-sm">Soft Skills</p>
-                                <p className="text-sm">{resumeData.skills.soft}</p>
+                                <p className="font-medium text-sm text-black">Soft Skills</p>
+                                <p className="text-sm text-black">{resumeData.skills.soft}</p>
                               </div>
                             )}
                           </div>

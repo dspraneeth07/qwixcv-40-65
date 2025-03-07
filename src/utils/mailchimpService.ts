@@ -17,81 +17,49 @@ export const sendEmailWithMailchimp = async (
   fileName?: string
 ): Promise<boolean> => {
   try {
-    console.log("Sending email via Mandrill with API key:", API_KEY);
+    console.log("Preparing email draft");
     
     // Convert PDF Blob to base64 if provided
-    let attachments = [];
+    let base64pdf = '';
     if (pdfBlob && fileName) {
-      const base64data = await blobToBase64(pdfBlob);
-      
-      // Extract only the base64 data part (remove the data:application/pdf;base64, prefix)
-      const base64Content = base64data.split(',')[1]; 
-      
-      console.log("PDF converted to base64, first 50 chars:", base64Content?.substring(0, 50));
-      
-      attachments.push({
-        type: "application/pdf",
-        name: fileName,
-        content: base64Content
-      });
+      base64pdf = await blobToBase64(pdfBlob);
+      console.log("PDF converted to base64");
     }
 
-    // Prepare email content
-    const emailData = {
-      key: API_KEY,
-      message: {
-        from_email: fromEmail,
-        to: [{ email: toEmail, type: "to" }],
-        subject: subject,
-        html: body.replace(/\n/g, "<br>"),
-        attachments: attachments
-      }
-    };
-
-    console.log("Sending email with data:", JSON.stringify({
-      ...emailData,
-      message: {
-        ...emailData.message,
-        attachments: attachments.length > 0 ? [`${attachments.length} attachments included`] : []
-      }
-    }));
-
-    // Make direct API call to Mandrill (Mailchimp's transactional email service)
-    const response = await fetch(`${MAILCHIMP_MANDRILL_URL}messages/send.json`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(emailData)
-    });
-
-    const responseData = await response.json();
-    console.log("Mailchimp API Response:", responseData);
-
-    // Check if call was successful
-    if (responseData && responseData[0] && responseData[0].status === "sent") {
-      toast({
-        title: "Email Sent Successfully",
-        description: `Your application has been sent to ${toEmail}.`,
-      });
-      return true;
-    } else {
-      console.error("Mandrill API Error:", responseData);
-      
-      // Show error message
-      toast({
-        title: "Email Sending Failed",
-        description: responseData.message || "Could not send email directly. Please try again.",
-        variant: "destructive"
-      });
-      return false;
+    // Create mailto URL with subject and body
+    const encodedSubject = encodeURIComponent(subject);
+    const encodedBody = encodeURIComponent(body);
+    const mailtoUrl = `mailto:${toEmail}?subject=${encodedSubject}&body=${encodedBody}`;
+    
+    // First, trigger download of the PDF
+    if (pdfBlob && fileName) {
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      const downloadLink = document.createElement('a');
+      downloadLink.href = pdfUrl;
+      downloadLink.download = fileName;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      URL.revokeObjectURL(pdfUrl);
     }
+    
+    // Then open the mail client
+    setTimeout(() => {
+      window.location.href = mailtoUrl;
+      
+      toast({
+        title: "Email draft created",
+        description: "Your email draft has been opened in your mail app. The resume PDF has been downloaded - please attach it to your email.",
+      });
+    }, 500);
+    
+    return true;
   } catch (error) {
-    console.error("Error sending email:", error);
+    console.error("Error creating email draft:", error);
     
     toast({
-      title: "Error Sending Email",
-      description: "There was a problem sending your email directly.",
+      title: "Error Creating Email",
+      description: "There was a problem creating your email draft.",
       variant: "destructive"
     });
     return false;

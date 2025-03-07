@@ -13,15 +13,18 @@ import {
   Calendar, 
   Search,
   ArrowUpRight,
-  Filter
+  Filter,
+  AlertCircle
 } from "lucide-react";
 import { fetchJobs } from "@/utils/jobBoardApi";
 import JobSearchFilters from "@/components/jobs/JobSearchFilters";
 import { JobListing } from "@/types/job";
+import { toast } from "@/components/ui/use-toast";
 
 const JobBoard = () => {
   const [jobs, setJobs] = useState<JobListing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [location, setLocation] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,15 +36,25 @@ const JobBoard = () => {
 
   const loadJobs = async () => {
     setLoading(true);
+    setError(null);
+    
     try {
+      // If searchTerm is empty, we'll search for a default term like "jobs" to get some results
+      const query = searchTerm || "developer";
       const jobData = await fetchJobs({
-        query: searchTerm,
+        query: query,
         location: location,
         page: currentPage
       });
       setJobs(jobData);
     } catch (error) {
       console.error("Error loading jobs:", error);
+      setError("Failed to load jobs. Please try again later.");
+      toast({
+        title: "Error loading jobs",
+        description: "There was a problem loading job listings. Please check your connection and try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -123,7 +136,11 @@ const JobBoard = () => {
                   </div>
                 </div>
               </div>
-              <Button variant="ats" onClick={handleSearch}>
+              <Button 
+                variant="ats" 
+                onClick={handleSearch}
+                className="bg-primary text-white hover:bg-primary/90"
+              >
                 Search Jobs
               </Button>
             </div>
@@ -147,6 +164,15 @@ const JobBoard = () => {
                   </Card>
                 ))}
               </div>
+            ) : error ? (
+              <Card className="p-6">
+                <div className="text-center py-12">
+                  <AlertCircle className="h-12 w-12 mx-auto text-orange-500 mb-3" />
+                  <h2 className="font-medium text-xl mb-2">Error Loading Jobs</h2>
+                  <p className="text-muted-foreground mb-4">{error}</p>
+                  <Button onClick={loadJobs} variant="ats">Try Again</Button>
+                </div>
+              </Card>
             ) : (
               <>
                 {jobs.length === 0 ? (
@@ -161,29 +187,29 @@ const JobBoard = () => {
                     {jobs.map((job) => (
                       <Card key={job.id} className="hover:shadow-md transition-shadow">
                         <CardHeader className="pb-2">
-                          <CardTitle className="text-xl">{job.title}</CardTitle>
+                          <CardTitle className="text-xl text-black dark:text-black">{job.title}</CardTitle>
                           <div className="flex flex-wrap text-muted-foreground text-sm gap-3 mt-1">
-                            <div className="flex items-center">
+                            <div className="flex items-center text-black dark:text-black">
                               <Building className="h-3.5 w-3.5 mr-1" />
                               {job.company}
                             </div>
-                            <div className="flex items-center">
+                            <div className="flex items-center text-black dark:text-black">
                               <MapPin className="h-3.5 w-3.5 mr-1" />
                               {job.location}
                             </div>
-                            <div className="flex items-center">
+                            <div className="flex items-center text-black dark:text-black">
                               <Calendar className="h-3.5 w-3.5 mr-1" />
                               Posted {formatDate(job.date)}
                             </div>
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-sm line-clamp-3">{job.description}</p>
+                          <p className="text-sm line-clamp-3 text-black dark:text-black">{job.description}</p>
                           <div className="flex flex-wrap gap-2 mt-3">
                             {job.tags?.map((tag, index) => (
                               <span 
                                 key={index} 
-                                className="text-xs bg-slate-100 px-2 py-1 rounded-full"
+                                className="text-xs bg-slate-100 px-2 py-1 rounded-full text-black"
                               >
                                 {tag}
                               </span>
@@ -191,7 +217,7 @@ const JobBoard = () => {
                           </div>
                         </CardContent>
                         <CardFooter className="flex justify-between pt-0">
-                          <span className="text-sm font-medium">
+                          <span className="text-sm font-medium text-black dark:text-black">
                             {job.salary ? job.salary : 'Salary not specified'}
                           </span>
                           <a 
@@ -200,7 +226,7 @@ const JobBoard = () => {
                             rel="noopener noreferrer" 
                             className="inline-flex"
                           >
-                            <Button variant="outline" size="sm" className="gap-1">
+                            <Button variant="outline" size="sm" className="gap-1 bg-white text-black hover:bg-gray-100">
                               Apply Now
                               <ArrowUpRight className="h-3.5 w-3.5" />
                             </Button>
@@ -216,6 +242,7 @@ const JobBoard = () => {
                     variant="outline" 
                     disabled={currentPage === 1} 
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    className="bg-white text-black hover:bg-gray-100"
                   >
                     Previous
                   </Button>
@@ -226,6 +253,7 @@ const JobBoard = () => {
                     variant="outline" 
                     onClick={() => setCurrentPage(prev => prev + 1)}
                     disabled={jobs.length === 0}
+                    className="bg-white text-black hover:bg-gray-100"
                   >
                     Next
                   </Button>
