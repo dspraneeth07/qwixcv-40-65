@@ -6,7 +6,7 @@ const API_KEY = "YOUR_MANDRILL_API_KEY";
 const MAILCHIMP_MANDRILL_URL = "https://mandrillapp.com/api/1.0/";
 
 /**
- * Send an email using Mailchimp Transactional API (formerly Mandrill)
+ * Send an email using the default mail client
  */
 export const sendEmailWithMailchimp = async (
   fromEmail: string,
@@ -17,81 +17,43 @@ export const sendEmailWithMailchimp = async (
   fileName?: string
 ): Promise<boolean> => {
   try {
-    console.log("Sending email via Mandrill with API key:", API_KEY);
+    console.log("Opening default mail client");
     
-    // Convert PDF Blob to base64 if provided
-    let attachments = [];
+    let mailtoLink = `mailto:${toEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    
+    // First, download the PDF to the user's device so they can attach it
     if (pdfBlob && fileName) {
-      const base64data = await blobToBase64(pdfBlob);
+      // Create a download link for the PDF
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      const downloadLink = document.createElement('a');
+      downloadLink.href = pdfUrl;
+      downloadLink.download = fileName;
       
-      // Extract only the base64 data part (remove the data:application/pdf;base64, prefix)
-      const base64Content = base64data.split(',')[1]; 
+      // Trigger download
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
       
-      console.log("PDF converted to base64, first 50 chars:", base64Content?.substring(0, 50));
-      
-      attachments.push({
-        type: "application/pdf",
-        name: fileName,
-        content: base64Content
-      });
+      // Add instructions to the email body about attaching the PDF
+      const updatedBody = body + "\n\n[Please attach the downloaded resume PDF to this email before sending]";
+      mailtoLink = `mailto:${toEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(updatedBody)}`;
     }
-
-    // Prepare email content
-    const emailData = {
-      key: API_KEY,
-      message: {
-        from_email: fromEmail,
-        to: [{ email: toEmail, type: "to" }],
-        subject: subject,
-        html: body.replace(/\n/g, "<br>"),
-        attachments: attachments
-      }
-    };
-
-    console.log("Sending email with data:", JSON.stringify({
-      ...emailData,
-      message: {
-        ...emailData.message,
-        attachments: attachments.length > 0 ? [`${attachments.length} attachments included`] : []
-      }
-    }));
-
-    // Make direct API call to Mandrill (Mailchimp's transactional email service)
-    const response = await fetch(`${MAILCHIMP_MANDRILL_URL}messages/send.json`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(emailData)
-    });
-
-    const responseData = await response.json();
-    console.log("Mailchimp API Response:", responseData);
-
-    // Check if call was successful
-    if (responseData && responseData[0] && responseData[0].status === "sent") {
-      toast({
-        title: "Email Sent Successfully",
-        description: `Your application has been sent to ${toEmail}.`,
-      });
-      return true;
-    } else {
-      console.error("Mandrill API Error:", responseData);
-      
-      // Show error message
-      toast({
-        title: "Email Sending Failed",
-        description: responseData.message || "Could not send email directly. Please try again.",
-        variant: "destructive"
-      });
-      return false;
-    }
-  } catch (error) {
-    console.error("Error sending email:", error);
+    
+    // Open the default mail client
+    window.location.href = mailtoLink;
     
     toast({
-      title: "Error Sending Email",
-      description: "There was a problem sending your email directly.",
+      title: "Email Draft Created",
+      description: "A draft email has been created in your default mail app. Please attach the downloaded resume before sending.",
+    });
+    
+    return true;
+  } catch (error) {
+    console.error("Error creating email:", error);
+    
+    toast({
+      title: "Error Creating Email",
+      description: "There was a problem creating your email. Please try again.",
       variant: "destructive"
     });
     return false;
