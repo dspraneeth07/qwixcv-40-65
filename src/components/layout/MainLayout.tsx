@@ -1,6 +1,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
+import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
 interface MainLayoutProps {
@@ -16,7 +17,7 @@ const MainLayout = ({
 }: MainLayoutProps) => {
   return (
     <div className="flex flex-col min-h-screen w-full">
-      {/* Sidebar removed temporarily to fix errors */}
+      <Navbar />
       <main
         className={cn(
           "flex-1",
