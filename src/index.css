@@ -100,11 +100,96 @@
 #resume-content h4,
 #resume-content p,
 #resume-content span,
-#resume-content div {
+#resume-content div,
+#resume-content li,
+#resume-content a {
   @apply text-black !important;
 }
 
 /* Ensure navigation buttons in dark theme are visible */
 .pagination-button {
   @apply dark:bg-blue-600 dark:text-white !important;
+}
+
+/* Make builder buttons visible in dark mode */
+.dark .bg-gray-900 {
+  @apply bg-blue-600 hover:bg-blue-700 !important;
+}
+
+/* 3D and animation styles */
+@layer utilities {
+  /* 3D transforms */
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  
+  /* Animations */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+  
+  .animate-float {
+    animation: float 5s ease-in-out infinite;
+  }
+  
+  @keyframes blob {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    25% {
+      transform: translate(20px, -30px) scale(1.1);
+    }
+    50% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+    75% {
+      transform: translate(30px, 30px) scale(1.2);
+    }
+  }
+  
+  .animate-blob {
+    animation: blob 15s ease-in-out infinite;
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 0.7;
+      box-shadow: 0 0 20px 10px rgba(79, 70, 229, 0.3);
+    }
+    50% {
+      opacity: 1;
+      box-shadow: 0 0 30px 15px rgba(79, 70, 229, 0.5);
+    }
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+  
+  /* Scale hover effects */
+  .hover-scale {
+    @apply transition-transform duration-300;
+  }
+  
+  .hover-scale:hover {
+    @apply transform scale-105;
+  }
+  
+  /* Glassmorphism */
+  .glass {
+    @apply backdrop-blur-xl bg-white/10 border border-white/20;
+  }
+  
+  .glass-dark {
+    @apply backdrop-blur-xl bg-black/30 border border-white/10;
+  }
 }

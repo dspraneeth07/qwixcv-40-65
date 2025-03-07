@@ -9,6 +9,7 @@ import JobBoard from "./pages/JobBoard";
 import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import ATSScanner from "./pages/ATSScanner";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/job-board" element={<JobBoard />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/ats-scanner" element={<ATSScanner />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
