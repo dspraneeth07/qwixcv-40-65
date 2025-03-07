@@ -1,29 +1,26 @@
 
-# QWIX CV - AI-Powered Resume Builder
+# QWIK CV - AI-Powered Resume Builder
 
 <div align="center">
   <h3>Build ATS-optimized resumes with AI assistance</h3>
 </div>
 
-![QWIX CV Banner](public/lovable-uploads/2c71e71a-b95f-42ce-bde4-ffce5bf3ec57.png)
+![QWIK CV Banner](public/og-image.png)
 
 ## 🚀 Project Overview
 
-QWIX CV is an advanced resume builder that leverages artificial intelligence to help job seekers create professional, ATS-optimized resumes tailored to specific job descriptions. The platform offers intelligent content suggestions, real-time ATS scoring, resume comparison tools, and automated job matching to streamline the job application process.
+QWIK CV is an advanced resume builder that leverages artificial intelligence to help job seekers create professional, ATS-optimized resumes tailored to specific job descriptions. The platform offers intelligent content suggestions, real-time ATS scoring, resume comparison tools, and automated job matching to streamline the job application process.
 
 ## ✨ Key Features
 
 - **AI-Powered Resume Generation**: Create professional resumes with AI-generated content suggestions
 - **ATS Optimization**: Real-time ATS compatibility scoring against job descriptions
-- **Resume Comparison**: Compare multiple versions of your resume with visual feedback
+- **Resume Comparison**: Compare your resume against job descriptions with visual feedback
 - **Template Selection**: Choose from multiple professionally designed resume templates
 - **Job Matching**: Get personalized job recommendations based on your resume content
 - **PDF Export**: Download your resume as a professionally formatted PDF document
 - **Job Search**: Browse job listings that match your skills and experience
 - **Share to Companies**: Email your resume directly to potential employers
-- **Social Media Sharing**: Share your resume on various platforms with a single click
-- **Resume Scanner**: Upload and analyze existing resumes for ATS compatibility
-- **Side-by-Side Comparison**: Compare two different versions of your resume to identify the strongest
 
 ## 🛠️ Technology Stack
 
@@ -69,7 +66,7 @@ The application follows a modern component-based architecture with:
 git clone <YOUR_REPO_URL>
 
 # Navigate to the project directory
-cd qwix-cv
+cd qwik-cv
 
 # Install dependencies
 npm install
@@ -91,26 +88,25 @@ npm run dev
 - Real-time scoring and feedback
 - Keyword matching analysis
 - Improvement suggestions
-- Job recommendations based on your resume content
 
 ### Resume Comparison
-- Side-by-side visual comparison of multiple resumes
-- Highlight differences between versions
-- Detailed score breakdown
-- Comprehensive PDF report generation
+- Side-by-side visual comparison of resume and job description
+- Highlighted matching keywords
+- 3D visualization of the matching process
+- Detailed PDF report generation
 
 ### Job Board
 - Search for jobs based on skills and location
 - Filter by job type, experience level, and more
 - Save interesting job postings
 - Direct application links
-- Personalized job recommendations
 
 ## 👨‍💻 Development Team
 
-- **Dhadi Sai Praneeth Reddy** - Full Stack Developer
-- **Kasireddy Manideep Reddy** - Backend Developer
-- **Pravalika Batchu** - UI/UX Designer
+- **Sai Praneeth Reddy Dhadi** - Full Stack Developer
+- **Pravalika Batchu** - UI/UX Designer (1602-23-733-308)
+- **Bhavana Vemula** - Backend Developer
+- **Vaishnavi Konda** - Frontend Developer
 
 ## 📄 License
 
@@ -121,10 +117,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Icon library provided by [Lucide Icons](https://lucide.dev/)
 - UI components from [shadcn/ui](https://ui.shadcn.com/)
 - 3D visualizations powered by [Three.js](https://threejs.org/)
-
-## 🔗 Connect With Us
-
-- [Instagram](https://instagram.com/qwikzen_india)
-- [Twitter](https://twitter.com/dspraneeth07)
-- [LinkedIn](https://www.linkedin.com/company/qwikzen)
-- [Website](https://qwikzen.netlify.app)

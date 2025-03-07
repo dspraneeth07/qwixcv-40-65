@@ -1,3 +1,4 @@
+
 import html2pdf from 'html2pdf.js';
 
 export const generateComparisonReport = async (
@@ -77,22 +78,6 @@ export const generateComparisonReport = async (
 
 // Function to generate and download PDF directly
 export const downloadPDF = (reportElement: HTMLElement, fileName: string = 'resume-comparison-report.pdf') => {
-  // Create a clone of the element to avoid modifying the original DOM
-  const clonedElement = reportElement.cloneNode(true) as HTMLElement;
-  
-  // Apply additional styles for PDF formatting
-  clonedElement.style.width = "100%";
-  clonedElement.style.maxWidth = "800px";
-  clonedElement.style.margin = "0 auto";
-  clonedElement.style.padding = "20px";
-  clonedElement.style.backgroundColor = "#ffffff";
-  clonedElement.style.color = "#000000";
-  
-  // Temporarily append to document but keep it invisible
-  clonedElement.style.position = "absolute";
-  clonedElement.style.left = "-9999px";
-  document.body.appendChild(clonedElement);
-  
   const opt = {
     margin: [10, 10, 10, 10],
     filename: fileName,
@@ -108,35 +93,7 @@ export const downloadPDF = (reportElement: HTMLElement, fileName: string = 'resu
   };
   
   // Return a promise to allow for proper handling
-  return html2pdf().set(opt).from(clonedElement).save()
-    .then(() => {
-      // Clean up the cloned element
-      document.body.removeChild(clonedElement);
-      return true;
-    })
-    .catch(error => {
-      console.error("PDF generation error:", error);
-      document.body.removeChild(clonedElement);
-      
-      // Fallback mechanism for browsers that have issues with html2pdf
-      try {
-        const printWindow = window.open('', '_blank');
-        if (!printWindow) throw new Error("Could not open print window");
-        
-        printWindow.document.write('<html><head><title>Resume Report</title>');
-        printWindow.document.write('<style>body { font-family: Arial, sans-serif; padding: 20px; }</style>');
-        printWindow.document.write('</head><body>');
-        printWindow.document.write(clonedElement.outerHTML);
-        printWindow.document.write('</body></html>');
-        printWindow.document.close();
-        printWindow.print();
-        
-        return true;
-      } catch (fallbackError) {
-        console.error("Print fallback error:", fallbackError);
-        throw error; // Re-throw the original error
-      }
-    });
+  return html2pdf().set(opt).from(reportElement).save();
 };
 
 // Helper function to get color based on score

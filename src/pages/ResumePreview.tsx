@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -13,10 +12,7 @@ import {
   Phone, 
   MapPin, 
   Link as LinkIcon,
-  Share2,
-  Instagram,
-  Twitter,
-  Globe
+  Share2
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import html2pdf from 'html2pdf.js';
@@ -130,7 +126,6 @@ const ResumePreview = () => {
     clonedElement.style.fontSize = "9pt";
     clonedElement.style.padding = "20px";
     clonedElement.style.backgroundColor = "white";
-    clonedElement.style.color = "black";
     
     // Temporarily append to the document but make it invisible
     clonedElement.style.position = "absolute";
@@ -162,125 +157,79 @@ const ResumePreview = () => {
       description: "Your resume is being prepared for download"
     });
 
-    html2pdf().from(clonedElement).set(opt).save()
-      .then(() => {
-        // Remove the cloned element
-        document.body.removeChild(clonedElement);
-        toast({
-          title: "Download Complete",
-          description: "Your resume has been downloaded successfully"
-        });
-      })
-      .catch(err => {
-        console.error("PDF generation error:", err);
-        // Remove the cloned element
-        document.body.removeChild(clonedElement);
-        // Fallback to browser print
-        try {
-          const printWindow = window.open('', '_blank');
-          if (!printWindow) throw new Error("Could not open print window");
-          
-          printWindow.document.write('<html><head><title>Resume</title>');
-          printWindow.document.write('<style>body { font-family: Arial, sans-serif; padding: 20px; }</style>');
-          printWindow.document.write('</head><body>');
-          printWindow.document.write(clonedElement.outerHTML);
-          printWindow.document.write('</body></html>');
-          printWindow.document.close();
-          printWindow.print();
-          
+    setTimeout(() => {
+      html2pdf().from(clonedElement).set(opt).save()
+        .then(() => {
+          // Remove the cloned element
+          document.body.removeChild(clonedElement);
           toast({
-            title: "Using Print Dialog",
-            description: "PDF generation failed. Please use the print dialog to save as PDF."
+            title: "Download Complete",
+            description: "Your resume has been downloaded successfully"
           });
-        } catch (fallbackError) {
-          console.error("Print fallback error:", fallbackError);
+        })
+        .catch(err => {
+          console.error("PDF generation error:", err);
+          // Remove the cloned element
+          document.body.removeChild(clonedElement);
           toast({
             title: "Error",
             description: "Failed to generate PDF. Please try again.",
             variant: "destructive"
           });
-        }
-      });
+        });
+    }, 500); // Add small delay to ensure proper rendering
   };
 
   const handleShareToMedia = async () => {
-    const resumeElement = document.getElementById('resume-content');
-    if (!resumeElement) {
-      toast({
-        title: "Error",
-        description: "Could not generate file for sharing. Please try again.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    toast({
-      title: "Preparing Resume",
-      description: "Getting your resume ready for sharing..."
-    });
-
     try {
-      // Create a clone of the element for PDF generation
-      const clonedElement = resumeElement.cloneNode(true) as HTMLElement;
-      
-      // Apply styles for better PDF formatting
-      clonedElement.style.width = "100%";
-      clonedElement.style.maxWidth = "700px";
-      clonedElement.style.fontSize = "10pt";
-      clonedElement.style.padding = "20px";
-      clonedElement.style.backgroundColor = "white";
-      clonedElement.style.color = "black";
-      
-      // Temporarily append to the document but make it invisible
-      clonedElement.style.position = "absolute";
-      clonedElement.style.left = "-9999px";
-      document.body.appendChild(clonedElement);
+      const resumeElement = document.getElementById('resume-content');
+      if (!resumeElement) {
+        toast({
+          title: "Error",
+          description: "Could not generate PDF for sharing. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Preparing Resume",
+        description: "Getting your resume ready for sharing..."
+      });
 
       const opt = {
-        margin: [10, 10, 10, 10],
-        filename: `${resumeData?.personalInfo?.firstName || ''}_${resumeData?.personalInfo?.lastName || ''}_Resume.pdf`,
+        margin: 1,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2, 
-          useCORS: true, 
-          logging: false,
-          backgroundColor: "#ffffff" 
-        },
-        jsPDF: { 
-          unit: 'mm', 
-          format: 'a4', 
-          orientation: 'portrait', 
-          compress: true,
-          background: '#ffffff'
-        }
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
-      const pdfBlob = await html2pdf().from(clonedElement).set(opt).outputPdf('blob');
-      document.body.removeChild(clonedElement);
+      const pdfBlob = await html2pdf().from(resumeElement).set(opt).outputPdf('blob');
       
-      if (navigator.share && navigator.canShare) {
+      if (navigator.share) {
         const file = new File([pdfBlob], `${resumeData?.personalInfo?.firstName || ''}_${resumeData?.personalInfo?.lastName || ''}_Resume.pdf`, { 
           type: 'application/pdf' 
         });
         
-        const shareData = {
+        await navigator.share({
           title: `${resumeData?.personalInfo?.firstName || ''} ${resumeData?.personalInfo?.lastName || ''} Resume`,
           files: [file]
-        };
+        });
         
-        if (navigator.canShare(shareData)) {
-          await navigator.share(shareData);
-          toast({
-            title: "Shared Successfully",
-            description: "Your resume has been shared"
-          });
-        } else {
-          // Fallback if Web Share API can't share files
-          fallbackShare(pdfBlob);
-        }
+        toast({
+          title: "Shared Successfully",
+          description: "Your resume has been shared"
+        });
       } else {
-        // Fallback for browsers that don't support Web Share API
-        fallbackShare(pdfBlob);
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        setPdfUrl(pdfUrl);
+        
+        toast({
+          title: "Resume Ready",
+          description: "Your resume is ready to download and share manually"
+        });
+        
+        window.open(pdfUrl, '_blank');
       }
     } catch (error) {
       console.error("Share error:", error);
@@ -290,18 +239,6 @@ const ResumePreview = () => {
         variant: "destructive"
       });
     }
-  };
-
-  const fallbackShare = (pdfBlob: Blob) => {
-    const pdfUrl = URL.createObjectURL(pdfBlob);
-    setPdfUrl(pdfUrl);
-    
-    toast({
-      title: "Resume Ready",
-      description: "Your resume PDF is ready. Opening in a new tab for you to download and share manually."
-    });
-    
-    window.open(pdfUrl, '_blank');
   };
 
   const handleShareToCompany = () => {

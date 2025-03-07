@@ -12,7 +12,6 @@ import NotFound from "./pages/NotFound";
 import ATSScanner from "./pages/ATSScanner";
 import ResumeCompare from "./pages/ResumeCompare";
 import { useEffect } from "react";
-import { Toaster } from "./components/ui/sonner";
 
 function App() {
   // Load fonts
@@ -38,7 +37,6 @@ function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
-        <Toaster />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/builder" element={<ResumeBuilder />} />

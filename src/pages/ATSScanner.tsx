@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -9,14 +8,12 @@ import { ATSScoreDisplay } from "@/components/resume/ATSScoreDisplay";
 import { generateATSScore, ATSScoreData } from "@/utils/atsScoreApi";
 import { toast } from "@/components/ui/use-toast";
 import * as THREE from "three";
-import JobSuggestions from "@/components/resume/JobSuggestions";
 
 const ATSScanner = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [atsScore, setAtsScore] = useState<ATSScoreData | null>(null);
-  const [resumeData, setResumeData] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scannerRef = useRef<HTMLDivElement>(null);
   
@@ -176,7 +173,6 @@ const ATSScanner = () => {
   const removeFile = () => {
     setFile(null);
     setAtsScore(null);
-    setResumeData(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -226,7 +222,6 @@ const ATSScanner = () => {
           objective: "Experienced software engineer seeking a challenging role in a dynamic organization."
         };
         
-        setResumeData(mockResumeData);
         const scoreData = await generateATSScore(mockResumeData);
         setAtsScore(scoreData);
         setIsAnalyzing(false);
@@ -246,18 +241,6 @@ const ATSScanner = () => {
         variant: "destructive"
       });
     }
-  };
-  
-  // Function to extract all skills from resume data
-  const getAllSkills = () => {
-    if (!resumeData?.skills) return [];
-    
-    return Object.values(resumeData.skills)
-      .filter(Boolean)
-      .map((skillSet: any) => skillSet.toString())
-      .join(", ")
-      .split(/[,;]\s*/)
-      .filter(Boolean);
   };
   
   return (
@@ -453,21 +436,6 @@ const ATSScanner = () => {
               )}
             </div>
           </div>
-          
-          {/* Job Suggestions Section - Added new section */}
-          {atsScore && resumeData && (
-            <div className="mt-8">
-              <h2 className="text-2xl font-bold text-white mb-4">Recommended Jobs Based on Your Resume</h2>
-              <div className="bg-black/20 backdrop-blur-lg border border-white/10 rounded-lg p-6">
-                <JobSuggestions 
-                  skills={getAllSkills()}
-                  jobTitle={resumeData?.personalInfo?.jobTitle || ""}
-                  location={resumeData?.personalInfo?.location || ""}
-                />
-              </div>
-            </div>
-          )}
-          
           <div className="mt-16 text-center">
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-6">
               Ready to build a professional resume from scratch?
