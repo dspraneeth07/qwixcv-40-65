@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
@@ -761,5 +762,27 @@ const ResumeCompare = () => {
             </div>
             
             <div className="text-center">
-              <Button 
-                variant
+              <Button
+                variant="gradient"
+                className="mr-3"
+                onClick={downloadComparisonReport}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download Report
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleShareToMedia}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Share Report
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </MainLayout>
+  );
+};
+
+export default ResumeCompare;
