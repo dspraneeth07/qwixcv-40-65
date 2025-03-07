@@ -1,3 +1,4 @@
+<lov-code>
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -892,4 +893,4 @@ const ResumeBuilder = () => {
                                   <Trash className="h-4 w-4" />
                                 </Button>
                               )}
-                              <CardContent className="p-6
+                              <CardContent className="
