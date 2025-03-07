@@ -2,12 +2,10 @@
 import html2pdf from 'html2pdf.js';
 
 export const generateComparisonReport = async (
-  resumeData: any,
-  jobDescription: string,
-  matchScore: number,
-  keywordMatches: any[],
-  missingKeywords: string[],
-  recommendations: string[]
+  resumeDataA: any,
+  resumeDataB: any,
+  scoreDataA: any,
+  scoreDataB: any
 ) => {
   const reportContainer = document.createElement('div');
   reportContainer.className = 'comparison-report';
@@ -36,7 +34,7 @@ export const generateComparisonReport = async (
   const taglineDiv = document.createElement('div');
   taglineDiv.style.fontSize = '14px';
   taglineDiv.style.color = '#666';
-  taglineDiv.innerHTML = 'Resume Analysis Report';
+  taglineDiv.innerHTML = 'Resume Comparison Report';
   
   headerDiv.appendChild(logoDiv);
   headerDiv.appendChild(taglineDiv);
@@ -58,165 +56,172 @@ export const generateComparisonReport = async (
   const subtitle = document.createElement('p');
   subtitle.style.fontSize = '16px';
   subtitle.style.color = '#6b7280';
-  subtitle.innerHTML = `For: ${resumeData?.personalInfo?.firstName || ''} ${resumeData?.personalInfo?.lastName || ''}`;
+  subtitle.innerHTML = `Comparing two versions of your resume`;
   
   titleDiv.appendChild(title);
   titleDiv.appendChild(subtitle);
   reportContainer.appendChild(titleDiv);
   
-  // Add match score section
-  const scoreDiv = document.createElement('div');
-  scoreDiv.style.backgroundColor = '#f8fafc';
-  scoreDiv.style.border = '1px solid #e2e8f0';
-  scoreDiv.style.borderRadius = '8px';
-  scoreDiv.style.padding = '20px';
-  scoreDiv.style.marginBottom = '30px';
-  scoreDiv.style.display = 'flex';
-  scoreDiv.style.alignItems = 'center';
-  scoreDiv.style.justifyContent = 'space-between';
-  
-  const scoreInfo = document.createElement('div');
-  
-  const scoreTitle = document.createElement('h2');
-  scoreTitle.style.fontSize = '18px';
-  scoreTitle.style.fontWeight = 'bold';
-  scoreTitle.style.marginBottom = '10px';
-  scoreTitle.innerHTML = 'ATS Compatibility Score';
-  
-  const scoreDesc = document.createElement('p');
-  scoreDesc.style.fontSize = '14px';
-  scoreDesc.style.color = '#6b7280';
-  scoreDesc.innerHTML = 'How well your resume matches the job description';
-  
-  scoreInfo.appendChild(scoreTitle);
-  scoreInfo.appendChild(scoreDesc);
-  
-  const scoreValue = document.createElement('div');
-  scoreValue.style.fontSize = '36px';
-  scoreValue.style.fontWeight = 'bold';
-  scoreValue.style.color = getScoreColor(matchScore);
-  scoreValue.innerHTML = `${matchScore}%`;
-  
-  scoreDiv.appendChild(scoreInfo);
-  scoreDiv.appendChild(scoreValue);
-  reportContainer.appendChild(scoreDiv);
-  
-  // Add job description section
-  const jobSection = document.createElement('div');
-  jobSection.style.marginBottom = '30px';
-  
-  const jobTitle = document.createElement('h2');
-  jobTitle.style.fontSize = '18px';
-  jobTitle.style.fontWeight = 'bold';
-  jobTitle.style.marginBottom = '15px';
-  jobTitle.innerHTML = 'Job Description Analyzed';
-  
-  const jobContent = document.createElement('div');
-  jobContent.style.backgroundColor = '#f8fafc';
-  jobContent.style.border = '1px solid #e2e8f0';
-  jobContent.style.borderRadius = '8px';
-  jobContent.style.padding = '15px';
-  jobContent.style.fontSize = '14px';
-  jobContent.style.lineHeight = '1.5';
-  jobContent.style.maxHeight = '200px';
-  jobContent.style.overflow = 'auto';
-  jobContent.innerHTML = jobDescription;
-  
-  jobSection.appendChild(jobTitle);
-  jobSection.appendChild(jobContent);
-  reportContainer.appendChild(jobSection);
-  
-  // Add matched keywords section
-  const matchedSection = document.createElement('div');
-  matchedSection.style.marginBottom = '30px';
-  
-  const matchedTitle = document.createElement('h2');
-  matchedTitle.style.fontSize = '18px';
-  matchedTitle.style.fontWeight = 'bold';
-  matchedTitle.style.marginBottom = '15px';
-  matchedTitle.innerHTML = 'Matched Keywords';
-  
-  const matchedGrid = document.createElement('div');
-  matchedGrid.style.display = 'grid';
-  matchedGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(180px, 1fr))';
-  matchedGrid.style.gap = '10px';
-  
-  keywordMatches.forEach(match => {
-    const matchItem = document.createElement('div');
-    matchItem.style.backgroundColor = '#ecfdf5';
-    matchItem.style.border = '1px solid #d1fae5';
-    matchItem.style.borderRadius = '6px';
-    matchItem.style.padding = '10px';
-    matchItem.style.fontSize = '14px';
-    matchItem.innerHTML = `<span style="font-weight: bold;">${match.keyword}</span>`;
+  // Create the comparison report structure
+  const createResumeSection = (resumeData: any, scoreData: any, label: string) => {
+    const scoreDiv = document.createElement('div');
+    scoreDiv.style.backgroundColor = '#f8fafc';
+    scoreDiv.style.border = '1px solid #e2e8f0';
+    scoreDiv.style.borderRadius = '8px';
+    scoreDiv.style.padding = '20px';
+    scoreDiv.style.marginBottom = '30px';
     
-    matchedGrid.appendChild(matchItem);
-  });
-  
-  matchedSection.appendChild(matchedTitle);
-  matchedSection.appendChild(matchedGrid);
-  reportContainer.appendChild(matchedSection);
-  
-  // Add missing keywords section
-  if (missingKeywords.length > 0) {
-    const missingSection = document.createElement('div');
-    missingSection.style.marginBottom = '30px';
+    const scoreTitle = document.createElement('h2');
+    scoreTitle.style.fontSize = '18px';
+    scoreTitle.style.fontWeight = 'bold';
+    scoreTitle.style.marginBottom = '15px';
+    scoreTitle.innerHTML = `Resume ${label} Analysis`;
     
-    const missingTitle = document.createElement('h2');
-    missingTitle.style.fontSize = '18px';
-    missingTitle.style.fontWeight = 'bold';
-    missingTitle.style.marginBottom = '15px';
-    missingTitle.innerHTML = 'Missing Keywords';
+    scoreDiv.appendChild(scoreTitle);
     
-    const missingGrid = document.createElement('div');
-    missingGrid.style.display = 'grid';
-    missingGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(180px, 1fr))';
-    missingGrid.style.gap = '10px';
+    // ATS Score
+    const scoreItem = document.createElement('div');
+    scoreItem.style.display = 'flex';
+    scoreItem.style.justifyContent = 'space-between';
+    scoreItem.style.marginBottom = '10px';
     
-    missingKeywords.forEach(keyword => {
-      const missingItem = document.createElement('div');
-      missingItem.style.backgroundColor = '#fee2e2';
-      missingItem.style.border = '1px solid #fecaca';
-      missingItem.style.borderRadius = '6px';
-      missingItem.style.padding = '10px';
-      missingItem.style.fontSize = '14px';
-      missingItem.innerHTML = keyword;
+    const scoreLabel = document.createElement('span');
+    scoreLabel.style.fontWeight = 'bold';
+    scoreLabel.innerHTML = 'ATS Compatibility Score:';
+    
+    const scoreValue = document.createElement('span');
+    scoreValue.style.color = getScoreColor(scoreData.atsScore);
+    scoreValue.style.fontWeight = 'bold';
+    scoreValue.innerHTML = `${scoreData.atsScore}%`;
+    
+    scoreItem.appendChild(scoreLabel);
+    scoreItem.appendChild(scoreValue);
+    scoreDiv.appendChild(scoreItem);
+    
+    // Add strengths
+    if (scoreData.strengths && scoreData.strengths.length > 0) {
+      const strengthsTitle = document.createElement('h3');
+      strengthsTitle.style.fontSize = '16px';
+      strengthsTitle.style.fontWeight = 'bold';
+      strengthsTitle.style.marginTop = '15px';
+      strengthsTitle.style.marginBottom = '10px';
+      strengthsTitle.style.color = '#059669';
+      strengthsTitle.innerHTML = 'Strengths:';
       
-      missingGrid.appendChild(missingItem);
+      scoreDiv.appendChild(strengthsTitle);
+      
+      const strengthsList = document.createElement('ul');
+      strengthsList.style.paddingLeft = '20px';
+      strengthsList.style.marginBottom = '15px';
+      
+      scoreData.strengths.forEach((strength: string) => {
+        const item = document.createElement('li');
+        item.style.marginBottom = '5px';
+        item.innerHTML = strength;
+        strengthsList.appendChild(item);
+      });
+      
+      scoreDiv.appendChild(strengthsList);
+    }
+    
+    // Add weaknesses
+    if (scoreData.weaknesses && scoreData.weaknesses.length > 0) {
+      const weaknessesTitle = document.createElement('h3');
+      weaknessesTitle.style.fontSize = '16px';
+      weaknessesTitle.style.fontWeight = 'bold';
+      weaknessesTitle.style.marginTop = '15px';
+      weaknessesTitle.style.marginBottom = '10px';
+      weaknessesTitle.style.color = '#dc2626';
+      weaknessesTitle.innerHTML = 'Areas to Improve:';
+      
+      scoreDiv.appendChild(weaknessesTitle);
+      
+      const weaknessesList = document.createElement('ul');
+      weaknessesList.style.paddingLeft = '20px';
+      
+      scoreData.weaknesses.forEach((weakness: string) => {
+        const item = document.createElement('li');
+        item.style.marginBottom = '5px';
+        item.innerHTML = weakness;
+        weaknessesList.appendChild(item);
+      });
+      
+      scoreDiv.appendChild(weaknessesList);
+    }
+    
+    return scoreDiv;
+  };
+  
+  // Add Resume A section
+  reportContainer.appendChild(createResumeSection(resumeDataA, scoreDataA, 'A'));
+  
+  // Add Resume B section
+  reportContainer.appendChild(createResumeSection(resumeDataB, scoreDataB, 'B'));
+  
+  // Determine the winner
+  const winner = scoreDataA.atsScore >= scoreDataB.atsScore ? 'A' : 'B';
+  const scoreDiff = Math.abs(scoreDataA.atsScore - scoreDataB.atsScore);
+  
+  // Add winner section
+  const winnerDiv = document.createElement('div');
+  winnerDiv.style.backgroundColor = '#ecfdf5';
+  winnerDiv.style.border = '1px solid #d1fae5';
+  winnerDiv.style.borderRadius = '8px';
+  winnerDiv.style.padding = '20px';
+  winnerDiv.style.marginBottom = '30px';
+  
+  const winnerTitle = document.createElement('h2');
+  winnerTitle.style.fontSize = '18px';
+  winnerTitle.style.fontWeight = 'bold';
+  winnerTitle.style.marginBottom = '10px';
+  winnerTitle.style.color = '#059669';
+  winnerTitle.innerHTML = 'Recommendation';
+  
+  const winnerText = document.createElement('p');
+  winnerText.style.marginBottom = '15px';
+  winnerText.innerHTML = `<strong>Resume ${winner}</strong> is more likely to pass ATS systems with a ${scoreDiff}% higher score. We recommend using this version for your job applications.`;
+  
+  winnerDiv.appendChild(winnerTitle);
+  winnerDiv.appendChild(winnerText);
+  reportContainer.appendChild(winnerDiv);
+  
+  // Add improvement suggestions
+  if (scoreDataA.improvementSuggestions || scoreDataB.improvementSuggestions) {
+    const suggestionsDiv = document.createElement('div');
+    suggestionsDiv.style.backgroundColor = '#f0f9ff';
+    suggestionsDiv.style.border = '1px solid #bae6fd';
+    suggestionsDiv.style.borderRadius = '8px';
+    suggestionsDiv.style.padding = '20px';
+    suggestionsDiv.style.marginBottom = '30px';
+    
+    const suggestionsTitle = document.createElement('h2');
+    suggestionsTitle.style.fontSize = '18px';
+    suggestionsTitle.style.fontWeight = 'bold';
+    suggestionsTitle.style.marginBottom = '10px';
+    suggestionsTitle.style.color = '#0284c7';
+    suggestionsTitle.innerHTML = 'General Improvement Suggestions';
+    
+    suggestionsDiv.appendChild(suggestionsTitle);
+    
+    const suggestionsList = document.createElement('ol');
+    suggestionsList.style.paddingLeft = '20px';
+    
+    // Combine and deduplicate suggestions
+    const allSuggestions = [
+      ...(scoreDataA.improvementSuggestions || []),
+      ...(scoreDataB.improvementSuggestions || [])
+    ];
+    const uniqueSuggestions = [...new Set(allSuggestions)];
+    
+    uniqueSuggestions.forEach((suggestion: string) => {
+      const item = document.createElement('li');
+      item.style.marginBottom = '8px';
+      item.innerHTML = suggestion;
+      suggestionsList.appendChild(item);
     });
     
-    missingSection.appendChild(missingTitle);
-    missingSection.appendChild(missingGrid);
-    reportContainer.appendChild(missingSection);
-  }
-  
-  // Add recommendations section
-  if (recommendations.length > 0) {
-    const recSection = document.createElement('div');
-    recSection.style.marginBottom = '30px';
-    
-    const recTitle = document.createElement('h2');
-    recTitle.style.fontSize = '18px';
-    recTitle.style.fontWeight = 'bold';
-    recTitle.style.marginBottom = '15px';
-    recTitle.innerHTML = 'Recommendations';
-    
-    const recList = document.createElement('ul');
-    recList.style.paddingLeft = '20px';
-    
-    recommendations.forEach(rec => {
-      const recItem = document.createElement('li');
-      recItem.style.fontSize = '14px';
-      recItem.style.marginBottom = '10px';
-      recItem.style.lineHeight = '1.5';
-      recItem.innerHTML = rec;
-      
-      recList.appendChild(recItem);
-    });
-    
-    recSection.appendChild(recTitle);
-    recSection.appendChild(recList);
-    reportContainer.appendChild(recSection);
+    suggestionsDiv.appendChild(suggestionsList);
+    reportContainer.appendChild(suggestionsDiv);
   }
   
   // Add footer
@@ -241,7 +246,7 @@ export const generateComparisonReport = async (
   // Generate PDF
   const opt = {
     margin: [10, 10, 10, 10],
-    filename: 'Resume_Analysis_Report.pdf',
+    filename: 'Resume_Comparison_Report.pdf',
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
