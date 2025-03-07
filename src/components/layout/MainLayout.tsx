@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileText, Menu, Briefcase, Zap, BarChart2, MessageSquare, User } from "lucide-react";
+import { FileText, Menu, Briefcase, Zap, FileCheck, MessageSquare, User } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 
@@ -9,10 +9,14 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navigation = [
-    { name: "Home", href: "/" },
     { name: "Resume Builder", href: "/builder" },
     { name: "ATS Scanner", href: "/ats-scanner" },
+    { name: "Compare Resumes", href: "/resume-compare" },
     { name: "Job Board", href: "/job-board" },
+  ];
+
+  const footerLinks = [
+    { name: "Home", href: "/" },
     { name: "About", href: "/about" },
     { name: "Contact", href: "/contact" },
   ];
@@ -96,8 +100,12 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                 Resume Builder
               </Link>
               <Link to="/ats-scanner" className="text-sm text-gray-300 hover:text-white font-poppins flex items-center gap-2">
-                <BarChart2 className="h-4 w-4" />
+                <Zap className="h-4 w-4" />
                 ATS Scanner
+              </Link>
+              <Link to="/resume-compare" className="text-sm text-gray-300 hover:text-white font-poppins flex items-center gap-2">
+                <FileCheck className="h-4 w-4" />
+                Compare Resumes
               </Link>
               <Link to="/job-board" className="text-sm text-gray-300 hover:text-white font-poppins flex items-center gap-2">
                 <Briefcase className="h-4 w-4" />
@@ -107,14 +115,22 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
             
             <div className="flex flex-col gap-3">
               <p className="font-medium font-sf-pro">Company</p>
-              <Link to="/about" className="text-sm text-gray-300 hover:text-white font-poppins flex items-center gap-2">
-                <User className="h-4 w-4" />
-                About
-              </Link>
-              <Link to="/contact" className="text-sm text-gray-300 hover:text-white font-poppins flex items-center gap-2">
-                <MessageSquare className="h-4 w-4" />
-                Contact
-              </Link>
+              {footerLinks.map((link) => (
+                <Link 
+                  key={link.name} 
+                  to={link.href} 
+                  className="text-sm text-gray-300 hover:text-white font-poppins flex items-center gap-2"
+                >
+                  {link.name === "Home" ? (
+                    <FileText className="h-4 w-4" />
+                  ) : link.name === "About" ? (
+                    <User className="h-4 w-4" />
+                  ) : (
+                    <MessageSquare className="h-4 w-4" />
+                  )}
+                  {link.name}
+                </Link>
+              ))}
             </div>
             
             <div className="flex flex-col gap-3">

@@ -1,0 +1,447 @@
+
+import { useState } from "react";
+import MainLayout from "@/components/layout/MainLayout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Upload, FileCheck, AlertTriangle, Award, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
+
+const ResumeCompare = () => {
+  const [resumeA, setResumeA] = useState<File | null>(null);
+  const [resumeB, setResumeB] = useState<File | null>(null);
+  const [isComparing, setIsComparing] = useState(false);
+  const [comparisonResults, setComparisonResults] = useState<any | null>(null);
+
+  const handleResumeAUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setResumeA(e.target.files[0]);
+    }
+  };
+
+  const handleResumeBUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setResumeB(e.target.files[0]);
+    }
+  };
+
+  const compareResumes = () => {
+    setIsComparing(true);
+    
+    // Simulate comparison with mock data (in a real app, this would be an API call)
+    setTimeout(() => {
+      setComparisonResults({
+        resumeA: {
+          atsScore: 78,
+          keywordScore: 72,
+          formatScore: 85,
+          contentScore: 76,
+          strengths: ["Strong action verbs", "Good education section", "Clear contact info"],
+          weaknesses: ["Missing measurable achievements", "Too wordy", "Generic objective"]
+        },
+        resumeB: {
+          atsScore: 84,
+          keywordScore: 88,
+          formatScore: 80,
+          contentScore: 84,
+          strengths: ["Quantified achievements", "Targeted skills section", "Concise bullet points"],
+          weaknesses: ["Could use better job title keywords", "Formatting inconsistencies"]
+        },
+        winner: "resumeB",
+        reason: "Resume B has better keyword optimization and more impactful content with quantified achievements, making it more likely to pass ATS systems.",
+        improvementSuggestions: [
+          "Add more industry-specific keywords to both resumes",
+          "Quantify achievements with metrics in Resume A",
+          "Fix formatting inconsistencies in Resume B",
+          "Use more action verbs at the beginning of bullet points"
+        ]
+      });
+      setIsComparing(false);
+    }, 2000);
+  };
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        staggerChildren: 0.1
+      }
+    }
+  };
+  
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { 
+      y: 0, 
+      opacity: 1,
+      transition: { type: "spring", stiffness: 100 }
+    }
+  };
+
+  return (
+    <MainLayout>
+      <div className="container py-12">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-8"
+        >
+          <h1 className="text-4xl font-sf-pro font-bold mb-4 gradient-text">📊 Compare Your Resumes & Find the Best!</h1>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            Upload two different versions of your resume to see which one performs better with ATS systems.
+            Our AI will analyze both and provide detailed feedback on which one is more likely to land you the job.
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 gap-8 mb-8">
+          {/* Resume A Upload */}
+          <motion.div 
+            variants={itemVariants}
+            initial="hidden"
+            animate="visible"
+            className="glass-card p-6"
+          >
+            <div className="text-center mb-4">
+              <h2 className="text-2xl font-sf-pro font-semibold text-modern-blue-600">Resume A</h2>
+              <p className="text-gray-500">Upload your first resume</p>
+            </div>
+            
+            <div className={`border-2 border-dashed rounded-lg p-8 text-center ${resumeA ? 'border-green-500 bg-green-50/30' : 'border-gray-300 hover:border-modern-blue-400'} transition-all duration-300`}>
+              {resumeA ? (
+                <div className="flex flex-col items-center">
+                  <FileCheck className="h-16 w-16 text-green-500 mb-2" />
+                  <p className="text-green-700 font-medium">{resumeA.name}</p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={() => setResumeA(null)}
+                  >
+                    Replace File
+                  </Button>
+                </div>
+              ) : (
+                <label className="cursor-pointer flex flex-col items-center">
+                  <Upload className="h-16 w-16 text-modern-blue-500 mb-2" />
+                  <p className="text-modern-blue-600 font-medium mb-2">Drag & drop your resume or click to browse</p>
+                  <p className="text-sm text-gray-500">Supported formats: PDF, DOCX</p>
+                  <input 
+                    type="file" 
+                    accept=".pdf,.docx" 
+                    className="hidden" 
+                    onChange={handleResumeAUpload}
+                  />
+                </label>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Resume B Upload */}
+          <motion.div 
+            variants={itemVariants}
+            initial="hidden"
+            animate="visible"
+            className="glass-card p-6"
+          >
+            <div className="text-center mb-4">
+              <h2 className="text-2xl font-sf-pro font-semibold text-modern-blue-600">Resume B</h2>
+              <p className="text-gray-500">Upload your second resume</p>
+            </div>
+            
+            <div className={`border-2 border-dashed rounded-lg p-8 text-center ${resumeB ? 'border-green-500 bg-green-50/30' : 'border-gray-300 hover:border-modern-blue-400'} transition-all duration-300`}>
+              {resumeB ? (
+                <div className="flex flex-col items-center">
+                  <FileCheck className="h-16 w-16 text-green-500 mb-2" />
+                  <p className="text-green-700 font-medium">{resumeB.name}</p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={() => setResumeB(null)}
+                  >
+                    Replace File
+                  </Button>
+                </div>
+              ) : (
+                <label className="cursor-pointer flex flex-col items-center">
+                  <Upload className="h-16 w-16 text-modern-blue-500 mb-2" />
+                  <p className="text-modern-blue-600 font-medium mb-2">Drag & drop your resume or click to browse</p>
+                  <p className="text-sm text-gray-500">Supported formats: PDF, DOCX</p>
+                  <input 
+                    type="file" 
+                    accept=".pdf,.docx" 
+                    className="hidden" 
+                    onChange={handleResumeBUpload}
+                  />
+                </label>
+              )}
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="text-center mb-12">
+          <Button
+            variant="gradient"
+            size="xl"
+            className="px-10"
+            disabled={!resumeA || !resumeB || isComparing}
+            onClick={compareResumes}
+          >
+            {isComparing ? "Analyzing..." : "Compare Resumes"}
+            {!isComparing && <ArrowRight className="ml-2" />}
+          </Button>
+        </div>
+
+        {comparisonResults && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="text-3xl font-sf-pro font-bold text-center mb-8 gradient-text">Comparison Results</h2>
+            
+            <div className="grid md:grid-cols-2 gap-8 mb-8">
+              {/* Resume A Results */}
+              <Card className={`overflow-hidden ${comparisonResults.winner === 'resumeA' ? 'border-2 border-green-500' : ''}`}>
+                {comparisonResults.winner === 'resumeA' && (
+                  <div className="absolute -right-12 top-10 bg-green-500 text-white py-2 px-12 transform rotate-45 flex items-center justify-center z-10">
+                    <Award className="w-4 h-4 mr-1" />
+                    <span className="text-sm font-medium">WINNER</span>
+                  </div>
+                )}
+                <CardHeader className="bg-gradient-to-r from-modern-blue-600 to-modern-blue-500 text-white">
+                  <CardTitle className="text-center">Resume A Analysis</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="mb-6">
+                    <h3 className="text-xl font-sf-pro font-semibold mb-4">ATS Score Breakdown</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm font-medium">Overall ATS Score</span>
+                          <span className="text-sm font-medium">{comparisonResults.resumeA.atsScore}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className="h-2.5 rounded-full bg-gradient-to-r from-modern-blue-500 to-soft-purple" 
+                            style={{ width: `${comparisonResults.resumeA.atsScore}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm font-medium">Keyword Score</span>
+                          <span className="text-sm font-medium">{comparisonResults.resumeA.keywordScore}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className="h-2.5 rounded-full bg-gradient-to-r from-modern-blue-500 to-soft-purple" 
+                            style={{ width: `${comparisonResults.resumeA.keywordScore}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm font-medium">Format Score</span>
+                          <span className="text-sm font-medium">{comparisonResults.resumeA.formatScore}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className="h-2.5 rounded-full bg-gradient-to-r from-modern-blue-500 to-soft-purple" 
+                            style={{ width: `${comparisonResults.resumeA.formatScore}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm font-medium">Content Score</span>
+                          <span className="text-sm font-medium">{comparisonResults.resumeA.contentScore}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className="h-2.5 rounded-full bg-gradient-to-r from-modern-blue-500 to-soft-purple" 
+                            style={{ width: `${comparisonResults.resumeA.contentScore}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-6">
+                    <h3 className="text-xl font-sf-pro font-semibold mb-3 text-green-600 flex items-center">
+                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center mr-2">
+                        <FileCheck className="w-4 h-4 text-green-600" />
+                      </div>
+                      Strengths
+                    </h3>
+                    <ul className="list-disc pl-6 space-y-1">
+                      {comparisonResults.resumeA.strengths.map((strength: string, index: number) => (
+                        <li key={index} className="text-gray-700">{strength}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-xl font-sf-pro font-semibold mb-3 text-amber-600 flex items-center">
+                      <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center mr-2">
+                        <AlertTriangle className="w-4 h-4 text-amber-600" />
+                      </div>
+                      Areas to Improve
+                    </h3>
+                    <ul className="list-disc pl-6 space-y-1">
+                      {comparisonResults.resumeA.weaknesses.map((weakness: string, index: number) => (
+                        <li key={index} className="text-gray-700">{weakness}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Resume B Results */}
+              <Card className={`overflow-hidden ${comparisonResults.winner === 'resumeB' ? 'border-2 border-green-500' : ''}`}>
+                {comparisonResults.winner === 'resumeB' && (
+                  <div className="absolute -right-12 top-10 bg-green-500 text-white py-2 px-12 transform rotate-45 flex items-center justify-center z-10">
+                    <Award className="w-4 h-4 mr-1" />
+                    <span className="text-sm font-medium">WINNER</span>
+                  </div>
+                )}
+                <CardHeader className="bg-gradient-to-r from-soft-purple to-modern-blue-500 text-white">
+                  <CardTitle className="text-center">Resume B Analysis</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="mb-6">
+                    <h3 className="text-xl font-sf-pro font-semibold mb-4">ATS Score Breakdown</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm font-medium">Overall ATS Score</span>
+                          <span className="text-sm font-medium">{comparisonResults.resumeB.atsScore}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className="h-2.5 rounded-full bg-gradient-to-r from-soft-purple to-modern-blue-500" 
+                            style={{ width: `${comparisonResults.resumeB.atsScore}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm font-medium">Keyword Score</span>
+                          <span className="text-sm font-medium">{comparisonResults.resumeB.keywordScore}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className="h-2.5 rounded-full bg-gradient-to-r from-soft-purple to-modern-blue-500" 
+                            style={{ width: `${comparisonResults.resumeB.keywordScore}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm font-medium">Format Score</span>
+                          <span className="text-sm font-medium">{comparisonResults.resumeB.formatScore}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className="h-2.5 rounded-full bg-gradient-to-r from-soft-purple to-modern-blue-500" 
+                            style={{ width: `${comparisonResults.resumeB.formatScore}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between mb-1">
+                          <span className="text-sm font-medium">Content Score</span>
+                          <span className="text-sm font-medium">{comparisonResults.resumeB.contentScore}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className="h-2.5 rounded-full bg-gradient-to-r from-soft-purple to-modern-blue-500" 
+                            style={{ width: `${comparisonResults.resumeB.contentScore}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-6">
+                    <h3 className="text-xl font-sf-pro font-semibold mb-3 text-green-600 flex items-center">
+                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center mr-2">
+                        <FileCheck className="w-4 h-4 text-green-600" />
+                      </div>
+                      Strengths
+                    </h3>
+                    <ul className="list-disc pl-6 space-y-1">
+                      {comparisonResults.resumeB.strengths.map((strength: string, index: number) => (
+                        <li key={index} className="text-gray-700">{strength}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-xl font-sf-pro font-semibold mb-3 text-amber-600 flex items-center">
+                      <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center mr-2">
+                        <AlertTriangle className="w-4 h-4 text-amber-600" />
+                      </div>
+                      Areas to Improve
+                    </h3>
+                    <ul className="list-disc pl-6 space-y-1">
+                      {comparisonResults.resumeB.weaknesses.map((weakness: string, index: number) => (
+                        <li key={index} className="text-gray-700">{weakness}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Expert Recommendation */}
+            <Card className="glassmorphism my-8">
+              <CardHeader>
+                <CardTitle className="flex items-center text-modern-blue-600">
+                  <Award className="mr-2 h-6 w-6 text-modern-blue-600" />
+                  Expert Recommendation
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-700">{comparisonResults.reason}</p>
+              </CardContent>
+            </Card>
+            
+            {/* Improvement Suggestions */}
+            <Card className="mb-10">
+              <CardHeader className="bg-gradient-to-r from-modern-blue-600 to-soft-purple text-white">
+                <CardTitle>Improvement Suggestions for Both Resumes</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <ul className="space-y-2">
+                  {comparisonResults.improvementSuggestions.map((suggestion: string, index: number) => (
+                    <li key={index} className="flex items-start">
+                      <div className="w-6 h-6 rounded-full bg-modern-blue-100 flex items-center justify-center mr-2 mt-0.5">
+                        <span className="text-modern-blue-600 text-sm font-bold">{index + 1}</span>
+                      </div>
+                      <span className="text-gray-700">{suggestion}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+            
+            <div className="text-center">
+              <Button variant="gradient" size="xl">
+                Download Detailed Comparison Report
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </MainLayout>
+  );
+};
+
+export default ResumeCompare;

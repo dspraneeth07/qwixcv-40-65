@@ -10,6 +10,7 @@ import Contact from "./pages/Contact";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import ATSScanner from "./pages/ATSScanner";
+import ResumeCompare from "./pages/ResumeCompare";
 import { useEffect } from "react";
 
 function App() {
@@ -45,6 +46,7 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/ats-scanner" element={<ATSScanner />} />
+          <Route path="/resume-compare" element={<ResumeCompare />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
