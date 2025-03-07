@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -24,6 +23,9 @@ export default {
 				'montserrat': ['Montserrat', 'sans-serif'],
 				'inter': ['Inter', 'sans-serif'],
 				'sf-pro': ['"SF Pro Display"', 'sans-serif'],
+			},
+			scale: {
+				'102': '1.02',
 			},
 			colors: {
 				border: 'hsl(var(--border))',
@@ -59,7 +61,6 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Add new palette colors
 				'deep-blue': '#0A1929',
 				'soft-cyan': '#64DFDF',
 				'soft-purple': '#8B5CF6',
