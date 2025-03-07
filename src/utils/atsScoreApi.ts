@@ -1,6 +1,4 @@
 
-import { limitToFourLines } from "./geminiApi";
-
 // This file contains API functions for ATS scoring using Google Gemini API
 
 const API_KEY = "AIzaSyDRuULswOC1iFSJr83VqRaeP1g8p0Vn4Lc";
@@ -14,6 +12,15 @@ export interface ATSScoreData {
   suggestions: string[];
   jobMatch: string;
 }
+
+/**
+ * Ensure text is limited to exactly 4 lines or fewer (copied from geminiApi.ts)
+ */
+const limitToFourLines = (text: string): string => {
+  const lines = text.split('\n');
+  if (lines.length <= 4) return text;
+  return lines.slice(0, 4).join('\n');
+};
 
 /**
  * Generate ATS score for a resume

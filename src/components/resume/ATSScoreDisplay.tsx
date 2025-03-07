@@ -68,7 +68,9 @@ export const ATSScoreDisplay = ({ scoreData, isLoading }: ATSScoreDisplayProps) 
                 {scoreData.overallScore}/100
               </span>
             </div>
-            <Progress value={scoreData.overallScore} className="h-2" indicatorClassName={getProgressColor(scoreData.overallScore)} />
+            <Progress value={scoreData.overallScore} className="h-2" style={{ 
+              '--progress-background': getProgressColor(scoreData.overallScore) 
+            } as React.CSSProperties} />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -79,7 +81,9 @@ export const ATSScoreDisplay = ({ scoreData, isLoading }: ATSScoreDisplayProps) 
                   {scoreData.keywordScore}%
                 </span>
               </div>
-              <Progress value={scoreData.keywordScore} className="h-1.5" indicatorClassName={getProgressColor(scoreData.keywordScore)} />
+              <Progress value={scoreData.keywordScore} className="h-1.5" style={{ 
+                '--progress-background': getProgressColor(scoreData.keywordScore) 
+              } as React.CSSProperties} />
             </div>
 
             <div className="space-y-1">
@@ -89,7 +93,9 @@ export const ATSScoreDisplay = ({ scoreData, isLoading }: ATSScoreDisplayProps) 
                   {scoreData.formatScore}%
                 </span>
               </div>
-              <Progress value={scoreData.formatScore} className="h-1.5" indicatorClassName={getProgressColor(scoreData.formatScore)} />
+              <Progress value={scoreData.formatScore} className="h-1.5" style={{ 
+                '--progress-background': getProgressColor(scoreData.formatScore) 
+              } as React.CSSProperties} />
             </div>
 
             <div className="space-y-1">
@@ -99,7 +105,9 @@ export const ATSScoreDisplay = ({ scoreData, isLoading }: ATSScoreDisplayProps) 
                   {scoreData.contentScore}%
                 </span>
               </div>
-              <Progress value={scoreData.contentScore} className="h-1.5" indicatorClassName={getProgressColor(scoreData.contentScore)} />
+              <Progress value={scoreData.contentScore} className="h-1.5" style={{ 
+                '--progress-background': getProgressColor(scoreData.contentScore) 
+              } as React.CSSProperties} />
             </div>
           </div>
         </div>
