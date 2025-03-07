@@ -113,7 +113,6 @@ const ResumePreview = () => {
 
   useEffect(() => {
     if (resumeData && !pdfGeneratedRef.current) {
-      // Wait a bit longer for DOM to render completely
       const timer = setTimeout(() => {
         generateResumePdf();
       }, 2000);
@@ -133,35 +132,24 @@ const ResumePreview = () => {
       const fileName = `${fullName.replace(/\s+/g, '_')}.pdf`;
       setResumeFileName(fileName);
       
-      // Get the content directly without cloning
-      const contentElement = resumeRef.current;
-      
-      // This is critical: use the direct content approach that works in ShareToCompany
       const opt = {
-        margin: 10,
+        margin: 1,
         filename: fileName,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2, 
-          useCORS: true,
-          logging: true,
-          backgroundColor: "#ffffff"
-        },
-        jsPDF: { 
-          unit: 'mm', 
-          format: 'a4', 
-          orientation: 'portrait'
-        }
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
       
-      // Using direct PDF generation without cloning
-      const pdfBlobResult = await html2pdf().from(contentElement).set(opt).outputPdf('blob');
+      console.log("Generating PDF from resume element");
       
-      setPdfBlob(pdfBlobResult);
-      const url = URL.createObjectURL(pdfBlobResult);
-      setPdfUrl(url);
+      const pdfBlob = await html2pdf().from(resumeRef.current).set(opt).outputPdf('blob');
+      console.log("PDF blob generated:", pdfBlob);
       
-      console.log("Resume PDF generated successfully");
+      setPdfBlob(pdfBlob);
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      setPdfUrl(pdfUrl);
+      
+      console.log("Resume PDF generated successfully:", pdfUrl);
       pdfGeneratedRef.current = true;
       setIsGeneratingPdf(false);
       
@@ -182,7 +170,6 @@ const ResumePreview = () => {
 
   const handleDownload = async () => {
     try {
-      // If PDF is already generated, use that
       if (pdfUrl && pdfBlob) {
         const link = document.createElement('a');
         link.href = pdfUrl;
@@ -198,13 +185,11 @@ const ResumePreview = () => {
         return;
       }
       
-      // Otherwise generate a new PDF
       toast({
         title: "Generating PDF",
         description: "Your resume is being prepared for download"
       });
       
-      // Reset PDF generation flag to force regeneration
       pdfGeneratedRef.current = false;
       await generateResumePdf();
       
@@ -235,7 +220,6 @@ const ResumePreview = () => {
 
   const handleShareToMedia = async () => {
     try {
-      // If PDF is already generated, use that
       if (!pdfBlob) {
         toast({
           title: "Preparing Resume",
@@ -265,7 +249,6 @@ const ResumePreview = () => {
           });
         } catch (shareError) {
           console.error("Share API error:", shareError);
-          // Fallback to opening in new tab
           if (pdfUrl) {
             window.open(pdfUrl, '_blank');
             
@@ -276,7 +259,6 @@ const ResumePreview = () => {
           }
         }
       } else {
-        // Fallback for browsers without Share API
         if (pdfUrl) {
           window.open(pdfUrl, '_blank');
           
@@ -417,11 +399,10 @@ const ResumePreview = () => {
               ref={resumeRef} 
               className="p-6 bg-white shadow-lg print:shadow-none"
               style={{
-                color: "black", // Ensure text is visible in PDF
-                fontFamily: "Arial, sans-serif", // Use common PDF-compatible font
+                color: "black", 
+                fontFamily: "Arial, sans-serif",
               }}
             >
-              {/* Keep the same Card content structure */}
               <div className="border-b pb-3 mb-3">
                 <h2 className="text-xl font-bold text-center text-black">
                   {resumeData?.personalInfo?.firstName || ""} {resumeData?.personalInfo?.lastName || ""}
@@ -525,7 +506,7 @@ const ResumePreview = () => {
                           </a>
                         )}
                         {proj.description && (
-                          <div className="text-xs" 
+                          <div className="text-xs text-black" 
                                dangerouslySetInnerHTML={{ 
                                  __html: proj.description
                                            .split('\n')
@@ -552,14 +533,14 @@ const ResumePreview = () => {
                         <div className="flex justify-between items-start">
                           <div>
                             <p className="font-medium text-xs text-black">{exp.jobTitle}</p>
-                            <p className="text-xs text-muted-foreground">{exp.companyName}</p>
+                            <p className="text-xs text-black">{exp.companyName}</p>
                           </div>
-                          <p className="text-xs text-right">
+                          <p className="text-xs text-black text-right">
                             {exp.startDate} - {exp.endDate || "Present"}
                           </p>
                         </div>
                         {exp.description && (
-                          <div className="text-xs" 
+                          <div className="text-xs text-black" 
                                dangerouslySetInnerHTML={{ 
                                  __html: exp.description
                                            .split('\n')
@@ -584,20 +565,20 @@ const ResumePreview = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                     {resumeData.skills.professional && (
                       <div>
-                        <p className="font-medium text-xs">Professional</p>
-                        <p className="text-xs">{resumeData.skills.professional}</p>
+                        <p className="font-medium text-xs text-black">Professional</p>
+                        <p className="text-xs text-black">{resumeData.skills.professional}</p>
                       </div>
                     )}
                     {resumeData.skills.technical && (
                       <div>
-                        <p className="font-medium text-xs">Technical</p>
-                        <p className="text-xs">{resumeData.skills.technical}</p>
+                        <p className="font-medium text-xs text-black">Technical</p>
+                        <p className="text-xs text-black">{resumeData.skills.technical}</p>
                       </div>
                     )}
                     {resumeData.skills.soft && (
                       <div>
-                        <p className="font-medium text-xs">Soft Skills</p>
-                        <p className="text-xs">{resumeData.skills.soft}</p>
+                        <p className="font-medium text-xs text-black">Soft Skills</p>
+                        <p className="text-xs text-black">{resumeData.skills.soft}</p>
                       </div>
                     )}
                   </div>
