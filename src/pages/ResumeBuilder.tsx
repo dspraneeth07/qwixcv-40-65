@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -12,14 +11,11 @@ import { toast } from "@/components/ui/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FormValidator } from "@/components/ui/form-validator";
 import { 
-  Plus, Trash, ChevronLeft, ChevronRight, Sparkles, Eye, EyeOff,
-  User, GraduationCap, Briefcase, Code, List, FileText, LineChart
+  Plus, Trash, ChevronLeft, ChevronRight, Sparkles, 
+  User, GraduationCap, Briefcase, Code, List, FileText
 } from "lucide-react";
 import { ResumePreviewContent } from "./ResumePreview";
 import { getAISkillSuggestions, getAIObjectiveSuggestion, getAIProjectDescription, getAIExperienceDescription } from "@/utils/geminiApi";
-import { generateATSScore, ATSScoreData } from "@/utils/atsScoreApi";
-import { ATSScoreDisplay } from "@/components/resume/ATSScoreDisplay";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface PersonalInfo {
   firstName: string;
@@ -72,9 +68,7 @@ const STORAGE_KEY = "resumeData";
 const ResumeBuilder = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("personal");
-  const [displayMode, setDisplayMode] = useState<string[]>(["preview", "ats"]);
-  const [atsData, setAtsData] = useState<ATSScoreData | null>(null);
-  const [isAtsLoading, setIsAtsLoading] = useState(false);
+  const [showLivePreview, setShowLivePreview] = useState(true);
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
     firstName: "",
     lastName: "",
@@ -140,23 +134,6 @@ const ResumeBuilder = () => {
       }
     }
   }, []);
-
-  useEffect(() => {
-    updateATSScore();
-  }, [personalInfo, education, experience, skills, objective, projects]);
-
-  const updateATSScore = useCallback(async () => {
-    setIsAtsLoading(true);
-    try {
-      const resumeData = getResumeData();
-      const scoreData = await generateATSScore(resumeData);
-      setAtsData(scoreData);
-    } catch (error) {
-      console.error("Error updating ATS score:", error);
-    } finally {
-      setIsAtsLoading(false);
-    }
-  }, [personalInfo, education, experience, skills, objective, projects]);
 
   const handleNumberInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9]/g, '');
@@ -518,27 +495,17 @@ const ResumeBuilder = () => {
             <p className="text-gray-600">Create a professional resume in minutes</p>
           </div>
           
-          <div className="flex items-center gap-3">
-            <ToggleGroup type="multiple" value={displayMode} onValueChange={(value) => {
-              if (value.length === 0) {
-                return;
-              }
-              setDisplayMode(value);
-            }}>
-              <ToggleGroupItem value="preview" aria-label="Toggle Preview">
-                <Eye className="h-4 w-4 mr-2" />
-                Preview
-              </ToggleGroupItem>
-              <ToggleGroupItem value="ats" aria-label="Toggle ATS Score">
-                <LineChart className="h-4 w-4 mr-2" />
-                ATS Score
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </div>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowLivePreview(!showLivePreview)}
+            className="whitespace-nowrap"
+          >
+            {showLivePreview ? "Hide Preview" : "Show Preview"}
+          </Button>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className={`lg:col-span-${displayMode.length === 2 ? '6' : '8'}`}>
+          <div className={showLivePreview ? "lg:col-span-7" : "lg:col-span-12"}>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <div className="border-b">
                 <TabsList className="w-full justify-start mb-2 bg-transparent p-0 h-auto">
@@ -587,7 +554,6 @@ const ResumeBuilder = () => {
               </div>
 
               <div className="mt-6">
-                
                 <TabsContent value="personal" className="mt-0">
                   <Card className="border shadow-sm">
                     <CardContent className="p-6">
@@ -891,8 +857,6 @@ const ResumeBuilder = () => {
                                 </Button>
                               )}
                               <CardContent className="p-6">
-                                <div className="text-sm text-gray-500 mb-3">Experience #{index + 1}</div>
-                                
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                   <div className="space-y-2">
                                     <Label htmlFor={`jobTitle_${exp.id}`} className="text-base">
@@ -910,11 +874,11 @@ const ResumeBuilder = () => {
                                   
                                   <div className="space-y-2">
                                     <Label htmlFor={`companyName_${exp.id}`} className="text-base">
-                                      Company <span className="text-red-500">*</span>
+                                      Company Name <span className="text-red-500">*</span>
                                     </Label>
                                     <Input
                                       id={`companyName_${exp.id}`}
-                                      placeholder="Google"
+                                      placeholder="Tech Corp"
                                       value={exp.companyName}
                                       onChange={e => updateExperience(exp.id, "companyName", handleTextInput(e))}
                                       className={formErrors[`exp_${index}_companyName`] ? "border-red-500" : ""}
@@ -923,60 +887,72 @@ const ResumeBuilder = () => {
                                   </div>
                                 </div>
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                   <div className="space-y-2">
                                     <Label htmlFor={`startDate_${exp.id}`} className="text-base">
                                       Start Date <span className="text-red-500">*</span>
                                     </Label>
                                     <Input
                                       id={`startDate_${exp.id}`}
-                                      placeholder="Jan 2020"
+                                      placeholder="MMM YYYY (e.g., Jan 2024)"
                                       value={exp.startDate}
-                                      onChange={e => updateExperience(exp.id, "startDate", e.target.value)}
+                                      onChange={(e) => {
+                                        updateExperience(exp.id, "startDate", e.target.value);
+                                      }}
                                       className={formErrors[`exp_${index}_startDate`] ? "border-red-500" : ""}
                                     />
-                                    <div className="text-xs text-gray-500">Format: MMM YYYY (e.g., Jan 2020)</div>
-                                    <FormValidator value={exp.startDate} required errorMessage="Start date is required" showMessage={!!formErrors[`exp_${index}_startDate`]} />
+                                    <FormValidator 
+                                      value={exp.startDate} 
+                                      required 
+                                      errorMessage="Start date is required (MMM YYYY)" 
+                                      showMessage={!!formErrors[`exp_${index}_startDate`]} 
+                                    />
                                   </div>
                                   
                                   <div className="space-y-2">
                                     <Label htmlFor={`endDate_${exp.id}`} className="text-base">
-                                      End Date <span className="text-gray-500">(or "Present")</span>
+                                      End Date (Optional)
                                     </Label>
                                     <Input
                                       id={`endDate_${exp.id}`}
-                                      placeholder="Present"
+                                      placeholder="MMM YYYY (e.g., Dec 2024)"
                                       value={exp.endDate || ""}
-                                      onChange={e => updateExperience(exp.id, "endDate", e.target.value)}
+                                      onChange={(e) => {
+                                        updateExperience(exp.id, "endDate", e.target.value);
+                                      }}
                                     />
-                                    <div className="text-xs text-gray-500">Format: MMM YYYY or "Present"</div>
                                   </div>
                                 </div>
                                 
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-center">
-                                    <Label htmlFor={`description_${exp.id}`} className="text-base">
-                                      Description <span className="text-red-500">*</span>
-                                    </Label>
-                                    <Button 
-                                      type="button" 
-                                      variant="ghost" 
-                                      size="sm" 
-                                      className="text-primary flex items-center gap-1 text-sm"
+                                <div className="space-y-2 mt-4">
+                                  <Label htmlFor={`description_${exp.id}`} className="text-base">
+                                    Description <span className="text-red-500">*</span>
+                                  </Label>
+                                  <div className="relative">
+                                    <Textarea
+                                      id={`description_${exp.id}`}
+                                      placeholder="Describe your responsibilities and achievements"
+                                      value={exp.description}
+                                      onChange={(e) => updateExperience(exp.id, "description", e.target.value)}
+                                      className={formErrors[`exp_${index}_description`] ? "border-red-500" : ""}
+                                    />
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      className="absolute right-2 top-2"
                                       onClick={() => generateExperienceDescription(exp.id)}
                                     >
-                                      <Sparkles className="h-3 w-3" /> AI Generate
+                                      <Sparkles className="h-4 w-4 mr-1" />
+                                      AI Suggest
                                     </Button>
                                   </div>
-                                  
-                                  <Textarea
-                                    id={`description_${exp.id}`}
-                                    placeholder="Describe your responsibilities and achievements..."
-                                    value={exp.description}
-                                    onChange={e => updateExperience(exp.id, "description", e.target.value)}
-                                    className={`min-h-[150px] ${formErrors[`exp_${index}_description`] ? "border-red-500" : ""}`}
+                                  <FormValidator 
+                                    value={exp.description} 
+                                    required 
+                                    errorMessage="Description is required" 
+                                    showMessage={!!formErrors[`exp_${index}_description`]} 
                                   />
-                                  <FormValidator value={exp.description} required errorMessage="Description is required" showMessage={!!formErrors[`exp_${index}_description`]} />
                                 </div>
                               </CardContent>
                             </Card>
@@ -995,7 +971,7 @@ const ResumeBuilder = () => {
                     </CardContent>
                   </Card>
                 </TabsContent>
-                
+
                 <TabsContent value="projects" className="mt-0">
                   <Card className="border shadow-sm">
                     <CardContent className="p-6">
@@ -1003,7 +979,7 @@ const ResumeBuilder = () => {
                         <div className="flex justify-between items-center">
                           <div>
                             <h2 className="text-2xl font-bold">Projects</h2>
-                            <p className="text-gray-500">Add your projects to showcase your skills</p>
+                            <p className="text-gray-500">Add your projects</p>
                           </div>
                           <Button onClick={addProject} variant="outline" className="gap-1">
                             <Plus className="h-4 w-4" /> Add Project
@@ -1026,71 +1002,71 @@ const ResumeBuilder = () => {
                               <CardContent className="p-6">
                                 <div className="text-sm text-gray-500 mb-3">Project #{index + 1}</div>
                                 
-                                <div className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                   <div className="space-y-2">
                                     <Label htmlFor={`title_${project.id}`} className="text-base">
-                                      Project Title <span className="text-red-500">*</span>
+                                      Title <span className="text-red-500">*</span>
                                     </Label>
                                     <Input
                                       id={`title_${project.id}`}
-                                      placeholder="E-commerce Website"
+                                      placeholder="Project Name"
                                       value={project.title}
-                                      onChange={e => updateProject(project.id, "title", e.target.value)}
-                                      className={formErrors[`project_${index}_title`] ? "border-red-500" : ""}
+                                      onChange={e => updateProject(project.id, "title", handleTextInput(e))}
+                                      className={formErrors[`proj_${index}_title`] ? "border-red-500" : ""}
                                     />
-                                    <FormValidator value={project.title} required errorMessage="Project title is required" showMessage={!!formErrors[`project_${index}_title`]} />
-                                  </div>
-                                  
-                                  <div className="space-y-2">
-                                    <Label htmlFor={`link_${project.id}`} className="text-base">
-                                      Project Link <span className="text-gray-500">(Optional)</span>
-                                    </Label>
-                                    <Input
-                                      id={`link_${project.id}`}
-                                      type="url"
-                                      placeholder="https://github.com/username/project"
-                                      value={project.link || ""}
-                                      onChange={e => updateProject(project.id, "link", e.target.value)}
-                                    />
+                                    <FormValidator value={project.title} required errorMessage="Project title is required" showMessage={!!formErrors[`proj_${index}_title`]} />
                                   </div>
                                   
                                   <div className="space-y-2">
                                     <Label htmlFor={`technologies_${project.id}`} className="text-base">
-                                      Technologies Used <span className="text-gray-500">(Optional)</span>
+                                      Technologies (Optional)
                                     </Label>
                                     <Input
                                       id={`technologies_${project.id}`}
-                                      placeholder="React, Node.js, MongoDB"
+                                      placeholder="React, Node.js"
                                       value={project.technologies || ""}
                                       onChange={e => updateProject(project.id, "technologies", e.target.value)}
                                     />
                                   </div>
-                                  
-                                  <div className="space-y-2">
-                                    <div className="flex justify-between items-center">
-                                      <Label htmlFor={`description_${project.id}`} className="text-base">
-                                        Description <span className="text-red-500">*</span>
-                                      </Label>
-                                      <Button 
-                                        type="button" 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        className="text-primary flex items-center gap-1 text-sm"
-                                        onClick={() => generateProjectDescription(project.id)}
-                                      >
-                                        <Sparkles className="h-3 w-3" /> AI Generate
-                                      </Button>
-                                    </div>
-                                    
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <Label htmlFor={`description_${project.id}`} className="text-base">
+                                    Description <span className="text-red-500">*</span>
+                                  </Label>
+                                  <div className="relative">
                                     <Textarea
                                       id={`description_${project.id}`}
-                                      placeholder="Describe your project, its purpose, and your role..."
+                                      placeholder="Describe your project"
                                       value={project.description}
                                       onChange={e => updateProject(project.id, "description", e.target.value)}
-                                      className={`min-h-[150px] ${formErrors[`project_${index}_description`] ? "border-red-500" : ""}`}
+                                      className={formErrors[`proj_${index}_description`] ? "border-red-500" : ""}
                                     />
-                                    <FormValidator value={project.description} required errorMessage="Description is required" showMessage={!!formErrors[`project_${index}_description`]} />
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      className="absolute right-2 top-2"
+                                      onClick={() => generateProjectDescription(project.id)}
+                                    >
+                                      <Sparkles className="h-4 w-4 mr-1" />
+                                      AI Suggest
+                                    </Button>
                                   </div>
+                                  <FormValidator value={project.description} required errorMessage="Description is required" showMessage={!!formErrors[`proj_${index}_description`]} />
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <Label htmlFor={`link_${project.id}`} className="text-base">
+                                    Project Link (Optional)
+                                  </Label>
+                                  <Input
+                                    id={`link_${project.id}`}
+                                    type="url"
+                                    placeholder="https://github.com/username/project"
+                                    value={project.link || ""}
+                                    onChange={e => updateProject(project.id, "link", e.target.value)}
+                                  />
                                 </div>
                               </CardContent>
                             </Card>
@@ -1109,7 +1085,7 @@ const ResumeBuilder = () => {
                     </CardContent>
                   </Card>
                 </TabsContent>
-                
+
                 <TabsContent value="skills" className="mt-0">
                   <Card className="border shadow-sm">
                     <CardContent className="p-6">
@@ -1117,61 +1093,62 @@ const ResumeBuilder = () => {
                         <div className="flex justify-between items-center">
                           <div>
                             <h2 className="text-2xl font-bold">Skills</h2>
-                            <p className="text-gray-500">Add your professional and technical skills</p>
+                            <p className="text-gray-500">Add your skills</p>
                           </div>
                           <Button 
-                            onClick={generateAISkillSuggestions} 
-                            variant="outline" 
+                            onClick={generateAISkillSuggestions}
+                            variant="outline"
                             className="gap-1"
                           >
-                            <Sparkles className="h-4 w-4" /> AI Generate
+                            <Sparkles className="h-4 w-4" /> AI Generate Skills
                           </Button>
                         </div>
 
                         <div className="space-y-6">
-                          <div className="space-y-2">
-                            <Label htmlFor="professional" className="text-base">
-                              Professional Skills <span className="text-red-500">*</span>
-                            </Label>
-                            <Textarea
-                              id="professional"
-                              placeholder="Leadership, Communication, Problem Solving..."
-                              value={skills.professional}
-                              onChange={e => setSkills({...skills, professional: e.target.value})}
-                              className={formErrors.professional ? "border-red-500" : ""}
-                            />
-                            <div className="text-xs text-gray-500">Separate skills with commas</div>
-                            <FormValidator value={skills.professional} required errorMessage="Professional skills are required" showMessage={!!formErrors.professional} />
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                              <Label htmlFor="professional" className="text-base">
+                                Professional Skills <span className="text-red-500">*</span>
+                              </Label>
+                              <Input
+                                id="professional"
+                                placeholder="Project Management, Business Analysis"
+                                value={skills.professional}
+                                onChange={e => setSkills({...skills, professional: e.target.value})}
+                                className={formErrors.professional ? "border-red-500" : ""}
+                              />
+                              <FormValidator value={skills.professional} required errorMessage="Professional skills are required" showMessage={!!formErrors.professional} />
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label htmlFor="technical" className="text-base">
+                                Technical Skills <span className="text-red-500">*</span>
+                              </Label>
+                              <Input
+                                id="technical"
+                                placeholder="HTML, CSS, JavaScript"
+                                value={skills.technical}
+                                onChange={e => setSkills({...skills, technical: e.target.value})}
+                                className={formErrors.technical ? "border-red-500" : ""}
+                              />
+                              <FormValidator value={skills.technical} required errorMessage="Technical skills are required" showMessage={!!formErrors.technical} />
+                            </div>
                           </div>
-                          
-                          <div className="space-y-2">
-                            <Label htmlFor="technical" className="text-base">
-                              Technical Skills <span className="text-red-500">*</span>
-                            </Label>
-                            <Textarea
-                              id="technical"
-                              placeholder="JavaScript, React, Node.js, Python..."
-                              value={skills.technical}
-                              onChange={e => setSkills({...skills, technical: e.target.value})}
-                              className={formErrors.technical ? "border-red-500" : ""}
-                            />
-                            <div className="text-xs text-gray-500">Separate skills with commas</div>
-                            <FormValidator value={skills.technical} required errorMessage="Technical skills are required" showMessage={!!formErrors.technical} />
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label htmlFor="soft" className="text-base">
-                              Soft Skills <span className="text-red-500">*</span>
-                            </Label>
-                            <Textarea
-                              id="soft"
-                              placeholder="Teamwork, Creativity, Time Management..."
-                              value={skills.soft}
-                              onChange={e => setSkills({...skills, soft: e.target.value})}
-                              className={formErrors.soft ? "border-red-500" : ""}
-                            />
-                            <div className="text-xs text-gray-500">Separate skills with commas</div>
-                            <FormValidator value={skills.soft} required errorMessage="Soft skills are required" showMessage={!!formErrors.soft} />
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                              <Label htmlFor="soft" className="text-base">
+                                Soft Skills <span className="text-red-500">*</span>
+                              </Label>
+                              <Input
+                                id="soft"
+                                placeholder="Communication, Teamwork"
+                                value={skills.soft}
+                                onChange={e => setSkills({...skills, soft: e.target.value})}
+                                className={formErrors.soft ? "border-red-500" : ""}
+                              />
+                              <FormValidator value={skills.soft} required errorMessage="Soft skills are required" showMessage={!!formErrors.soft} />
+                            </div>
                           </div>
                         </div>
 
@@ -1187,44 +1164,48 @@ const ResumeBuilder = () => {
                     </CardContent>
                   </Card>
                 </TabsContent>
-                
+
                 <TabsContent value="objectives" className="mt-0">
                   <Card className="border shadow-sm">
                     <CardContent className="p-6">
                       <div className="space-y-6">
                         <div className="flex justify-between items-center">
                           <div>
-                            <h2 className="text-2xl font-bold">Career Objective</h2>
-                            <p className="text-gray-500">Add a compelling career objective or summary</p>
+                            <h2 className="text-2xl font-bold">Career Objectives</h2>
+                            <p className="text-gray-500">Add your career objective</p>
                           </div>
                           <Button 
-                            onClick={generateAIObjective} 
-                            variant="outline" 
+                            onClick={generateAIObjective}
+                            variant="outline"
                             className="gap-1"
                           >
-                            <Sparkles className="h-4 w-4" /> AI Generate
+                            <Sparkles className="h-4 w-4" /> AI Generate Objective
                           </Button>
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="objective" className="text-base">
-                            Career Objective <span className="text-red-500">*</span>
-                          </Label>
-                          <Textarea
-                            id="objective"
-                            placeholder="A passionate software engineer with 5+ years of experience seeking..."
-                            value={objective}
-                            onChange={e => setObjective(e.target.value)}
-                            className={`min-h-[150px] ${formErrors.objective ? "border-red-500" : ""}`}
-                          />
-                          <FormValidator value={objective} required errorMessage="Career objective is required" showMessage={!!formErrors.objective} />
+                        <div className="space-y-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="objective" className="text-base">
+                              Career Objective <span className="text-red-500">*</span>
+                            </Label>
+                            <Textarea
+                              id="objective"
+                              placeholder="Seeking a challenging role in the tech industry..."
+                              value={objective}
+                              onChange={e => setObjective(e.target.value)}
+                              className={formErrors.objective ? "border-red-500" : ""}
+                              rows={4}
+                            />
+                            <FormValidator value={objective} required errorMessage="Career objective is required" showMessage={!!formErrors.objective} />
+                            <p className="text-xs text-gray-500 mt-1">Maximum 4 lines recommended for optimal resume appearance</p>
+                          </div>
                         </div>
 
                         <div className="flex justify-between">
                           <Button onClick={() => setActiveTab("skills")} variant="outline" size="lg">
                             <ChevronLeft className="mr-2 h-4 w-4" /> Previous
                           </Button>
-                          <Button onClick={handleGenerate} className="bg-primary" size="lg">
+                          <Button onClick={handleGenerate} className="bg-gray-900" size="lg">
                             Generate Resume
                           </Button>
                         </div>
@@ -1235,31 +1216,12 @@ const ResumeBuilder = () => {
               </div>
             </Tabs>
           </div>
-          
-          <div className={`lg:col-span-${displayMode.length === 2 ? '6' : '4'}`}>
-            <div className="sticky top-4 space-y-6">
-              {displayMode.includes("preview") && (
-                <Card className="border shadow-sm">
-                  <CardContent className="p-4">
-                    <div className="aspect-[3/4] overflow-hidden border rounded-md bg-white">
-                      <ResumePreviewContent 
-                        resumeData={getResumeData()} 
-                        selectedTemplate={selectedTemplate}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              
-              {displayMode.includes("ats") && (
-                <Card className="border shadow-sm">
-                  <CardContent className="p-4">
-                    <ATSScoreDisplay data={atsData} isLoading={isAtsLoading} />
-                  </CardContent>
-                </Card>
-              )}
+
+          {showLivePreview && (
+            <div className="lg:col-span-5">
+              <ResumePreviewContent data={getResumeData()} />
             </div>
-          </div>
+          )}
         </div>
       </div>
     </MainLayout>
