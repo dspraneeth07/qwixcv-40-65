@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -74,6 +75,7 @@ const ResumePreview = () => {
   const [resumeFileName, setResumeFileName] = useState<string>("");
   const resumeRef = useRef<HTMLDivElement>(null);
   const pdfGeneratedRef = useRef<boolean>(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   useEffect(() => {
     try {
@@ -112,35 +114,38 @@ const ResumePreview = () => {
 
   useEffect(() => {
     if (resumeData && !pdfGeneratedRef.current) {
-      // Use a timeout to ensure the DOM is rendered before generating PDF
+      // Wait for DOM to render
       const timer = setTimeout(() => {
         generateResumePdf();
-      }, 1000);
+      }, 1500);
       
       return () => clearTimeout(timer);
     }
   }, [resumeData]);
 
   const generateResumePdf = async () => {
-    if (!resumeData || !resumeRef.current) return;
+    if (!resumeData || !resumeRef.current || isGeneratingPdf) return;
     
     try {
+      setIsGeneratingPdf(true);
       console.log("Starting PDF generation process");
       
       const fullName = `${resumeData.personalInfo?.firstName || 'resume'}_${resumeData.personalInfo?.lastName || ''}`;
       const fileName = `${fullName.replace(/\s+/g, '_')}.pdf`;
       setResumeFileName(fileName);
       
-      // Clone the resume element for PDF generation
+      // Create a clone of the resume element to maintain styling
       const clonedElement = resumeRef.current.cloneNode(true) as HTMLElement;
       
+      // Apply styles for PDF rendering
       clonedElement.style.width = "700px";
-      clonedElement.style.maxWidth = "700px";
-      clonedElement.style.fontSize = "9pt";
       clonedElement.style.padding = "20px";
       clonedElement.style.backgroundColor = "white";
+      clonedElement.style.color = "black";
+      clonedElement.style.fontFamily = "Arial, sans-serif";
+      clonedElement.style.fontSize = "12pt";
       
-      // Position off-screen for rendering
+      // Position offscreen for rendering
       clonedElement.style.position = "absolute";
       clonedElement.style.left = "-9999px";
       document.body.appendChild(clonedElement);
@@ -160,24 +165,30 @@ const ResumePreview = () => {
           format: 'a4', 
           orientation: 'portrait',
           compress: true
-        },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        }
       };
       
       const pdfBlobResult = await html2pdf().from(clonedElement).set(opt).outputPdf('blob');
       
-      // Remove the cloned element after PDF generation
+      // Clean up the DOM
       document.body.removeChild(clonedElement);
       
       // Store the PDF blob and URL
       setPdfBlob(pdfBlobResult);
-      const pdfUrl = URL.createObjectURL(pdfBlobResult);
-      setPdfUrl(pdfUrl);
+      const url = URL.createObjectURL(pdfBlobResult);
+      setPdfUrl(url);
       
       console.log("Resume PDF generated successfully");
       pdfGeneratedRef.current = true;
+      setIsGeneratingPdf(false);
+      
+      toast({
+        title: "PDF Ready",
+        description: "Your resume PDF has been generated successfully"
+      });
     } catch (error) {
       console.error("Error generating PDF:", error);
+      setIsGeneratingPdf(false);
       toast({
         title: "PDF Generation Error",
         description: "Could not generate PDF. Please try again.",
@@ -367,9 +378,12 @@ const ResumePreview = () => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Edit Resume
             </Button>
-            <Button onClick={handleDownload}>
+            <Button 
+              onClick={handleDownload}
+              disabled={isGeneratingPdf}
+            >
               <Download className="h-4 w-4 mr-2" />
-              Download PDF
+              {isGeneratingPdf ? "Preparing..." : "Download PDF"}
             </Button>
             <Popover>
               <PopoverTrigger asChild>
@@ -384,6 +398,7 @@ const ResumePreview = () => {
                     variant="ghost" 
                     className="justify-start rounded-none py-3 px-4"
                     onClick={handleShareToMedia}
+                    disabled={isGeneratingPdf}
                   >
                     <Share2 className="h-4 w-4 mr-2" />
                     Share to Media
