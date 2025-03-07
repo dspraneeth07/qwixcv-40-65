@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 
@@ -64,7 +63,7 @@ export const ResumeComparisonScanner = () => {
     addTextLines(resumeLeft, -1.5);
     addTextLines(resumeRight, 1.5);
     
-    // Add connecting lines between the resumes
+    // Create connecting lines between the resumes
     const connectingLines = new THREE.Group();
     for (let i = 0; i < 5; i++) {
       const lineGeometry = new THREE.BoxGeometry(3, 0.02, 0.01);
@@ -133,9 +132,11 @@ export const ResumeComparisonScanner = () => {
       }
       
       // Create pulse effect on connecting lines
-      connectingLines.children.forEach((line, index) => {
-        (line.material as THREE.MeshBasicMaterial).opacity = 
-          0.3 + 0.3 * Math.sin(Date.now() * 0.003 + index * 0.5);
+      connectingLines.children.forEach((child) => {
+        if (child instanceof THREE.Mesh) {
+          const material = child.material as THREE.MeshBasicMaterial;
+          material.opacity = 0.3 + 0.3 * Math.sin(Date.now() * 0.003 + child.position.y * 0.5);
+        }
       });
       
       renderer.render(scene, camera);
