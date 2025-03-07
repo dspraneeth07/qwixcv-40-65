@@ -116,7 +116,9 @@ const ShareToCompany = () => {
     if (!resumeData || !resumeRef.current || pdfGeneratedRef.current) return;
     
     try {
-      const fileName = `${resumeData.personalInfo?.firstName || 'resume'}_${resumeData.personalInfo?.lastName || ''}.pdf`;
+      console.log("Starting PDF generation process");
+      const fullName = `${resumeData.personalInfo?.firstName || 'resume'}_${resumeData.personalInfo?.lastName || ''}`;
+      const fileName = `${fullName.replace(/\s+/g, '_')}.pdf`;
       setResumeFileName(fileName);
       
       const opt = {
@@ -131,6 +133,8 @@ const ShareToCompany = () => {
       
       // Generate PDF as blob
       const pdfBlob = await html2pdf().from(resumeRef.current).set(opt).outputPdf('blob');
+      console.log("PDF blob generated:", pdfBlob);
+      
       setResumePdfBlob(pdfBlob);
       const pdfUrl = URL.createObjectURL(pdfBlob);
       setResumePdfUrl(pdfUrl);
@@ -247,6 +251,7 @@ const ShareToCompany = () => {
     setIsSending(true);
     
     try {
+      console.log("Sending email with PDF attachment...");
       // Send email with Mailchimp
       const success = await sendEmailWithMailchimp(
         fromEmail,

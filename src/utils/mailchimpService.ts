@@ -24,10 +24,16 @@ export const sendEmailWithMailchimp = async (
     let attachments = [];
     if (pdfBlob && fileName) {
       const base64data = await blobToBase64(pdfBlob);
+      
+      // Extract only the base64 data part (remove the data:application/pdf;base64, prefix)
+      const base64Content = base64data.split(',')[1]; 
+      
+      console.log("PDF converted to base64, first 50 chars:", base64Content?.substring(0, 50));
+      
       attachments.push({
         type: "application/pdf",
         name: fileName,
-        content: base64data.split(',')[1] // Remove the data:application/pdf;base64, part
+        content: base64Content
       });
     }
 
@@ -43,6 +49,14 @@ export const sendEmailWithMailchimp = async (
       }
     };
 
+    console.log("Sending email with data:", JSON.stringify({
+      ...emailData,
+      message: {
+        ...emailData.message,
+        attachments: attachments.length > 0 ? [`${attachments.length} attachments included`] : []
+      }
+    }));
+
     // Make direct API call to Mandrill (Mailchimp's transactional email service)
     const response = await fetch(`${MAILCHIMP_MANDRILL_URL}messages/send.json`, {
       method: "POST",
@@ -52,6 +66,9 @@ export const sendEmailWithMailchimp = async (
       body: JSON.stringify(emailData)
     });
 
+    const responseData = await response.json();
+    console.log("Mailchimp API Response:", responseData);
+
     // Check if call was successful
     if (response.ok) {
       toast({
@@ -60,15 +77,12 @@ export const sendEmailWithMailchimp = async (
       });
       return true;
     } else {
-      const errorData = await response.json();
-      console.error("Mailchimp API Error:", errorData);
+      console.error("Mailchimp API Error:", responseData);
       
-      // Fallback to mailto link if Mailchimp API fails
-      fallbackToMailtoLink(fromEmail, toEmail, subject, body);
-      
+      // Show error message
       toast({
-        title: "Direct Email Failed",
-        description: "We've opened your mail client as a fallback option.",
+        title: "Email Sending Failed",
+        description: responseData.message || "Could not send email directly. Please try again.",
         variant: "destructive"
       });
       return false;
@@ -76,12 +90,9 @@ export const sendEmailWithMailchimp = async (
   } catch (error) {
     console.error("Error sending email:", error);
     
-    // Fallback to mailto link if there's any error
-    fallbackToMailtoLink(fromEmail, toEmail, subject, body);
-    
     toast({
       title: "Error Sending Email",
-      description: "There was a problem sending your email directly. We've opened your mail client as a fallback.",
+      description: "There was a problem sending your email directly.",
       variant: "destructive"
     });
     return false;
@@ -98,14 +109,4 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
-};
-
-/**
- * Fallback function to open mail client
- */
-const fallbackToMailtoLink = (fromEmail: string, toEmail: string, subject: string, body: string) => {
-  const encodedSubject = encodeURIComponent(subject);
-  const encodedBody = encodeURIComponent(body);
-  const mailtoLink = `mailto:${toEmail}?subject=${encodedSubject}&body=${encodedBody}&from=${fromEmail}`;
-  window.open(mailtoLink, "_blank");
 };
