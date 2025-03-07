@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
@@ -117,23 +117,20 @@ const ResumePreview = () => {
       return;
     }
 
-    // Create a clone of the element for PDF generation
     const clonedElement = resumeElement.cloneNode(true) as HTMLElement;
     
-    // Apply additional styles to ensure the content fits on one page
-    clonedElement.style.width = "100%";
+    clonedElement.style.width = "700px";
     clonedElement.style.maxWidth = "700px";
     clonedElement.style.fontSize = "9pt";
     clonedElement.style.padding = "20px";
     clonedElement.style.backgroundColor = "white";
     
-    // Temporarily append to the document but make it invisible
     clonedElement.style.position = "absolute";
     clonedElement.style.left = "-9999px";
     document.body.appendChild(clonedElement);
 
     const opt = {
-      margin: [10, 10, 10, 10], // Slightly increased margins for better readability
+      margin: [10, 10, 10, 10],
       filename: `${resumeData?.personalInfo?.firstName || ''}_${resumeData?.personalInfo?.lastName || ''}_Resume.pdf`,
       image: { type: 'jpeg', quality: 1.0 },
       html2canvas: { 
@@ -145,9 +142,8 @@ const ResumePreview = () => {
       jsPDF: { 
         unit: 'mm', 
         format: 'a4', 
-        orientation: 'portrait', 
-        compress: true,
-        background: '#ffffff'
+        orientation: 'portrait',
+        compress: true
       },
       pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
@@ -157,27 +153,26 @@ const ResumePreview = () => {
       description: "Your resume is being prepared for download"
     });
 
-    setTimeout(() => {
-      html2pdf().from(clonedElement).set(opt).save()
-        .then(() => {
-          // Remove the cloned element
-          document.body.removeChild(clonedElement);
-          toast({
-            title: "Download Complete",
-            description: "Your resume has been downloaded successfully"
-          });
-        })
-        .catch(err => {
-          console.error("PDF generation error:", err);
-          // Remove the cloned element
-          document.body.removeChild(clonedElement);
-          toast({
-            title: "Error",
-            description: "Failed to generate PDF. Please try again.",
-            variant: "destructive"
-          });
+    html2pdf()
+      .from(clonedElement)
+      .set(opt)
+      .save()
+      .then(() => {
+        document.body.removeChild(clonedElement);
+        toast({
+          title: "Download Complete",
+          description: "Your resume has been downloaded successfully"
         });
-    }, 500); // Add small delay to ensure proper rendering
+      })
+      .catch(err => {
+        console.error("PDF generation error:", err);
+        document.body.removeChild(clonedElement);
+        toast({
+          title: "Error",
+          description: "Failed to generate PDF. Please try again.",
+          variant: "destructive"
+        });
+      });
   };
 
   const handleShareToMedia = async () => {
@@ -197,39 +192,61 @@ const ResumePreview = () => {
         description: "Getting your resume ready for sharing..."
       });
 
+      const clonedElement = resumeElement.cloneNode(true) as HTMLElement;
+      
+      clonedElement.style.width = "700px";
+      clonedElement.style.maxWidth = "700px";
+      clonedElement.style.padding = "20px";
+      clonedElement.style.backgroundColor = "white";
+      
+      clonedElement.style.position = "absolute";
+      clonedElement.style.left = "-9999px";
+      document.body.appendChild(clonedElement);
+
       const opt = {
         margin: 1,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
+        html2canvas: { scale: 2, backgroundColor: "#ffffff" },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
-      const pdfBlob = await html2pdf().from(resumeElement).set(opt).outputPdf('blob');
+      const pdfBlob = await html2pdf().from(clonedElement).set(opt).outputPdf('blob');
+      
+      document.body.removeChild(clonedElement);
       
       if (navigator.share) {
         const file = new File([pdfBlob], `${resumeData?.personalInfo?.firstName || ''}_${resumeData?.personalInfo?.lastName || ''}_Resume.pdf`, { 
           type: 'application/pdf' 
         });
         
-        await navigator.share({
-          title: `${resumeData?.personalInfo?.firstName || ''} ${resumeData?.personalInfo?.lastName || ''} Resume`,
-          files: [file]
-        });
-        
-        toast({
-          title: "Shared Successfully",
-          description: "Your resume has been shared"
-        });
+        try {
+          await navigator.share({
+            title: `${resumeData?.personalInfo?.firstName || ''} ${resumeData?.personalInfo?.lastName || ''} Resume`,
+            files: [file]
+          });
+          
+          toast({
+            title: "Shared Successfully",
+            description: "Your resume has been shared"
+          });
+        } catch (shareError) {
+          console.error("Share API error:", shareError);
+          const url = URL.createObjectURL(pdfBlob);
+          window.open(url, '_blank');
+          
+          toast({
+            title: "Resume Ready",
+            description: "Your resume has opened in a new tab"
+          });
+        }
       } else {
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-        setPdfUrl(pdfUrl);
+        const url = URL.createObjectURL(pdfBlob);
+        window.open(url, '_blank');
         
         toast({
           title: "Resume Ready",
-          description: "Your resume is ready to download and share manually"
+          description: "Your resume has opened in a new tab"
         });
-        
-        window.open(pdfUrl, '_blank');
       }
     } catch (error) {
       console.error("Share error:", error);

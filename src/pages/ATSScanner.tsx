@@ -1,19 +1,24 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trash2, Upload, FileText, CheckCircle, AlertCircle, Zap, Download, Target, Info } from "lucide-react";
+import { Trash2, Upload, FileText, CheckCircle, AlertCircle, Zap, Download, Target, Info, Briefcase } from "lucide-react";
 import { ATSScoreDisplay } from "@/components/resume/ATSScoreDisplay";
 import { generateATSScore, ATSScoreData } from "@/utils/atsScoreApi";
 import { toast } from "@/components/ui/use-toast";
 import * as THREE from "three";
+import { getJobRecommendations } from "@/utils/jobBoardApi";
+import { JobListing } from "@/types/job";
 
 const ATSScanner = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [atsScore, setAtsScore] = useState<ATSScoreData | null>(null);
+  const [jobRecommendations, setJobRecommendations] = useState<JobListing[]>([]);
+  const [isLoadingJobs, setIsLoadingJobs] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scannerRef = useRef<HTMLDivElement>(null);
   
@@ -189,6 +194,7 @@ const ATSScanner = () => {
     }
     
     setIsAnalyzing(true);
+    setJobRecommendations([]);
     
     try {
       setTimeout(async () => {
@@ -230,6 +236,28 @@ const ATSScanner = () => {
           title: "Analysis Complete",
           description: "Your resume has been analyzed successfully."
         });
+        
+        // Fetch job recommendations based on skills and job title
+        setIsLoadingJobs(true);
+        
+        try {
+          // Extract skills from the resume
+          const skills = Object.values(mockResumeData.skills)
+            .filter(Boolean)
+            .join(", ")
+            .split(/[,;]\s*/)
+            .filter(Boolean);
+          
+          const jobTitle = mockResumeData.personalInfo.jobTitle;
+          const location = mockResumeData.personalInfo.location;
+          
+          const jobs = await getJobRecommendations(skills, jobTitle, location);
+          setJobRecommendations(jobs.slice(0, 6)); // Display top 6 recommendations
+        } catch (jobError) {
+          console.error("Error fetching job recommendations:", jobError);
+        } finally {
+          setIsLoadingJobs(false);
+        }
       }, 3000);
     } catch (error) {
       console.error("Error analyzing resume:", error);
@@ -436,6 +464,60 @@ const ATSScanner = () => {
               )}
             </div>
           </div>
+          
+          {/* Job Recommendations Section */}
+          {(atsScore && jobRecommendations.length > 0) && (
+            <div className="mt-10">
+              <Card className="border shadow-sm bg-black/20 backdrop-blur-lg border-white/10">
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center text-white">
+                    <Briefcase className="mr-2 h-5 w-5 text-green-400" />
+                    Recommended Jobs Based on Your Resume
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingJobs ? (
+                    <div className="flex justify-center py-8">
+                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {jobRecommendations.map(job => (
+                        <div 
+                          key={job.id} 
+                          className="bg-white/5 rounded-lg p-4 border border-white/10 hover:bg-white/10 transition-colors"
+                        >
+                          <h3 className="font-semibold text-white mb-1 line-clamp-1">{job.title}</h3>
+                          <p className="text-sm text-blue-300 mb-2">{job.company}</p>
+                          <p className="text-xs text-gray-300 mb-3">{job.location}</p>
+                          <div className="flex flex-wrap gap-1 mb-3">
+                            {job.tags.slice(0, 3).map((tag, index) => (
+                              <span 
+                                key={index} 
+                                className="text-xs bg-indigo-900/50 text-indigo-300 px-2 py-0.5 rounded"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                          <p className="text-xs text-gray-400 line-clamp-2 mb-3">{job.description}</p>
+                          <a 
+                            href={job.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-xs text-white bg-indigo-600 hover:bg-indigo-700 rounded px-3 py-1.5 inline-block"
+                          >
+                            View Job
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          
           <div className="mt-16 text-center">
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-6">
               Ready to build a professional resume from scratch?

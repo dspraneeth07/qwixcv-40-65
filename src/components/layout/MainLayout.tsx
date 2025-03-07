@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileText, Menu, Briefcase, Zap, FileCheck, MessageSquare, User } from "lucide-react";
+import { FileText, Menu, Briefcase, Zap, FileCheck, MessageSquare, User, Instagram, Twitter, Linkedin, Globe } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 
@@ -19,6 +19,13 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     { name: "Home", href: "/" },
     { name: "About", href: "/about" },
     { name: "Contact", href: "/contact" },
+  ];
+
+  const socialLinks = [
+    { icon: Instagram, name: "Instagram", href: "https://instagram.com/qwikzen_india" },
+    { icon: Twitter, name: "Twitter", href: "https://twitter.com/dspraneeth07" },
+    { icon: Linkedin, name: "LinkedIn", href: "https://www.linkedin.com/company/qwikzen" },
+    { icon: Globe, name: "Website", href: "https://qwikzen.netlify.app" },
   ];
 
   return (
@@ -132,16 +139,32 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
                 </Link>
               ))}
             </div>
-            
-            <div className="flex flex-col gap-3">
-              <p className="font-medium font-sf-pro">Follow us</p>
-              <a href="https://github.com/dspraneeth07" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-300 hover:text-white font-poppins">GitHub</a>
-              <a href="https://linkedin.com/in/dspraneeth07" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-300 hover:text-white font-poppins">LinkedIn</a>
-            </div>
           </div>
         </div>
         
-        <div className="container mt-8 pt-8 border-t border-white/10">
+        {/* Social Media Links - Centered */}
+        <div className="container mt-8 text-center">
+          <p className="font-medium font-sf-pro mb-4">FOLLOW US</p>
+          <div className="flex justify-center gap-6 mb-6">
+            {socialLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <a 
+                  key={link.name}
+                  href={link.href}
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-white transition-colors"
+                  aria-label={link.name}
+                >
+                  <Icon className="h-6 w-6" />
+                </a>
+              );
+            })}
+          </div>
+        </div>
+        
+        <div className="container pt-8 border-t border-white/10">
           <p className="text-center text-sm text-gray-400 font-poppins">
             © {new Date().getFullYear()} QwiX CV by QwikZen. All rights reserved.
           </p>
