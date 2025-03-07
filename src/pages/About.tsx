@@ -1,4 +1,3 @@
-
 import MainLayout from "@/components/layout/MainLayout";
 import { motion } from "framer-motion";
 import { GraduationCap, Code, Cpu, Award, Briefcase, Star, GitBranch, Github, Linkedin, Mail } from "lucide-react";
@@ -81,7 +80,7 @@ const About = () => {
       name: "Pravalika Batchu",
       role: "Full-Stack Developer, QwikZen Group India",
       education: "Student at Vasavi College of Engineering, CSE Department",
-      rollNo: "1602-23-733-311",
+      rollNo: "1602-23-733-308",
       bio: "Core developer specializing in front-end and back-end development for QwikZen's AI-driven products.",
       expertise: ["Full-Stack Development", "UI/UX Design", "Scalable Web Architectures"],
       achievements: [

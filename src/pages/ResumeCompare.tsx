@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
@@ -191,6 +190,79 @@ const ResumeCompare = () => {
     });
   };
 
+  const handleShareToMedia = async () => {
+    try {
+      if (!comparisonResults) {
+        toast({
+          title: "No Results",
+          description: "Please compare resumes first before sharing",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const reportElement = reportRef.current;
+      if (!reportElement) {
+        toast({
+          title: "Error",
+          description: "Could not generate report for sharing. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Preparing Report",
+        description: "Getting your comparison ready for sharing..."
+      });
+
+      const opt = {
+        margin: 1,
+        filename: 'resume-comparison-report.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      const pdfBlob = await html2pdf().from(reportElement).set(opt).outputPdf('blob');
+      
+      if (navigator.share && navigator.canShare({ files: [new File([pdfBlob], 'resume-comparison.pdf', { type: 'application/pdf' })] })) {
+        await navigator.share({
+          files: [new File([pdfBlob], 'resume-comparison.pdf', { type: 'application/pdf' })],
+          title: 'Resume Comparison Report',
+          text: 'Check out this resume comparison report from QwiX CV!'
+        });
+        
+        toast({
+          title: "Success",
+          description: "Your comparison report has been shared"
+        });
+      } else {
+        // Fallback for browsers that don't support sharing files
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = pdfUrl;
+        a.download = 'resume-comparison.pdf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(pdfUrl);
+        
+        toast({
+          title: "Downloaded",
+          description: "Your comparison report has been downloaded (sharing not supported in this browser)"
+        });
+      }
+    } catch (error) {
+      console.error("Share error:", error);
+      toast({
+        title: "Sharing Failed",
+        description: "Could not share your report. Please try downloading it instead.",
+        variant: "destructive"
+      });
+    }
+  };
+
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -376,7 +448,9 @@ const ResumeCompare = () => {
                       <div>
                         <div className="flex justify-between mb-1">
                           <span className="text-sm font-medium">Overall ATS Score</span>
-                          <span className="text-sm font-medium">{comparisonResults.resumeA.atsScore}%</span>
+                          <span className="text-sm font-medium">
+                            {comparisonResults?.resumeA?.atsScore || 0}%
+                          </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
                           <div 
@@ -475,7 +549,9 @@ const ResumeCompare = () => {
                       <div>
                         <div className="flex justify-between mb-1">
                           <span className="text-sm font-medium">Overall ATS Score</span>
-                          <span className="text-sm font-medium">{comparisonResults.resumeB.atsScore}%</span>
+                          <span className="text-sm font-medium">
+                            {comparisonResults?.resumeB?.atsScore || 0}%
+                          </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2.5">
                           <div 
@@ -686,20 +762,4 @@ const ResumeCompare = () => {
             
             <div className="text-center">
               <Button 
-                variant="gradient" 
-                size="xl"
-                onClick={downloadComparisonReport}
-                className="flex items-center"
-              >
-                <Download className="mr-2 h-5 w-5" />
-                Download Detailed Comparison Report
-              </Button>
-            </div>
-          </motion.div>
-        )}
-      </div>
-    </MainLayout>
-  );
-};
-
-export default ResumeCompare;
+                variant
