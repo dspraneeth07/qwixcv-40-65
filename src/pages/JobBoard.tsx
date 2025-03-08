@@ -18,12 +18,15 @@ import {
   FileText,
   Clock,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ToggleRight
 } from "lucide-react";
 import { fetchJobs } from "@/utils/jobBoardApi";
 import JobSearchFilters from "@/components/jobs/JobSearchFilters";
 import { JobListing } from "@/types/job";
 import { toast } from "@/components/ui/use-toast";
+import { Switch } from "@/components/ui/switch";
+import { recommendedJobs } from "@/data/recommendedJobs";
 
 const JobBoard = () => {
   const [jobs, setJobs] = useState<JobListing[]>([]);
@@ -33,12 +36,21 @@ const JobBoard = () => {
   const [location, setLocation] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const [showRecommended, setShowRecommended] = useState(false);
 
   useEffect(() => {
-    loadJobs();
-  }, [currentPage]);
+    if (showRecommended) {
+      setJobs(recommendedJobs);
+      setLoading(false);
+      setError(null);
+    } else {
+      loadJobs();
+    }
+  }, [currentPage, showRecommended]);
 
   const loadJobs = async () => {
+    if (showRecommended) return;
+    
     setLoading(true);
     setError(null);
     
@@ -76,8 +88,10 @@ const JobBoard = () => {
   };
 
   const handleSearch = () => {
-    setCurrentPage(1);
-    loadJobs();
+    if (!showRecommended) {
+      setCurrentPage(1);
+      loadJobs();
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -103,6 +117,10 @@ const JobBoard = () => {
     }
   };
 
+  const toggleRecommendedJobs = () => {
+    setShowRecommended(prev => !prev);
+  };
+
   return (
     <MainLayout>
       <div className="bg-gradient-to-b from-indigo-600 to-purple-700 text-white py-12">
@@ -126,6 +144,7 @@ const JobBoard = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                disabled={showRecommended}
               />
             </div>
             <div className="relative flex-1">
@@ -137,12 +156,14 @@ const JobBoard = () => {
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                disabled={showRecommended}
               />
             </div>
             <Button 
               size="lg"
               onClick={handleSearch}
               className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 font-poppins"
+              disabled={showRecommended}
             >
               <Search className="h-4 w-4 mr-2" />
               Search
@@ -160,13 +181,26 @@ const JobBoard = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-4 font-poppins">
+                  <div className="flex items-center gap-2">
+                    <ToggleRight className="h-5 w-5 text-indigo-500" />
+                    <span className="text-sm font-medium">Show Recommended Jobs</span>
+                  </div>
+                  <Switch 
+                    checked={showRecommended} 
+                    onCheckedChange={toggleRecommendedJobs}
+                  />
+                </div>
+                
                 <div className="space-y-4 font-poppins">
                   <JobSearchFilters 
-                    onFilterChange={(filters) => console.log("Filters changed:", filters)} 
+                    onFilterChange={(filters) => console.log("Filters changed:", filters)}
+                    disabled={showRecommended}
                   />
                   <Button 
                     className="w-full mt-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
                     onClick={handleSearch}
+                    disabled={showRecommended}
                   >
                     Apply Filters
                   </Button>
@@ -310,29 +344,31 @@ const JobBoard = () => {
                   </div>
                 )}
 
-                <div className="flex justify-between items-center mt-8 font-poppins">
-                  <Button 
-                    variant="outline" 
-                    disabled={currentPage === 1} 
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    className="flex items-center gap-1 border border-indigo-200 hover:bg-indigo-50"
-                  >
-                    <ChevronLeft className="h-4 w-4" /> 
-                    Previous
-                  </Button>
-                  <span className="flex items-center text-sm bg-indigo-100 text-indigo-800 px-4 py-2 rounded-full">
-                    Page {currentPage}
-                  </span>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setCurrentPage(prev => prev + 1)}
-                    disabled={jobs.length === 0}
-                    className="flex items-center gap-1 border border-indigo-200 hover:bg-indigo-50"
-                  >
-                    Next
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
+                {!showRecommended && (
+                  <div className="flex justify-between items-center mt-8 font-poppins">
+                    <Button 
+                      variant="outline" 
+                      disabled={currentPage === 1} 
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      className="flex items-center gap-1 border border-indigo-200 hover:bg-indigo-50"
+                    >
+                      <ChevronLeft className="h-4 w-4" /> 
+                      Previous
+                    </Button>
+                    <span className="flex items-center text-sm bg-indigo-100 text-indigo-800 px-4 py-2 rounded-full">
+                      Page {currentPage}
+                    </span>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setCurrentPage(prev => prev + 1)}
+                      disabled={jobs.length === 0}
+                      className="flex items-center gap-1 border border-indigo-200 hover:bg-indigo-50"
+                    >
+                      Next
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </>
             )}
           </div>
