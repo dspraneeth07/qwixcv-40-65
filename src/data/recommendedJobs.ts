@@ -12,7 +12,7 @@ export const recommendedJobs: JobListing[] = [
     url: "https://www.linkedin.com/jobs/collections/recommended/?currentJobId=4172742565",
     tags: ["HTML", "CSS", "JavaScript", "SQL", "MySQL", "Python"],
     salary: "Not specified",
-    platform: "indeed"
+    platform: "arbeitnow"
   },
   {
     id: "rec-job-2",
@@ -24,7 +24,7 @@ export const recommendedJobs: JobListing[] = [
     url: "https://www.linkedin.com/jobs/collections/recommended/?currentJobId=4166960299",
     tags: ["Angular", "JavaScript", "MongoDB", "HTML", "CSS"],
     salary: "Not specified",
-    platform: "indeed"
+    platform: "arbeitnow"
   },
   {
     id: "rec-job-3",
@@ -36,6 +36,6 @@ export const recommendedJobs: JobListing[] = [
     url: "https://www.linkedin.com/jobs/collections/recommended/?currentJobId=4174283845",
     tags: ["C/C++", "Java", "SQL", "CS fundamentals"],
     salary: "Not specified",
-    platform: "indeed"
+    platform: "arbeitnow"
   }
 ];

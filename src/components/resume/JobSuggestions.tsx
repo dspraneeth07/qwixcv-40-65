@@ -164,7 +164,7 @@ const JobSuggestions = ({ skills, jobTitle, location }: JobSuggestionsProps) => 
                 >
                   <span className="flex items-center">
                     <Briefcase className="h-3 w-3 mr-1" />
-                    <span className="ml-1">Indeed</span>
+                    <span className="ml-1">Arbeitnow</span>
                   </span>
                 </Badge>
               </div>
