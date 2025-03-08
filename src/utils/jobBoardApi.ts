@@ -1,9 +1,8 @@
 
 import { JobListing } from "@/types/job";
 
-// API key for RapidAPI - Arbeitnow API
-const RAPID_API_KEY = "9515e48d1bmsh7a2462135b3d8e9p1755e7jsn7759e1a20e89";
-const RAPID_API_HOST = "arbeitnow-free-job-board.p.rapidapi.com";
+// API endpoint for Arbeitnow
+const ARBEITNOW_API_URL = "https://www.arbeitnow.com/api/job-board-api";
 
 interface JobSearchParams {
   query?: string;
@@ -34,16 +33,11 @@ export const fetchJobs = async (params: JobSearchParams): Promise<JobListing[]> 
     // Add pagination
     queryParams.append("page", page.toString());
     
-    const url = `https://arbeitnow-free-job-board.p.rapidapi.com/api/job-board-api?${queryParams.toString()}`;
+    const url = `${ARBEITNOW_API_URL}?${queryParams.toString()}`;
     
     console.log("Requesting URL:", url);
     
-    const response = await fetch(url, {
-      headers: {
-        'x-rapidapi-host': RAPID_API_HOST,
-        'x-rapidapi-key': RAPID_API_KEY
-      }
-    });
+    const response = await fetch(url);
 
     if (!response.ok) {
       console.error(`Arbeitnow API error with status: ${response.status}`);
@@ -51,7 +45,7 @@ export const fetchJobs = async (params: JobSearchParams): Promise<JobListing[]> 
     }
 
     const data = await response.json();
-    console.log("Arbeitnow API response:", data);
+    console.log("Arbeitnow API response data:", data);
     
     if (!data.data || data.data.length === 0) {
       console.log("No jobs found from Arbeitnow API");
@@ -63,10 +57,17 @@ export const fetchJobs = async (params: JobSearchParams): Promise<JobListing[]> 
       // Extract tags from the tag array or create empty array if none
       const tags = job.tags || [];
       
-      // Format the location from the location array or use a default
-      const locationFormatted = job.location?.length > 0 
-        ? job.location.join(", ") 
-        : (params.location || "Not specified");
+      // Format the location - handle both string and array types
+      let locationFormatted = "Not specified";
+      if (job.location) {
+        if (Array.isArray(job.location)) {
+          locationFormatted = job.location.join(", ");
+        } else if (typeof job.location === 'string') {
+          locationFormatted = job.location;
+        } else {
+          locationFormatted = params.location || "Not specified";
+        }
+      }
       
       return {
         id: job.slug || `job-${Math.random().toString(36).substring(7)}`,
