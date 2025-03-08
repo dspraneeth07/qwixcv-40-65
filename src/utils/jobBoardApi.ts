@@ -13,6 +13,15 @@ interface JobSearchParams {
   experience?: string;
 }
 
+// Helper function to strip HTML tags from a string
+const stripHtmlTags = (html: string): string => {
+  if (!html) return '';
+  return html.replace(/<\/?[^>]+(>|$)/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
 // Function to search for jobs using the Arbeitnow API
 export const fetchJobs = async (params: JobSearchParams): Promise<JobListing[]> => {
   try {
@@ -69,12 +78,15 @@ export const fetchJobs = async (params: JobSearchParams): Promise<JobListing[]> 
         }
       }
       
+      // Strip HTML tags from the description
+      const cleanDescription = stripHtmlTags(job.description);
+      
       return {
         id: job.slug || `job-${Math.random().toString(36).substring(7)}`,
         title: job.title || "Job Position",
         company: job.company_name || "Company",
         location: locationFormatted,
-        description: job.description || "No description available",
+        description: cleanDescription || "No description available",
         date: job.created_at || new Date().toISOString(),
         url: job.url || job.application_url || "https://arbeitnow.com",
         tags: tags.slice(0, 10), // Limit to 10 tags for display purposes
