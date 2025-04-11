@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,7 @@ const CertificateCard = ({ certificate, onUpdateVisibility }: CertificateCardPro
   
   const { id, title, score, issuedDate, txHash, isPublic, certHash, blockId } = certificate;
   
+  // Ensure the base URL is consistently formatted without trailing slashes
   const baseUrl = window.location.origin.replace(/\/+$/, '');
   const verificationUrl = `${baseUrl}/verify-cert/${certHash}`;
   
@@ -54,16 +56,17 @@ const CertificateCard = ({ certificate, onUpdateVisibility }: CertificateCardPro
       tempDiv.style.left = '-9999px';
       document.body.appendChild(tempDiv);
       
-      const qrCodeCanvas = document.createElement('canvas');
-      qrCodeCanvas.id = 'temp-qr-canvas';
-      qrCodeCanvas.width = 150;
-      qrCodeCanvas.height = 150;
-      document.body.appendChild(qrCodeCanvas);
+      // First create a canvas with the QR code
+      const qrCanvas = document.createElement('canvas');
+      qrCanvas.width = 200;
+      qrCanvas.height = 200;
+      document.body.appendChild(qrCanvas);
       
+      // Generate QR code using qrcode.react's toCanvas method
       try {
         const QRCodeLibrary = await import('qrcode');
-        await QRCodeLibrary.toCanvas(qrCodeCanvas, verificationUrl, {
-          width: 150,
+        await QRCodeLibrary.toCanvas(qrCanvas, verificationUrl, {
+          width: 200,
           margin: 0,
           color: {
             dark: '#000000',
@@ -71,8 +74,9 @@ const CertificateCard = ({ certificate, onUpdateVisibility }: CertificateCardPro
           }
         });
         
-        const qrDataUrl = qrCodeCanvas.toDataURL('image/png');
+        const qrDataUrl = qrCanvas.toDataURL('image/png');
         
+        // Now create the PDF content with the QR code image
         tempDiv.innerHTML = `
           <div style="padding: 40px; font-family: 'SF Pro Display', Arial, sans-serif; color: white; background: linear-gradient(to right, #3b82f6, #8b5cf6); width: 1122px; height: 793px; position: relative;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
@@ -130,11 +134,12 @@ const CertificateCard = ({ certificate, onUpdateVisibility }: CertificateCardPro
         console.error("Error processing QR code:", error);
         throw error;
       } finally {
+        // Clean up
         if (document.body.contains(tempDiv)) {
           document.body.removeChild(tempDiv);
         }
-        if (document.body.contains(qrCodeCanvas)) {
-          document.body.removeChild(qrCodeCanvas);
+        if (document.body.contains(qrCanvas)) {
+          document.body.removeChild(qrCanvas);
         }
       }
       
