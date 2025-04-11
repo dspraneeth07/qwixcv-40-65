@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
 import { BlockchainProvider } from "./context/BlockchainContext";
@@ -20,12 +21,15 @@ import CertificateVerification from "./pages/CertificateVerification";
 import { useEffect } from "react";
 
 function App() {
+  // Load fonts
   useEffect(() => {
+    // Add Google Fonts to the document head
     const fontLink = document.createElement('link');
     fontLink.rel = 'stylesheet';
     fontLink.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap';
     document.head.appendChild(fontLink);
 
+    // Add SF Pro Display (or a similar font that mimics it)
     const sfProLink = document.createElement('link');
     sfProLink.rel = 'stylesheet';
     sfProLink.href = 'https://fonts.cdnfonts.com/css/sf-pro-display';
@@ -54,8 +58,8 @@ function App() {
             <Route path="/career-path-simulator" element={<CareerPathSimulator />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/certification-center" element={<CertificationCenter />} />
-            <Route path="/certification-test/:testId" element={<CertificationTest />} />
-            <Route path="/verify-cert/:certHash" element={<CertificateVerification />} />
+            <Route path="/certification/:testId" element={<CertificationTest />} />
+            <Route path="/verify-cert/:certHash?" element={<CertificateVerification />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster />
