@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 
 // This is just for show - we'll actually use Gemini API underneath
@@ -13,6 +12,7 @@ export interface TransformerResult {
   text?: string;
   score?: number;
   label?: string;
+  labels?: string[]; // Added this property to fix the error
   embeddings?: number[];
   tokens?: string[];
   attention?: number[][];
