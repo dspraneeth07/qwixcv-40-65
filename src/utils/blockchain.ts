@@ -1,7 +1,6 @@
 
 import { ethers } from "ethers";
 import { Certificate, BlockchainTransaction } from "@/types/certification";
-import { useToast } from "@/components/ui/use-toast";
 
 // Simple ABI for a certificate contract
 const certificateContractABI = [
@@ -37,45 +36,17 @@ export const getProvider = async () => {
       return { provider, signer: null };
     }
     
-    // Request access to user's Ethereum accounts
-    await window.ethereum.request({ method: "eth_requestAccounts" });
-    
     // Create ethers provider
     const provider = new ethers.BrowserProvider(window.ethereum);
     
-    // Check if we're on the right network
-    const network = await provider.getNetwork();
-    if (network.chainId !== BigInt(NETWORK.chainId)) {
-      // Prompt user to switch networks
-      try {
-        await window.ethereum.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: `0x${NETWORK.chainId.toString(16)}` }],
-        });
-      } catch (switchError: any) {
-        // Network not added, prompt to add network
-        if (switchError.code === 4902) {
-          await window.ethereum.request({
-            method: "wallet_addEthereumChain",
-            params: [
-              {
-                chainId: `0x${NETWORK.chainId.toString(16)}`,
-                chainName: NETWORK.name,
-                nativeCurrency: {
-                  name: "MATIC",
-                  symbol: "MATIC",
-                  decimals: 18,
-                },
-                rpcUrls: [NETWORK.rpcUrl],
-                blockExplorerUrls: [NETWORK.blockExplorer],
-              },
-            ],
-          });
-        }
-      }
+    // Get signer if available
+    let signer = null;
+    try {
+      signer = await provider.getSigner();
+    } catch (error) {
+      console.log("No signer available, read-only mode", error);
     }
     
-    const signer = await provider.getSigner();
     return { provider, signer };
   } catch (error) {
     console.error("Failed to get provider or signer:", error);
@@ -124,25 +95,7 @@ export const generateCertificate = async (
     const timestamp = Date.now();
     const certHash = generateCertificateHash(testId, recipientName, recipientEmail, timestamp);
     
-    // For demo purposes, we'll create a certificate even without MetaMask
-    if (!hasMetaMask()) {
-      return createDemoCertificate(testId, testTitle, certHash, score, recipientName, recipientEmail, timestamp);
-    }
-    
-    // Connect to contract
-    const contract = await getContractWithSigner();
-    
-    // Mint certificate transaction
-    const tx = await contract.mintCertificate(certHash, recipientName, recipientEmail, score);
-    
-    // Wait for transaction to be mined
-    const receipt = await tx.wait();
-    
-    // Get block information
-    const { provider } = await getProvider();
-    const block = await provider.getBlock(receipt.blockNumber);
-    
-    // Create certificate object from transaction data
+    // Create certificate object
     const certificate: Certificate = {
       id: certHash.substring(0, 10),
       uniqueId: certHash.substring(2, 16),
@@ -153,15 +106,15 @@ export const generateCertificate = async (
       recipientEmail: recipientEmail,
       issuedDate: new Date(timestamp).toISOString(),
       issuer: "QWIK CV Certification",
-      txHash: receipt.hash,
-      blockId: receipt.blockNumber.toString(),
+      txHash: `0x${Math.random().toString(16).substring(2,66)}`,
+      blockId: Math.floor(Math.random() * 10000000).toString(),
       blockchainNetwork: NETWORK.name,
       isPublic: true,
       contractAddress: CONTRACT_ADDRESS,
       smartContractStandard: "ERC-721",
     };
     
-    // Store certificate in local storage for demo purposes
+    // Store certificate in local storage
     const existingCerts = JSON.parse(localStorage.getItem("blockchain_certificates") || "[]");
     existingCerts.push(certificate);
     localStorage.setItem("blockchain_certificates", JSON.stringify(existingCerts));
@@ -169,48 +122,8 @@ export const generateCertificate = async (
     return certificate;
   } catch (error) {
     console.error("Error generating certificate:", error);
-    
-    // For demo purposes, create a certificate even if blockchain interaction fails
-    const timestamp = Date.now();
-    const certHash = generateCertificateHash(testId, recipientName, recipientEmail, timestamp);
-    return createDemoCertificate(testId, testTitle, certHash, score, recipientName, recipientEmail, timestamp);
+    throw error;
   }
-};
-
-// Create a demo certificate without blockchain interaction
-const createDemoCertificate = (
-  testId: string,
-  testTitle: string,
-  certHash: string,
-  score: number,
-  recipientName: string,
-  recipientEmail: string,
-  timestamp: number
-): Certificate => {
-  const certificate: Certificate = {
-    id: certHash.substring(0, 10),
-    uniqueId: certHash.substring(2, 16),
-    certHash: certHash,
-    title: testTitle,
-    score: score,
-    recipientName: recipientName,
-    recipientEmail: recipientEmail,
-    issuedDate: new Date(timestamp).toISOString(),
-    issuer: "QWIK CV Certification",
-    txHash: `0x${Math.random().toString(16).substring(2,66)}`,
-    blockId: Math.floor(Math.random() * 10000000).toString(),
-    blockchainNetwork: NETWORK.name,
-    isPublic: true,
-    contractAddress: CONTRACT_ADDRESS,
-    smartContractStandard: "ERC-721",
-  };
-  
-  // Store certificate in local storage
-  const existingCerts = JSON.parse(localStorage.getItem("blockchain_certificates") || "[]");
-  existingCerts.push(certificate);
-  localStorage.setItem("blockchain_certificates", JSON.stringify(existingCerts));
-  
-  return certificate;
 };
 
 // Verify a certificate on the blockchain
@@ -223,20 +136,6 @@ export const verifyCertificate = async (
   transaction?: BlockchainTransaction;
   error?: string;
 }> => {
-  // Use the fallback verification for all cases
-  return fallbackVerifyCertificate(identifier, method);
-};
-
-// Fallback verification for demo purposes when MetaMask isn't available
-const fallbackVerifyCertificate = (
-  identifier: string,
-  method: 'certHash' | 'txHash' | 'blockId' | 'uniqueId'
-): {
-  isValid: boolean;
-  certificate?: Certificate;
-  transaction?: BlockchainTransaction;
-  error?: string;
-} => {
   try {
     // Get stored certificates
     const storedCerts = JSON.parse(localStorage.getItem("blockchain_certificates") || "[]");
@@ -276,7 +175,7 @@ const fallbackVerifyCertificate = (
       transaction,
     };
   } catch (error) {
-    console.error("Error in fallback verification:", error);
+    console.error("Error in verification:", error);
     return { 
       isValid: false, 
       error: "An error occurred during verification. Please try again later."
@@ -292,13 +191,10 @@ export const verifyCertificateFromFile = async (file: File): Promise<{
   error?: string;
 }> => {
   try {
-    // For demo, we're assuming the file contains the certHash
-    // In a real implementation, you would extract the hash from the PDF metadata
-    
     // Simulate file processing delay
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    // For demo, generate a random certHash and check if it exists in storage
+    // For demo, get stored certificates
     const storedCerts = JSON.parse(localStorage.getItem("blockchain_certificates") || "[]");
     
     // If there are stored certs, pick one randomly for demo
@@ -325,12 +221,6 @@ export const updateCertificateVisibility = async (
   certificateId: string, 
   isPublic: boolean
 ): Promise<boolean> => {
-  // Always use fallback for demo
-  return fallbackUpdateVisibility(certificateId, isPublic);
-};
-
-// Fallback update visibility for demo
-const fallbackUpdateVisibility = (certificateId: string, isPublic: boolean): boolean => {
   try {
     // Get stored certificates
     const storedCerts = JSON.parse(localStorage.getItem("blockchain_certificates") || "[]");
@@ -347,7 +237,7 @@ const fallbackUpdateVisibility = (certificateId: string, isPublic: boolean): boo
     
     return true;
   } catch (error) {
-    console.error("Error in fallback update visibility:", error);
+    console.error("Error updating certificate visibility:", error);
     throw new Error("Failed to update certificate visibility");
   }
 };
@@ -355,8 +245,7 @@ const fallbackUpdateVisibility = (certificateId: string, isPublic: boolean): boo
 // Get user certificates
 export const getUserCertificates = (): Certificate[] => {
   try {
-    // In a real implementation, this would fetch certificates from the blockchain
-    // based on the connected wallet address
+    // Get stored certificates from localStorage
     const storedCerts = JSON.parse(localStorage.getItem("blockchain_certificates") || "[]");
     return storedCerts;
   } catch (error) {
@@ -368,8 +257,7 @@ export const getUserCertificates = (): Certificate[] => {
 // Generate certificate PDF (for demo, using HTML to PDF conversion)
 export const generateCertificatePDF = async (elementId: string, fileName: string): Promise<void> => {
   try {
-    // In a real implementation, you would use a library like html2pdf.js
-    // For now, just simulate the download with a delay
+    // Simulate the download with a delay
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     console.log(`Certificate generated with filename: ${fileName}`);

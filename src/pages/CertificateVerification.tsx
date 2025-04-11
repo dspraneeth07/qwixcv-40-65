@@ -5,7 +5,6 @@ import MainLayout from '@/components/layout/MainLayout';
 import CertificateVerifier from '@/components/certification/CertificateVerifier';
 import QwiXCertHeader from '@/components/certification/QwiXCertHeader';
 import WalletConnect from '@/components/blockchain/WalletConnect';
-import { hasMetaMask } from '@/utils/blockchain';
 
 const CertificateVerification = () => {
   const { certHash } = useParams<{ certHash?: string }>();

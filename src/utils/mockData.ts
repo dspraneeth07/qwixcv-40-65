@@ -84,6 +84,66 @@ export const getMockTests = (): TestInfo[] => {
       passingScore: 70,
       topics: ["Data Analysis", "SQL", "Python", "Statistical Methods", "Data Visualization", "Business Intelligence"]
     },
+    {
+      id: "resume-01",
+      title: "Professional Resume Building",
+      description: "Master the art of creating ATS-friendly resumes",
+      timeLimit: 20,
+      questionCount: 15,
+      passingScore: 70,
+      topics: ["Resume Structure", "ATS Optimization", "Content Writing", "Formatting"],
+      category: "Career Development"
+    },
+    {
+      id: "ats-02",
+      title: "ATS Optimization Specialist",
+      description: "Learn advanced techniques for beating ATS systems",
+      timeLimit: 30,
+      questionCount: 20,
+      passingScore: 75,
+      topics: ["Keyword Optimization", "ATS Algorithms", "Format Compatibility", "Parsing Technology"],
+      category: "Technical Skills"
+    },
+    {
+      id: "career-03",
+      title: "Career Development Fundamentals",
+      description: "Essential strategies for career growth and advancement",
+      timeLimit: 25,
+      questionCount: 18,
+      passingScore: 70,
+      topics: ["Networking", "Professional Development", "Industry Trends", "Job Search Strategy"],
+      category: "Career Development"
+    },
+    {
+      id: "interview-04",
+      title: "Interview Mastery",
+      description: "Ace your interviews with proven techniques",
+      timeLimit: 20,
+      questionCount: 15,
+      passingScore: 75,
+      topics: ["Common Questions", "STAR Method", "Body Language", "Follow-up Strategy"],
+      category: "Soft Skills"
+    },
+    {
+      id: "web3-05",
+      title: "Blockchain & Web3 Basics",
+      description: "Essential knowledge for modern technology careers",
+      timeLimit: 30,
+      questionCount: 20,
+      passingScore: 70,
+      topics: ["Blockchain Fundamentals", "Cryptocurrency", "Smart Contracts", "Decentralized Apps"],
+      category: "Technical Skills"
+    },
+    {
+      id: "aiml-06",
+      title: "AI & Machine Learning Essentials",
+      description: "Key concepts in artificial intelligence for your resume",
+      timeLimit: 40,
+      questionCount: 25,
+      passingScore: 75,
+      topics: ["ML Fundamentals", "Neural Networks", "NLP", "AI Applications"],
+      category: "Technical Skills"
+    }
   ];
 };
 
@@ -261,7 +321,10 @@ export const getMockTestById = (testId: string): {
   const allTests = getMockTests();
   const testInfo = allTests.find(test => test.id === testId);
   
-  if (!testInfo) return null;
+  if (!testInfo) {
+    console.error(`Test not found with ID: ${testId}`);
+    return null;
+  }
   
   // For this demo, we'll return a fixed set of questions based on test ID
   let questions: Question[] = [];

@@ -43,7 +43,7 @@ const CertificationTest = () => {
   const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
-    // In a real app, you would fetch this from your API
+    // Get mock test data
     const fetchTest = async () => {
       try {
         setIsLoading(true);
@@ -54,11 +54,14 @@ const CertificationTest = () => {
         
         if (!test) {
           setError("Test not found");
+          console.error(`Test with ID ${testId} not found`);
           return;
         }
         
         setTestData(test);
+        console.log("Test data loaded:", test.title);
       } catch (err) {
+        console.error("Failed to load test:", err);
         setError("Failed to load the test. Please try again.");
       } finally {
         setIsLoading(false);
@@ -72,9 +75,10 @@ const CertificationTest = () => {
     setStage(TestStage.TEST);
   };
   
-  const handleTestComplete = (testScore: number, testPassed: boolean) => {
+  const handleTestComplete = (testScore: number, testPassed: boolean, answers: Record<number, string>) => {
     setScore(testScore);
     setPassed(testPassed);
+    setUserAnswers(answers);
     setStage(TestStage.RESULTS);
   };
   

@@ -71,7 +71,6 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
       // Handle chain changes
       const handleChainChanged = (chainIdHex: string) => {
         setChainId(parseInt(chainIdHex, 16));
-        window.location.reload();
       };
 
       // Handle disconnect
@@ -109,9 +108,12 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
       setBalance(parseFloat(balanceEth).toFixed(4));
       
       setIsConnected(true);
+      
+      return true;
     } catch (error) {
       console.error("Error updating wallet info:", error);
       disconnectWallet();
+      return false;
     }
   };
 
@@ -128,12 +130,14 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
 
     try {
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      await updateWalletInfo(accounts[0]);
+      const success = await updateWalletInfo(accounts[0]);
       
-      toast({
-        title: "Wallet Connected",
-        description: `Connected to ${accounts[0].substring(0, 6)}...${accounts[0].substring(accounts[0].length - 4)}`,
-      });
+      if (success) {
+        toast({
+          title: "Wallet Connected",
+          description: `Connected to ${accounts[0].substring(0, 6)}...${accounts[0].substring(accounts[0].length - 4)}`,
+        });
+      }
     } catch (error: any) {
       console.error("Error connecting wallet:", error);
       
