@@ -1,8 +1,43 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import { hasMetaMask, getProvider } from '@/utils/blockchain';
 import { useToast } from "@/components/ui/use-toast";
+
+// Define the type for Ethereum window object
+interface WindowWithEthereum extends Window {
+  ethereum?: {
+    request: (args: any) => Promise<any>;
+    on: (event: string, callback: any) => void;
+    removeListener: (event: string, callback: any) => void;
+    isMetaMask?: boolean;
+  };
+}
+
+// Helper function to check if MetaMask is installed
+const hasMetaMask = (): boolean => {
+  const windowWithEthereum = window as WindowWithEthereum;
+  return (
+    typeof windowWithEthereum !== 'undefined' &&
+    typeof windowWithEthereum.ethereum !== 'undefined' &&
+    !!windowWithEthereum.ethereum.isMetaMask
+  );
+};
+
+// Helper function to get provider
+const getProvider = async () => {
+  const windowWithEthereum = window as WindowWithEthereum;
+  
+  if (typeof windowWithEthereum !== 'undefined' && windowWithEthereum.ethereum) {
+    const provider = new ethers.BrowserProvider(windowWithEthereum.ethereum);
+    return { provider, signer: await provider.getSigner() };
+  }
+  
+  // Fallback to a public provider if MetaMask is not available
+  return { 
+    provider: new ethers.JsonRpcProvider('https://polygon-mumbai.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'),
+    signer: null
+  };
+};
 
 interface BlockchainContextType {
   isConnected: boolean;
@@ -34,6 +69,7 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
   const [chainId, setChainId] = useState<number | null>(null);
   const [balance, setBalance] = useState<string | null>(null);
   const { toast } = useToast();
+  const windowWithEthereum = window as WindowWithEthereum;
 
   // Check for existing connection on load
   useEffect(() => {
@@ -41,8 +77,8 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
       if (hasMetaMask()) {
         try {
           // Check if already connected
-          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-          if (accounts.length > 0) {
+          const accounts = await windowWithEthereum.ethereum?.request({ method: 'eth_accounts' });
+          if (accounts && accounts.length > 0) {
             await updateWalletInfo(accounts[0]);
           }
         } catch (error) {
@@ -78,16 +114,22 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
         disconnectWallet();
       };
 
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('chainChanged', handleChainChanged);
-      window.ethereum.on('disconnect', handleDisconnect);
-
-      return () => {
-        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-        window.ethereum.removeListener('chainChanged', handleChainChanged);
-        window.ethereum.removeListener('disconnect', handleDisconnect);
-      };
+      if (windowWithEthereum.ethereum) {
+        windowWithEthereum.ethereum.on('accountsChanged', handleAccountsChanged);
+        windowWithEthereum.ethereum.on('chainChanged', handleChainChanged);
+        windowWithEthereum.ethereum.on('disconnect', handleDisconnect);
+  
+        return () => {
+          if (windowWithEthereum.ethereum) {
+            windowWithEthereum.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+            windowWithEthereum.ethereum.removeListener('chainChanged', handleChainChanged);
+            windowWithEthereum.ethereum.removeListener('disconnect', handleDisconnect);
+          }
+        };
+      }
     }
+    
+    return undefined;
   }, [account]);
 
   // Update wallet info
@@ -129,14 +171,16 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
     }
 
     try {
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const success = await updateWalletInfo(accounts[0]);
-      
-      if (success) {
-        toast({
-          title: "Wallet Connected",
-          description: `Connected to ${accounts[0].substring(0, 6)}...${accounts[0].substring(accounts[0].length - 4)}`,
-        });
+      const accounts = await windowWithEthereum.ethereum?.request({ method: 'eth_requestAccounts' });
+      if (accounts && accounts.length > 0) {
+        const success = await updateWalletInfo(accounts[0]);
+        
+        if (success) {
+          toast({
+            title: "Wallet Connected",
+            description: `Connected to ${accounts[0].substring(0, 6)}...${accounts[0].substring(accounts[0].length - 4)}`,
+          });
+        }
       }
     } catch (error: any) {
       console.error("Error connecting wallet:", error);
