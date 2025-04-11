@@ -133,36 +133,41 @@ const ResumePreview = () => {
       const fileName = `${fullName.replace(/\s+/g, '_')}.pdf`;
       setResumeFileName(fileName);
       
+      // Clone the resume element to style it properly for PDF
+      const clonedElement = resumeRef.current.cloneNode(true) as HTMLElement;
+      
+      // Ensure all fonts and styles are properly applied
+      const fontStyle = document.createElement('style');
+      fontStyle.textContent = `
+        * {
+          font-family: Arial, Helvetica, sans-serif !important;
+          color: black !important;
+        }
+        .text-primary, a {
+          color: #3B82F6 !important;
+        }
+        .text-muted-foreground, .text-gray-600 {
+          color: #4B5563 !important;
+        }
+      `;
+      clonedElement.appendChild(fontStyle);
+      
+      // Ensure proper styling for PDF export
+      clonedElement.style.background = "white";
+      clonedElement.style.padding = "20px";
+      clonedElement.style.width = "210mm"; // A4 width
+      clonedElement.style.minHeight = "297mm"; // A4 height
+      
       const opt = {
-        margin: 1,
+        margin: 10,
         filename: fileName,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
+        html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        fontFaces: [
-          { family: 'Arial', style: 'normal' },
-          { family: 'Helvetica', style: 'normal' },
-          { family: 'sans-serif', style: 'normal' }
-        ]
       };
       
-      // Make sure all text is properly styled before generating PDF
-      const originalElement = resumeRef.current;
-      
-      // Ensure all text elements have proper styling for PDF generation
-      const textElements = originalElement.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, div, a, li');
-      textElements.forEach(el => {
-        const element = el as HTMLElement;
-        if (!element.style.color) {
-          element.style.color = 'black';
-        }
-        if (!element.style.fontFamily) {
-          element.style.fontFamily = 'Arial, Helvetica, sans-serif';
-        }
-      });
-      
       console.log("Generating PDF from resume element");
-      const pdfBlob = await html2pdf().from(originalElement).set(opt).outputPdf('blob');
+      const pdfBlob = await html2pdf().from(clonedElement).set(opt).outputPdf('blob');
       console.log("PDF blob generated:", pdfBlob);
       
       setPdfBlob(pdfBlob);

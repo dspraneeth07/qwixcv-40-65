@@ -54,7 +54,7 @@ export const generateEmbedding = async (text: string) => {
   return new Float32Array(384).fill(0.1);
 };
 
-// New function for resume analysis
+// Resume analysis function with improved error handling and detailed analysis
 export const analyzeResume = async (resumeData: any, analysisType: 'general' | 'questions' = 'general') => {
   console.log(`Analyzing resume for ${analysisType} analysis:`, resumeData);
   
@@ -65,21 +65,38 @@ export const analyzeResume = async (resumeData: any, analysisType: 'general' | '
   
   if (analysisType === 'general') {
     prompt = `
-      You are a professional resume analyst. Analyze the following resume data and provide feedback.
+      You are a professional resume analyst with expertise in ATS optimization and career development.
+      
+      Analyze the following resume data and provide detailed professional feedback:
       
       Resume data:
       ${JSON.stringify(resumeData, null, 2)}
       
-      Provide a comprehensive analysis focusing on strengths, weaknesses, and suggestions.
+      Please provide:
+      1. Overall resume strength score (out of 10)
+      2. ATS compatibility assessment
+      3. Key strengths (at least 3)
+      4. Areas for improvement (at least 2)
+      5. Specific actionable suggestions to enhance the resume
+      
+      Format your response clearly with headings and bullet points.
     `;
   } else {
     prompt = `
-      You are an interview preparation expert. Generate interview questions and answers based on this resume.
+      You are an interview preparation expert specializing in job-specific interview preparation.
+      
+      Based on this resume, generate realistic interview questions and suggested answers:
       
       Resume data:
       ${JSON.stringify(resumeData, null, 2)}
       
-      Provide 6-8 likely interview questions and suggested answers based on this resume.
+      Please provide:
+      1. 6-8 technical questions likely to be asked based on their skills and experience
+      2. 3-4 behavioral questions relevant to their background
+      3. For each question, provide a well-structured, concise sample answer based on their resume details
+      
+      Make the answers personalized to their specific experience as shown in the resume.
+      Format answers in a way that's easy to read and practice from.
     `;
   }
   
@@ -92,7 +109,11 @@ export const analyzeResume = async (resumeData: any, analysisType: 'general' | '
       body: JSON.stringify({
         contents: [{
           parts: [{ text: prompt }]
-        }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2048
+        }
       })
     });
 
