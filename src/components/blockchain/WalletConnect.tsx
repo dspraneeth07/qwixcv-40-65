@@ -2,7 +2,7 @@
 import React from 'react';
 import { useBlockchain } from '@/context/BlockchainContext';
 import { Button } from "@/components/ui/button";
-import { Wallet, ExternalLink, LogOut, AlertCircle } from "lucide-react";
+import { Wallet, ExternalLink, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,7 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { hasMetaMask } from '@/utils/blockchain';
 
 export const WalletConnect: React.FC = () => {
@@ -64,27 +63,6 @@ export const WalletConnect: React.FC = () => {
     window.open(explorerUrl, '_blank');
   };
 
-  if (!hasMetaMask()) {
-    return (
-      <Alert variant="destructive" className="max-w-md mx-auto">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>MetaMask Required</AlertTitle>
-        <AlertDescription>
-          Please install{" "}
-          <a 
-            href="https://metamask.io/download/" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="font-semibold underline"
-          >
-            MetaMask
-          </a>{" "}
-          to use blockchain features.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
   if (isConnected && account) {
     return (
       <DropdownMenu>
@@ -123,12 +101,18 @@ export const WalletConnect: React.FC = () => {
     );
   }
 
-  return (
-    <Button onClick={connectWallet}>
-      <Wallet className="mr-2 h-4 w-4" />
-      Connect Wallet
-    </Button>
-  );
+  // Only show connect button if MetaMask is available
+  if (hasMetaMask()) {
+    return (
+      <Button onClick={connectWallet}>
+        <Wallet className="mr-2 h-4 w-4" />
+        Connect Wallet
+      </Button>
+    );
+  }
+
+  // Return an empty div with the same width to maintain layout
+  return <div className="min-w-[180px]"></div>;
 };
 
 export default WalletConnect;

@@ -29,7 +29,8 @@ const CertificationCenter = () => {
           timeLimit: 20,
           questionCount: 15,
           topics: ["Resume Structure", "ATS Optimization", "Content Writing", "Formatting"],
-          passingScore: 70
+          passingScore: 70,
+          category: "Career Development"
         },
         {
           id: "ats-02",
@@ -38,7 +39,8 @@ const CertificationCenter = () => {
           timeLimit: 30,
           questionCount: 20,
           topics: ["Keyword Optimization", "ATS Algorithms", "Format Compatibility", "Parsing Technology"],
-          passingScore: 75
+          passingScore: 75,
+          category: "Technical Skills"
         },
         {
           id: "career-03",
@@ -47,7 +49,8 @@ const CertificationCenter = () => {
           timeLimit: 25,
           questionCount: 18,
           topics: ["Networking", "Professional Development", "Industry Trends", "Job Search Strategy"],
-          passingScore: 70
+          passingScore: 70,
+          category: "Career Development"
         },
         {
           id: "interview-04",
@@ -56,7 +59,8 @@ const CertificationCenter = () => {
           timeLimit: 20,
           questionCount: 15,
           topics: ["Common Questions", "STAR Method", "Body Language", "Follow-up Strategy"],
-          passingScore: 75
+          passingScore: 75,
+          category: "Soft Skills"
         },
         {
           id: "web3-05",
@@ -65,7 +69,8 @@ const CertificationCenter = () => {
           timeLimit: 30,
           questionCount: 20,
           topics: ["Blockchain Fundamentals", "Cryptocurrency", "Smart Contracts", "Decentralized Apps"],
-          passingScore: 70
+          passingScore: 70,
+          category: "Technical Skills"
         },
         {
           id: "aiml-06",
@@ -74,7 +79,8 @@ const CertificationCenter = () => {
           timeLimit: 40,
           questionCount: 25,
           topics: ["ML Fundamentals", "Neural Networks", "NLP", "AI Applications"],
-          passingScore: 75
+          passingScore: 75,
+          category: "Technical Skills"
         }
       ];
       
@@ -83,17 +89,12 @@ const CertificationCenter = () => {
     
     // Fetch user's certificates
     const fetchUserCertificates = () => {
-      // Only fetch certificates if wallet is connected
-      if (isConnected && account) {
-        try {
-          const certificates = getUserCertificates();
-          const certifiedTestIds = certificates.map(cert => cert.title.split(' - ')[0]);
-          setUserCertificates(certifiedTestIds);
-        } catch (error) {
-          console.error("Error fetching user certificates:", error);
-          setUserCertificates([]);
-        }
-      } else {
+      try {
+        const certificates = getUserCertificates();
+        const certifiedTestIds = certificates.map(cert => cert.title.split(' - ')[0]);
+        setUserCertificates(certifiedTestIds);
+      } catch (error) {
+        console.error("Error fetching user certificates:", error);
         setUserCertificates([]);
       }
     };
@@ -138,19 +139,6 @@ const CertificationCenter = () => {
                         Pass our certification exams to earn tamper-proof credentials stored on the Polygon blockchain.
                         These certifications can be added to your resume and verified by employers with a simple QR code.
                       </p>
-                      {!isConnected ? (
-                        <div className="bg-blue-100/50 p-3 rounded-lg border border-blue-200">
-                          <p className="text-blue-800 text-sm">
-                            Please connect your wallet to start earning blockchain certifications.
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="bg-green-100/50 p-3 rounded-lg border border-green-200">
-                          <p className="text-green-800 text-sm">
-                            Your wallet is connected! Complete exams to mint certification NFTs.
-                          </p>
-                        </div>
-                      )}
                     </div>
                     <div className="md:w-1/3 flex justify-center">
                       <div className="bg-white p-6 rounded-full shadow-md">

@@ -15,7 +15,7 @@ export interface TestInfo {
   questionCount: number;
   topics: string[];
   passingScore: number;
-  category?: string; // Added the category field
+  category?: string;
 }
 
 export interface Certificate {

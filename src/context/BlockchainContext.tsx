@@ -120,8 +120,8 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
     if (!hasMetaMask()) {
       toast({
         title: "MetaMask not detected",
-        description: "Please install MetaMask to use blockchain features",
-        variant: "destructive"
+        description: "Proceeding with limited functionality",
+        variant: "default"
       });
       return;
     }

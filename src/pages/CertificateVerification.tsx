@@ -5,19 +5,11 @@ import MainLayout from '@/components/layout/MainLayout';
 import CertificateVerifier from '@/components/certification/CertificateVerifier';
 import QwiXCertHeader from '@/components/certification/QwiXCertHeader';
 import WalletConnect from '@/components/blockchain/WalletConnect';
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
 import { hasMetaMask } from '@/utils/blockchain';
 
 const CertificateVerification = () => {
   const { certHash } = useParams<{ certHash?: string }>();
-  const [showWalletWarning, setShowWalletWarning] = useState(false);
   
-  useEffect(() => {
-    // Check if MetaMask is installed
-    setShowWalletWarning(!hasMetaMask());
-  }, []);
-
   return (
     <MainLayout>
       <div className="container py-8">
@@ -32,15 +24,6 @@ const CertificateVerification = () => {
             <WalletConnect />
           </div>
         </div>
-        
-        {showWalletWarning && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              MetaMask is recommended for full blockchain verification. Without it, we'll use a fallback verification method.
-            </AlertDescription>
-          </Alert>
-        )}
         
         <CertificateVerifier initialHash={certHash} />
       </div>
