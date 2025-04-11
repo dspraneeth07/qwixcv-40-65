@@ -55,32 +55,69 @@ const CertificateCard = ({ certificate, onUpdateVisibility }: CertificateCardPro
       tempDiv.style.left = '-9999px';
       document.body.appendChild(tempDiv);
       
-      // Create simplified certificate design for PDF
+      // Create simplified certificate design for PDF with A4 landscape dimensions
       tempDiv.innerHTML = `
-        <div style="padding: 30px; font-family: Arial, sans-serif; color: white; background: linear-gradient(to right, #3b82f6, #8b5cf6); width: 800px; height: 600px;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-            <h2 style="font-size: 24px; font-weight: bold;">QwiXCertChain</h2>
-            <div style="background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.4);">
+        <div style="padding: 40px; font-family: 'SF Pro Display', Arial, sans-serif; color: white; background: linear-gradient(to right, #3b82f6, #8b5cf6); width: 1122px; height: 793px; position: relative;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
+            <h2 style="font-size: 32px; font-weight: bold;">QwiXCertChain</h2>
+            <div style="background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.4);">
               Blockchain Verified
             </div>
           </div>
-          <h3 style="font-size: 28px; font-weight: bold; margin-bottom: 10px;">${title}</h3>
-          <p style="opacity: 0.9;">Awarded to</p>
-          <p style="font-size: 24px; font-weight: bold; margin-bottom: 15px;">${certificate.recipientName}</p>
-          <p style="font-size: 16px; margin-top: 30px;">Issued by: ${certificate.issuer}</p>
-          <p style="font-size: 16px;">Issue Date: ${new Date(issuedDate).toLocaleDateString()}</p>
-          <p style="font-size: 16px;">Certificate ID: ${certificate.uniqueId}</p>
-          <p style="font-size: 16px;">Score: ${score}%</p>
-          <div style="margin-top: 20px; font-size: 12px;">
-            <p>Blockchain: ${certificate.blockchainNetwork}</p>
-            <p>Transaction: ${txHash.substring(0, 10)}...${txHash.substring(txHash.length - 5)}</p>
-            <p>Block ID: ${blockId || 'N/A'}</p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <h1 style="font-size: 48px; font-weight: bold; margin-bottom: 20px;">${title}</h1>
+            <p style="font-size: 24px; opacity: 0.9; margin-bottom: 10px;">This certificate is awarded to</p>
+            <p style="font-size: 36px; font-weight: bold; margin-bottom: 30px;">${certificate.recipientName}</p>
+            <p style="font-size: 20px;">For successfully demonstrating proficiency with a score of <strong>${score}%</strong></p>
           </div>
-          <p style="position: absolute; bottom: 20px; text-align: center; width: 90%; font-size: 12px;">
-            Verify this certificate at: ${verificationUrl}
-          </p>
+          
+          <div style="display: flex; justify-content: space-between; margin-top: 60px;">
+            <div>
+              <p style="font-size: 18px; margin-bottom: 5px;">Issued by: ${certificate.issuer}</p>
+              <p style="font-size: 18px;">Issue Date: ${new Date(issuedDate).toLocaleDateString()}</p>
+            </div>
+            <div>
+              <p style="font-size: 18px; margin-bottom: 5px;">Certificate ID: ${certificate.uniqueId}</p>
+              <p style="font-size: 18px;">Blockchain: ${certificate.blockchainNetwork}</p>
+            </div>
+          </div>
+          
+          <div style="position: absolute; bottom: 40px; width: calc(100% - 80px);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+              <div style="font-size: 12px;">
+                <p>Transaction: ${txHash.substring(0, 10)}...${txHash.substring(txHash.length - 5)}</p>
+                <p>Block ID: ${blockId || 'N/A'}</p>
+                <p>Certificate Hash: ${certHash}</p>
+              </div>
+              <div style="text-align: center; background: white; padding: 15px; border-radius: 8px;">
+                <img src="data:image/svg+xml;base64,${btoa(
+                  new XMLSerializer().serializeToString(
+                    document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+                  )
+                )}" alt="QR Code" width="100" height="100" />
+                <p style="color: #333; font-size: 12px; margin-top: 5px;">Scan to verify</p>
+              </div>
+            </div>
+            <p style="text-align: center; margin-top: 20px; font-size: 14px;">
+              Verify the authenticity of this certificate at: ${verificationUrl}
+            </p>
+          </div>
         </div>
       `;
+      
+      // Replace the placeholder QR code with a real one
+      const qrCodeImg = document.createElement('img');
+      const canvas = document.createElement('canvas');
+      QRCode.toCanvas(canvas, verificationUrl, { width: 100 });
+      qrCodeImg.src = canvas.toDataURL();
+      qrCodeImg.width = 100;
+      qrCodeImg.height = 100;
+      
+      const qrPlaceholder = tempDiv.querySelector('img');
+      if (qrPlaceholder && qrPlaceholder.parentNode) {
+        qrPlaceholder.parentNode.replaceChild(qrCodeImg, qrPlaceholder);
+      }
       
       const fileName = `${title.replace(/\s+/g, '_')}_Certificate.pdf`;
       await generateCertificatePDF(`temp-cert-${id}`, fileName);

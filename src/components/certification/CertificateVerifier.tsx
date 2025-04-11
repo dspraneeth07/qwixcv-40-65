@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Certificate, BlockchainTransaction, VerificationMethod } from "@/types/certification";
-import { verifyCertificate, verifyCertificateFromFile, generateCertificatePDF, shareCertificate } from "@/utils/blockchain";
+import { verifyCertificate, verifyCertificateFromFile, generateCertificatePDF, shareCertificate, getUserCertificates } from "@/utils/blockchain";
 import QRCode from 'qrcode.react';
 
 interface CertificateVerifierProps {
@@ -40,9 +41,16 @@ const CertificateVerifier = ({ initialHash }: CertificateVerifierProps) => {
   
   const { toast } = useToast();
 
+  // Debug log certificates when component mounts
+  useEffect(() => {
+    console.log("Available certificates:", getUserCertificates());
+    console.log("Initial hash:", initialHash);
+  }, [initialHash]);
+
   // Auto-verify if initialHash is provided
   useEffect(() => {
     if (initialHash) {
+      console.log("Auto-verifying with hash:", initialHash);
       handleVerify();
     }
   }, [initialHash]);
@@ -61,9 +69,13 @@ const CertificateVerifier = ({ initialHash }: CertificateVerifierProps) => {
     setResult(null);
     
     try {
+      console.log("Verifying with:", { certHash, method: verificationMethod });
+      
       // Only use valid verification methods for the verifyCertificate function
       const validMethod = verificationMethod === 'file' ? 'certHash' : verificationMethod;
       const verificationResult = await verifyCertificate(certHash, validMethod);
+      
+      console.log("Verification result:", verificationResult);
       setResult(verificationResult);
       
       if (!verificationResult.isValid) {
@@ -79,6 +91,7 @@ const CertificateVerifier = ({ initialHash }: CertificateVerifierProps) => {
         });
       }
     } catch (error) {
+      console.error("Verification error:", error);
       setResult({
         isValid: false,
         error: "Failed to verify the certificate. Try again later."
@@ -159,6 +172,7 @@ const CertificateVerifier = ({ initialHash }: CertificateVerifierProps) => {
         description: "Your certificate has been downloaded as a PDF",
       });
     } catch (error) {
+      console.error("PDF generation error:", error);
       toast({
         title: "Download Failed",
         description: "Failed to download certificate as PDF",

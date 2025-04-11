@@ -1,5 +1,31 @@
 
-export type VerificationMethod = 'certHash' | 'txHash' | 'blockId' | 'uniqueId' | 'file';
+export interface Certificate {
+  id: string;
+  testId: string;
+  title: string;
+  score: number;
+  recipientName: string;
+  recipientEmail: string;
+  issuer: string;
+  issuedDate: string;
+  validUntil?: string;
+  txHash: string;
+  blockId: number;
+  certHash: string;
+  uniqueId: string;
+  contractAddress?: string;
+  blockchainNetwork: string;
+  smartContractStandard?: string;
+  isPublic: boolean;
+}
+
+export interface BlockchainTransaction {
+  hash: string;
+  blockId: number;
+  timestamp: number;
+  confirmations: number;
+  status: 'pending' | 'confirmed' | 'failed';
+}
 
 export interface Question {
   text: string;
@@ -11,44 +37,10 @@ export interface TestInfo {
   id: string;
   title: string;
   description: string;
+  topics: string[];
   timeLimit: number;
   questionCount: number;
-  topics: string[];
   passingScore: number;
-  category?: string;
 }
 
-export interface Certificate {
-  id: string;
-  uniqueId: string;
-  certHash: string;
-  title: string;
-  score: number;
-  recipientName: string;
-  recipientEmail: string;
-  issuedDate: string;
-  validUntil?: string;
-  issuer: string;
-  txHash: string;
-  blockId: string;
-  blockchainNetwork: string;
-  isPublic: boolean;
-  contractAddress?: string;
-  smartContractStandard?: string;
-}
-
-export interface BlockchainTransaction {
-  hash: string;
-  blockNumber: number;
-  confirmations: number;
-  timestamp: number;
-  from: string;
-  to: string;
-  status: 'confirmed' | 'pending' | 'failed';
-}
-
-export interface SkillGap {
-  skill: string;
-  suggestion: string;
-  resourceUrl?: string;
-}
+export type VerificationMethod = 'certHash' | 'txHash' | 'blockId' | 'uniqueId' | 'file';
