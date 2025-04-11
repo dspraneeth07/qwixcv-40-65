@@ -1,103 +1,48 @@
 
-import React, { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import MainLayout from '@/components/layout/MainLayout';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import MainLayout from '@/components/layouts/MainLayout';
 import CertificateVerifier from '@/components/certification/CertificateVerifier';
 import QwiXCertHeader from '@/components/certification/QwiXCertHeader';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, Award, Shield, FileCheck } from 'lucide-react';
+import WalletConnect from '@/components/blockchain/WalletConnect';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
+import { hasMetaMask } from '@/utils/blockchain';
 
 const CertificateVerification = () => {
   const { certHash } = useParams<{ certHash?: string }>();
+  const [showWalletWarning, setShowWalletWarning] = useState(false);
   
   useEffect(() => {
-    // Scroll to top when component mounts
-    window.scrollTo(0, 0);
-    
-    // For demonstration, ensure at least one certificate exists in localStorage
-    const certificates = JSON.parse(localStorage.getItem('certificates') || '[]');
-    if (certificates.length === 0 && !certHash) {
-      // This is just to ensure there's always something to verify in the demo
-      const mockCertData = {
-        certificates: [{
-          id: "demo-cert-1",
-          testId: "test-blockchain-101",
-          title: "Blockchain Fundamentals",
-          recipientName: "Demo User",
-          recipientEmail: "demo@example.com",
-          recipientId: "user-1234",
-          score: 95,
-          issuedDate: new Date().toISOString(),
-          txHash: "0x" + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
-          certHash: certHash || ("cert_" + Array(32).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')),
-          isPublic: true,
-          issuer: "QwiXZen Certification Authority",
-          uniqueId: "QWIXCERT-" + Date.now().toString(36),
-          blockchainNetwork: "Ethereum Mainnet",
-          blockId: Math.floor(15000000 + Math.random() * 2000000).toString(),
-          contractAddress: "0x" + Array(40).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
-          smartContractStandard: "ERC-721",
-          metadataUri: "ipfs://Qm" + Array(44).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')
-        }]
-      };
-      
-      localStorage.setItem('certificates', JSON.stringify(mockCertData.certificates));
-    }
-  }, [certHash]);
-  
+    // Check if MetaMask is installed
+    setShowWalletWarning(!hasMetaMask());
+  }, []);
+
   return (
     <MainLayout>
-      <div className="container py-10">
-        <QwiXCertHeader 
-          title="QwiXCert Verification" 
-          subtitle="Verify the authenticity of blockchain-powered certifications instantly"
-        />
-        
-        <CertificateVerifier initialHash={certHash} />
-        
-        {/* Navigation links */}
-        <div className="mt-8 space-y-4">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-            <Button variant="outline" asChild className="w-full md:w-auto">
-              <Link to="/certification-center" className="flex items-center">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Explore Certification Tests
-              </Link>
-            </Button>
-            
-            <Button asChild className="w-full md:w-auto bg-gradient-to-r from-blue-500 to-purple-500">
-              <Link to="/dashboard" className="flex items-center">
-                <Award className="mr-2 h-4 w-4" />
-                View Your Certificates
-              </Link>
-            </Button>
-          </div>
+      <div className="container py-8">
+        <div className="flex justify-between items-center mb-6">
+          <QwiXCertHeader 
+            title="Certificate Verification" 
+            subtitle="Verify the authenticity of blockchain certificates"
+            showBadge={false}
+          />
           
-          <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 max-w-3xl mx-auto">
-            <div className="flex items-start">
-              <FileCheck className="h-5 w-5 text-blue-600 mr-3 mt-1" />
-              <div>
-                <h3 className="text-lg font-medium text-blue-800 mb-2">About QwiXCert Blockchain Verification</h3>
-                <p className="text-blue-700 mb-3">
-                  QwiXCert uses advanced blockchain technology to create tamper-proof certifications that can be instantly verified by employers, recruiters, and educational institutions.
-                </p>
-                <div className="flex flex-col md:flex-row md:items-center gap-3 mt-4">
-                  <Button asChild variant="outline" size="sm" className="border-blue-200 text-blue-700 hover:bg-blue-100">
-                    <Link to="/">
-                      Learn More About QwiXCert
-                    </Link>
-                  </Button>
-                  <Button asChild size="sm" className="bg-blue-600 hover:bg-blue-700">
-                    <Link to="/certification-center">
-                      <Shield className="mr-2 h-4 w-4" />
-                      Get Certified
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </div>
+          <div className="min-w-[180px]">
+            <WalletConnect />
           </div>
         </div>
+        
+        {showWalletWarning && (
+          <Alert variant="warning" className="mb-6">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              MetaMask is recommended for full blockchain verification. Without it, we'll use a fallback verification method.
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        <CertificateVerifier initialHash={certHash} />
       </div>
     </MainLayout>
   );

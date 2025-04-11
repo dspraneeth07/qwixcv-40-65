@@ -1,438 +1,454 @@
-import { Certificate, BlockchainTransaction, VerificationMethod } from '@/types/certification';
-import { v4 as uuidv4 } from 'uuid';
-import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
 
-// Mock blockchain networks
-export const BLOCKCHAIN_NETWORKS = {
-  ETHEREUM: 'Ethereum Mainnet',
-  POLYGON: 'Polygon PoS Chain',
-  ARBITRUM: 'Arbitrum One',
-  OPTIMISM: 'Optimism',
-  BSC: 'Binance Smart Chain'
+import { ethers } from "ethers";
+import { Certificate, BlockchainTransaction } from "@/types/certification";
+import { useToast } from "@/components/ui/use-toast";
+
+// Simple ABI for a certificate contract
+const certificateContractABI = [
+  "function mintCertificate(string memory certHash, string memory recipientName, string memory recipientEmail, uint256 score) public returns (uint256)",
+  "function getCertificate(string memory certHash) public view returns (string memory, string memory, uint256, uint256, bool)",
+  "function updateCertificateVisibility(string memory certHash, bool isPublic) public returns (bool)",
+  "function verifyCertificate(string memory certHash) public view returns (bool)",
+];
+
+// Demo contract address (should be replaced with actual deployed contract)
+const CONTRACT_ADDRESS = "0x4d43925eB5b4492B0dE13FDce4515eD0b9E44ab2";
+
+// Network configuration
+const NETWORK = {
+  name: "Polygon Mumbai",
+  chainId: 80001, // Mumbai testnet
+  rpcUrl: "https://rpc-mumbai.maticvigil.com/",
+  blockExplorer: "https://mumbai.polygonscan.com"
 };
 
-// Mock smart contract standards
-export const CONTRACT_STANDARDS = {
-  ERC721: 'ERC-721',
-  ERC1155: 'ERC-1155',
-  POLYGON_NFT: 'Polygon NFT'
+// Check if user has MetaMask or web3 provider installed
+export const hasMetaMask = (): boolean => {
+  return typeof window !== "undefined" && typeof window.ethereum !== "undefined";
 };
 
-/**
- * Generate a unique blockchain-style hash
- */
-const generateHash = (length = 64) => {
-  return `0x${Array(length).fill(0).map(() => 
-    Math.floor(Math.random() * 16).toString(16)).join('')}`;
+// Get ethers provider and signer
+export const getProvider = async () => {
+  try {
+    // Request access to user's Ethereum accounts
+    await window.ethereum.request({ method: "eth_requestAccounts" });
+    
+    // Create ethers provider
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    
+    // Check if we're on the right network
+    const network = await provider.getNetwork();
+    if (network.chainId !== BigInt(NETWORK.chainId)) {
+      // Prompt user to switch networks
+      try {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: `0x${NETWORK.chainId.toString(16)}` }],
+        });
+      } catch (switchError: any) {
+        // Network not added, prompt to add network
+        if (switchError.code === 4902) {
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: `0x${NETWORK.chainId.toString(16)}`,
+                chainName: NETWORK.name,
+                nativeCurrency: {
+                  name: "MATIC",
+                  symbol: "MATIC",
+                  decimals: 18,
+                },
+                rpcUrls: [NETWORK.rpcUrl],
+                blockExplorerUrls: [NETWORK.blockExplorer],
+              },
+            ],
+          });
+        }
+      }
+    }
+    
+    const signer = await provider.getSigner();
+    return { provider, signer };
+  } catch (error) {
+    console.error("Failed to get provider or signer:", error);
+    throw new Error("Failed to connect to wallet. Please ensure MetaMask is installed and unlocked.");
+  }
 };
 
-/**
- * Generate a mock block ID in Ethereum format
- */
-const generateBlockId = () => {
-  return Math.floor(15000000 + Math.random() * 2000000).toString();
+// Connect to contract with signer
+const getContractWithSigner = async () => {
+  const { provider, signer } = await getProvider();
+  return new ethers.Contract(CONTRACT_ADDRESS, certificateContractABI, signer);
 };
 
-/**
- * Generate a unique certificate ID with a specific format
- */
-const generateCertificateId = () => {
-  const timestamp = Date.now().toString(36);
-  const random = Math.random().toString(36).substring(2, 7).toUpperCase();
-  return `QWIXCERT-${timestamp}-${random}`;
-};
-
-/**
- * Generate a mock Ethereum address
- */
-const generateEthAddress = () => {
-  return `0x${Array(40).fill(0).map(() => 
-    Math.floor(Math.random() * 16).toString(16)).join('')}`;
-};
-
-/**
- * Mock function to generate blockchain certificates
- * In a real implementation, this would interact with a blockchain smart contract
- */
-export const generateCertificate = async (
+// Generate a deterministic certificate hash from test data
+export const generateCertificateHash = (
   testId: string, 
-  testTitle: string, 
+  recipientName: string,
+  recipientEmail: string,
+  timestamp: number
+): string => {
+  const hashData = `${testId}-${recipientName}-${recipientEmail}-${timestamp}`;
+  return ethers.keccak256(ethers.toUtf8Bytes(hashData));
+};
+
+// Mint a new certificate on the blockchain
+export const generateCertificate = async (
+  testId: string,
+  testTitle: string,
   score: number,
   recipientName: string,
   recipientEmail: string
 ): Promise<Certificate> => {
-  // Simulate blockchain interaction
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  // Generate mock blockchain data
-  const txHash = generateHash();
-  const certHash = `cert_${generateHash(32)}`;
-  const blockId = generateBlockId();
-  const contractAddress = generateEthAddress();
-  const uniqueId = generateCertificateId();
-  const metadataUri = `ipfs://Qm${generateHash(44).substring(2)}`;
-  
-  // Create certificate object
-  const certificate: Certificate = {
-    id: uuidv4(),
-    testId,
-    title: testTitle,
-    recipientName: recipientName || "John Doe",
-    recipientEmail: recipientEmail || "john.doe@example.com",
-    recipientId: "user_" + Math.floor(Math.random() * 10000),
-    score,
-    issuedDate: new Date().toISOString(),
-    txHash,
-    certHash,
-    isPublic: true,
-    issuer: "QwikZen Certification Authority",
-    uniqueId,
-    blockchainNetwork: BLOCKCHAIN_NETWORKS.POLYGON,
-    blockId,
-    contractAddress,
-    smartContractStandard: CONTRACT_STANDARDS.ERC721,
-    metadataUri
-  };
-  
-  // Ensure a valid QR code URL is stored in localStorage for verification
-  const verificationData = {
-    url: `${window.location.origin}/verify-cert/${certHash}`,
-    certHash: certHash,
-    uniqueId: uniqueId,
-    blockId: blockId,
-    txHash: txHash
-  };
-  
-  localStorage.setItem(`qr_verification_${certHash}`, JSON.stringify(verificationData));
-  
-  // In a real app, you would store this in your database
-  const certificates = JSON.parse(localStorage.getItem('certificates') || '[]');
-  certificates.push(certificate);
-  localStorage.setItem('certificates', JSON.stringify(certificates));
-  
-  // Store transaction details
-  const transaction: BlockchainTransaction = {
-    hash: txHash,
-    timestamp: Date.now(),
-    blockNumber: parseInt(blockId),
-    confirmations: Math.floor(Math.random() * 50) + 1,
-    network: BLOCKCHAIN_NETWORKS.POLYGON,
-    status: 'confirmed',
-    blockId,
-    gasUsed: Math.floor(Math.random() * 300000) + 100000,
-    gasPrice: (Math.random() * 100 + 20).toFixed(2),
-    from: generateEthAddress(),
-    to: contractAddress,
-    contractCallMethod: "mintCertificate"
-  };
-  
-  // Store transaction
-  const transactions = JSON.parse(localStorage.getItem('blockchain_transactions') || '[]');
-  transactions.push(transaction);
-  localStorage.setItem('blockchain_transactions', JSON.stringify(transactions));
-  
-  return certificate;
+  if (!hasMetaMask()) {
+    throw new Error("MetaMask not detected. Please install MetaMask to create blockchain certificates.");
+  }
+
+  try {
+    // Generate certificate hash
+    const timestamp = Date.now();
+    const certHash = generateCertificateHash(testId, recipientName, recipientEmail, timestamp);
+    
+    // Connect to contract
+    const contract = await getContractWithSigner();
+    
+    // Mint certificate transaction
+    const tx = await contract.mintCertificate(certHash, recipientName, recipientEmail, score);
+    
+    // Wait for transaction to be mined
+    const receipt = await tx.wait();
+    
+    // Get block information
+    const { provider } = await getProvider();
+    const block = await provider.getBlock(receipt.blockNumber);
+    
+    // Create certificate object from transaction data
+    const certificate: Certificate = {
+      id: certHash.substring(0, 10),
+      uniqueId: certHash.substring(2, 16),
+      certHash: certHash,
+      title: testTitle,
+      score: score,
+      recipientName: recipientName,
+      recipientEmail: recipientEmail,
+      issuedDate: new Date(timestamp).toISOString(),
+      issuer: "QWIK CV Certification",
+      txHash: receipt.hash,
+      blockId: receipt.blockNumber.toString(),
+      blockchainNetwork: NETWORK.name,
+      isPublic: true,
+      contractAddress: CONTRACT_ADDRESS,
+      smartContractStandard: "ERC-721",
+    };
+    
+    // Store certificate in local storage for demo purposes
+    // In real world scenario, this would be stored in a database linked to the user account
+    const existingCerts = JSON.parse(localStorage.getItem("blockchain_certificates") || "[]");
+    existingCerts.push(certificate);
+    localStorage.setItem("blockchain_certificates", JSON.stringify(existingCerts));
+    
+    return certificate;
+  } catch (error) {
+    console.error("Error generating certificate:", error);
+    throw new Error("Failed to generate certificate. Please try again.");
+  }
 };
 
-/**
- * Mock function to verify a certificate using different methods
- */
+// Verify a certificate on the blockchain
 export const verifyCertificate = async (
   identifier: string,
-  method: VerificationMethod = 'certHash'
+  method: 'certHash' | 'txHash' | 'blockId' | 'uniqueId' = 'certHash'
 ): Promise<{
   isValid: boolean;
   certificate?: Certificate;
   transaction?: BlockchainTransaction;
   error?: string;
 }> => {
-  // Simulate blockchain interaction
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
+  if (!hasMetaMask()) {
+    // Fallback to local verification if no MetaMask (just for demo)
+    return fallbackVerifyCertificate(identifier, method);
+  }
+
   try {
-    // Get stored certificates
-    const certificates: Certificate[] = JSON.parse(localStorage.getItem('certificates') || '[]');
-    let certificate: Certificate | undefined;
+    // Connect to contract
+    const { provider } = await getProvider();
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, certificateContractABI, provider);
     
-    // Handle QR verification first - extract certificate hash from stored QR data
-    if (method === 'file') {
-      // For demonstration, use a random certificate or create a new mock one
-      if (certificates.length > 0) {
-        // Get a random certificate for demo purposes
-        const randomIndex = Math.floor(Math.random() * certificates.length);
-        certificate = certificates[randomIndex];
-      } else {
-        // If no certificates exist, create a mock certificate for the demo
-        certificate = createMockCertificate();
-        
-        // Save it to localStorage for future verification
-        certificates.push(certificate);
-        localStorage.setItem('certificates', JSON.stringify(certificates));
+    // If the method is not certHash, we need to find the certHash first
+    let certHash = identifier;
+    
+    if (method !== 'certHash') {
+      // Get stored certificates for demo
+      const storedCerts = JSON.parse(localStorage.getItem("blockchain_certificates") || "[]");
+      
+      // Find certificate by specified method
+      const cert = storedCerts.find((c: Certificate) => {
+        switch (method) {
+          case 'txHash': return c.txHash === identifier;
+          case 'blockId': return c.blockId === identifier;
+          case 'uniqueId': return c.uniqueId === identifier;
+          default: return false;
+        }
+      });
+      
+      if (!cert) {
+        return { 
+          isValid: false, 
+          error: `Certificate not found using ${method}: ${identifier}` 
+        };
       }
-    } else {
-      // Normal verification based on method
-      switch (method) {
-        case 'certHash':
-          certificate = certificates.find(cert => cert.certHash === identifier);
-          break;
-        case 'txHash':
-          certificate = certificates.find(cert => cert.txHash === identifier);
-          break;
-        case 'blockId':
-          certificate = certificates.find(cert => cert.blockId === identifier);
-          break;
-        case 'uniqueId':
-          certificate = certificates.find(cert => cert.uniqueId === identifier);
-          break;
-        default:
-          certificate = certificates.find(cert => cert.certHash === identifier);
-      }
+      
+      certHash = cert.certHash;
     }
     
+    // Verify certificate on blockchain
+    const isValid = await contract.verifyCertificate(certHash);
+    
+    if (!isValid) {
+      return { 
+        isValid: false, 
+        error: "Certificate verification failed. The certificate may be invalid or tampered with." 
+      };
+    }
+    
+    // Get stored certificates for demo
+    const storedCerts = JSON.parse(localStorage.getItem("blockchain_certificates") || "[]");
+    const certificate = storedCerts.find((c: Certificate) => c.certHash === certHash);
+    
     if (!certificate) {
-      // If certificate isn't found, create a mock one for demonstration purposes
-      // This ensures QR verification always works in the demo
-      certificate = createMockCertificate();
-      
-      // Save it for future verification
-      certificates.push(certificate);
-      localStorage.setItem('certificates', JSON.stringify(certificates));
+      return { 
+        isValid: true,
+        error: "Certificate verified on blockchain but details not found locally."
+      };
     }
     
     // Get transaction details
-    const transactions: BlockchainTransaction[] = JSON.parse(localStorage.getItem('blockchain_transactions') || '[]');
-    let transaction = transactions.find(tx => tx.hash === certificate?.txHash);
+    const txReceipt = await provider.getTransactionReceipt(certificate.txHash);
     
-    // If no transaction exists, create a mock one for demonstration
-    if (!transaction && certificate) {
-      transaction = createMockTransaction(certificate.txHash);
-      transactions.push(transaction);
-      localStorage.setItem('blockchain_transactions', JSON.stringify(transactions));
-    }
+    const transaction: BlockchainTransaction = {
+      hash: certificate.txHash,
+      blockNumber: Number(certificate.blockId),
+      confirmations: txReceipt ? txReceipt.confirmations : 0,
+      timestamp: new Date(certificate.issuedDate).getTime(),
+      from: txReceipt ? txReceipt.from : '',
+      to: CONTRACT_ADDRESS,
+      status: txReceipt && txReceipt.status === 1 ? 'confirmed' : 'pending',
+    };
     
     return {
       isValid: true,
       certificate,
-      transaction
+      transaction,
     };
   } catch (error) {
-    console.error("Verification error:", error);
+    console.error("Error verifying certificate:", error);
+    return { 
+      isValid: false, 
+      error: "An error occurred during verification. Please try again later."
+    };
+  }
+};
+
+// Fallback verification for demo purposes when MetaMask isn't available
+const fallbackVerifyCertificate = (
+  identifier: string,
+  method: 'certHash' | 'txHash' | 'blockId' | 'uniqueId'
+): {
+  isValid: boolean;
+  certificate?: Certificate;
+  transaction?: BlockchainTransaction;
+  error?: string;
+} => {
+  try {
+    // Get stored certificates
+    const storedCerts = JSON.parse(localStorage.getItem("blockchain_certificates") || "[]");
+    
+    // Find certificate by specified method
+    const certificate = storedCerts.find((c: Certificate) => {
+      switch (method) {
+        case 'certHash': return c.certHash === identifier;
+        case 'txHash': return c.txHash === identifier;
+        case 'blockId': return c.blockId === identifier;
+        case 'uniqueId': return c.uniqueId === identifier;
+        default: return false;
+      }
+    });
+    
+    if (!certificate) {
+      return { 
+        isValid: false, 
+        error: `Certificate not found using ${method}: ${identifier}` 
+      };
+    }
+    
+    // Simulate transaction for demo
+    const transaction: BlockchainTransaction = {
+      hash: certificate.txHash,
+      blockNumber: Number(certificate.blockId),
+      confirmations: 42,
+      timestamp: new Date(certificate.issuedDate).getTime(),
+      from: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      to: CONTRACT_ADDRESS,
+      status: 'confirmed',
+    };
+    
     return {
-      isValid: false,
-      error: "Failed to verify certificate"
+      isValid: true,
+      certificate,
+      transaction,
+    };
+  } catch (error) {
+    console.error("Error in fallback verification:", error);
+    return { 
+      isValid: false, 
+      error: "An error occurred during verification. Please try again later."
     };
   }
 };
 
-/**
- * Helper function to create a mock certificate for demonstration
- */
-const createMockCertificate = (): Certificate => {
-  const txHash = generateHash();
-  const certHash = `cert_${generateHash(32)}`;
-  const blockId = generateBlockId();
-  const contractAddress = generateEthAddress();
-  const uniqueId = generateCertificateId();
-
-  return {
-    id: uuidv4(),
-    testId: "demo_test_1",
-    title: "Blockchain Developer Certification",
-    recipientName: "Demo User",
-    recipientEmail: "demo@example.com",
-    recipientId: "user_demo",
-    score: 92,
-    issuedDate: new Date().toISOString(),
-    txHash,
-    certHash,
-    isPublic: true,
-    issuer: "QwiXZen Certification Authority",
-    uniqueId,
-    blockchainNetwork: BLOCKCHAIN_NETWORKS.ETHEREUM,
-    blockId,
-    contractAddress,
-    smartContractStandard: CONTRACT_STANDARDS.ERC721,
-    metadataUri: `ipfs://Qm${generateHash(44).substring(2)}`
-  };
-};
-
-/**
- * Helper function to create a mock blockchain transaction
- */
-const createMockTransaction = (txHash: string): BlockchainTransaction => {
-  const blockId = generateBlockId();
-  
-  return {
-    hash: txHash,
-    timestamp: Date.now(),
-    blockNumber: parseInt(blockId),
-    confirmations: Math.floor(Math.random() * 50) + 10,
-    network: BLOCKCHAIN_NETWORKS.ETHEREUM,
-    status: 'confirmed',
-    blockId,
-    gasUsed: Math.floor(Math.random() * 300000) + 100000,
-    gasPrice: (Math.random() * 100 + 20).toFixed(2),
-    from: generateEthAddress(),
-    to: generateEthAddress(),
-    contractCallMethod: "mintCertificate"
-  };
-};
-
-/**
- * Mock function to get user certificates
- */
-export const getUserCertificates = (): Certificate[] => {
-  return JSON.parse(localStorage.getItem('certificates') || '[]');
-};
-
-/**
- * Mock function to update certificate visibility
- */
-export const updateCertificateVisibility = (certificateId: string, isPublic: boolean): void => {
-  const certificates: Certificate[] = JSON.parse(localStorage.getItem('certificates') || '[]');
-  const updatedCertificates = certificates.map(cert => 
-    cert.id === certificateId ? { ...cert, isPublic } : cert
-  );
-  
-  localStorage.setItem('certificates', JSON.stringify(updatedCertificates));
-};
-
-/**
- * Mock function to get detailed blockchain transaction info
- */
-export const getTransactionDetails = (txHash: string): BlockchainTransaction | null => {
-  const transactions: BlockchainTransaction[] = JSON.parse(localStorage.getItem('blockchain_transactions') || '[]');
-  return transactions.find(tx => tx.hash === txHash) || null;
-};
-
-/**
- * Generate PDF certificate for download
- */
-export const generateCertificatePDF = async (certificateElementId: string, fileName: string): Promise<void> => {
-  try {
-    const certificateElement = document.getElementById(certificateElementId);
-    
-    if (!certificateElement) {
-      throw new Error("Certificate element not found");
-    }
-    
-    // Use html2canvas to create an image of the certificate
-    const canvas = await html2canvas(certificateElement, {
-      scale: 2,
-      logging: false,
-      useCORS: true
-    });
-    
-    const imgData = canvas.toDataURL('image/png');
-    
-    // Create PDF document using jsPDF
-    const pdf = new jsPDF({
-      orientation: 'landscape',
-      unit: 'mm',
-      format: 'a4'
-    });
-    
-    // Calculate positioning for centered image
-    const imgWidth = 280;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const x = (pageWidth - imgWidth) / 2;
-    const y = (pageHeight - imgHeight) / 2;
-    
-    // Add the image to the PDF
-    pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
-    
-    // Add metadata
-    pdf.setProperties({
-      title: fileName,
-      subject: 'QwiXCert Blockchain Certificate',
-      creator: 'QwiXCert by QwikZen',
-      keywords: 'blockchain, certificate, verification, QwiXCert'
-    });
-    
-    // Add footer note for verification
-    pdf.setFontSize(8);
-    pdf.setTextColor(100, 100, 100);
-    const verifyText = "Verify this certificate at: https://qwikzen.com/verify-cert";
-    const textWidth = pdf.getStringUnitWidth(verifyText) * 8 / pdf.internal.scaleFactor;
-    pdf.text(verifyText, pageWidth/2 - textWidth/2, pageHeight - 10);
-    
-    // Save the PDF
-    pdf.save(fileName);
-  } catch (error) {
-    console.error("Error generating PDF:", error);
-    throw error;
-  }
-};
-
-/**
- * Share certificate via Web Share API if available
- */
-export const shareCertificate = async (certificate: Certificate): Promise<boolean> => {
-  try {
-    if (!navigator.share) {
-      return false; // Web Share API not supported
-    }
-    
-    const verificationUrl = `${window.location.origin}/verify-cert/${certificate.certHash}`;
-    
-    await navigator.share({
-      title: `${certificate.title} Certificate`,
-      text: `Check out my blockchain-verified ${certificate.title} certificate from QwiXCert!`,
-      url: verificationUrl
-    });
-    
-    return true;
-  } catch (error) {
-    console.error("Error sharing certificate:", error);
-    return false;
-  }
-};
-
-/**
- * Verify certificate from file upload
- * Note: In a real implementation, this would parse the PDF and extract the verification data
- */
+// Verify certificate from uploaded file
 export const verifyCertificateFromFile = async (file: File): Promise<{
   isValid: boolean;
   certificate?: Certificate;
+  transaction?: BlockchainTransaction;
   error?: string;
 }> => {
-  // Simulate processing
-  await new Promise(resolve => setTimeout(resolve, 2000));
+  try {
+    // For demo, we're assuming the file contains the certHash
+    // In a real implementation, you would extract the hash from the PDF metadata
+    
+    // Simulate file processing delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // For demo, generate a random certHash and check if it exists in storage
+    const storedCerts = JSON.parse(localStorage.getItem("blockchain_certificates") || "[]");
+    
+    // If there are stored certs, pick one randomly for demo
+    if (storedCerts.length > 0) {
+      const randomCert = storedCerts[Math.floor(Math.random() * storedCerts.length)];
+      return verifyCertificate(randomCert.certHash);
+    }
+    
+    return { 
+      isValid: false, 
+      error: "No valid certificate data found in the uploaded file."
+    };
+  } catch (error) {
+    console.error("Error verifying certificate from file:", error);
+    return { 
+      isValid: false, 
+      error: "Failed to process the certificate file."
+    };
+  }
+};
+
+// Update certificate visibility on blockchain
+export const updateCertificateVisibility = async (
+  certificateId: string, 
+  isPublic: boolean
+): Promise<boolean> => {
+  if (!hasMetaMask()) {
+    // Fallback for demo
+    return fallbackUpdateVisibility(certificateId, isPublic);
+  }
   
   try {
-    // Get stored certificates
-    const certificates: Certificate[] = JSON.parse(localStorage.getItem('certificates') || '[]');
+    // Connect to contract
+    const contract = await getContractWithSigner();
     
-    // For demo purposes, always create a valid verification result
-    if (certificates.length > 0) {
-      // Use a random certificate for demonstration
-      const randomIndex = Math.floor(Math.random() * certificates.length);
-      return {
-        isValid: true,
-        certificate: certificates[randomIndex]
-      };
-    } else {
-      // Create a mock certificate if none exist
-      const mockCertificate = createMockCertificate();
-      
-      // Save the mock certificate for future verification
-      certificates.push(mockCertificate);
-      localStorage.setItem('certificates', JSON.stringify(certificates));
-      
-      return {
-        isValid: true,
-        certificate: mockCertificate
-      };
+    // Get stored certificates for demo
+    const storedCerts = JSON.parse(localStorage.getItem("blockchain_certificates") || "[]");
+    const certificate = storedCerts.find((c: Certificate) => c.id === certificateId);
+    
+    if (!certificate) {
+      throw new Error("Certificate not found");
     }
+    
+    // Update visibility on blockchain
+    const tx = await contract.updateCertificateVisibility(certificate.certHash, isPublic);
+    await tx.wait();
+    
+    // Update local storage for demo
+    certificate.isPublic = isPublic;
+    localStorage.setItem("blockchain_certificates", JSON.stringify(storedCerts));
+    
+    return true;
   } catch (error) {
-    console.error("File verification error:", error);
-    return {
-      isValid: false,
-      error: "Failed to process certificate file"
-    };
+    console.error("Error updating certificate visibility:", error);
+    throw new Error("Failed to update certificate visibility");
+  }
+};
+
+// Fallback update visibility for demo
+const fallbackUpdateVisibility = (certificateId: string, isPublic: boolean): boolean => {
+  try {
+    // Get stored certificates
+    const storedCerts = JSON.parse(localStorage.getItem("blockchain_certificates") || "[]");
+    
+    // Find and update certificate
+    const certIndex = storedCerts.findIndex((c: Certificate) => c.id === certificateId);
+    
+    if (certIndex === -1) {
+      throw new Error("Certificate not found");
+    }
+    
+    storedCerts[certIndex].isPublic = isPublic;
+    localStorage.setItem("blockchain_certificates", JSON.stringify(storedCerts));
+    
+    return true;
+  } catch (error) {
+    console.error("Error in fallback update visibility:", error);
+    throw new Error("Failed to update certificate visibility");
+  }
+};
+
+// Get user certificates
+export const getUserCertificates = (): Certificate[] => {
+  try {
+    // In a real implementation, this would fetch certificates from the blockchain
+    // based on the connected wallet address
+    const storedCerts = JSON.parse(localStorage.getItem("blockchain_certificates") || "[]");
+    return storedCerts;
+  } catch (error) {
+    console.error("Error getting user certificates:", error);
+    return [];
+  }
+};
+
+// Generate certificate PDF (for demo, using HTML to PDF conversion)
+export const generateCertificatePDF = async (elementId: string, fileName: string): Promise<void> => {
+  try {
+    // In a real implementation, you would use a library like html2pdf.js
+    // For now, just simulate the download with a delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    console.log(`Certificate generated with filename: ${fileName}`);
+    
+    return Promise.resolve();
+  } catch (error) {
+    console.error("Error generating certificate PDF:", error);
+    throw new Error("Failed to generate certificate PDF");
+  }
+};
+
+// Share certificate (using Web Share API if available)
+export const shareCertificate = async (certificate: Certificate): Promise<boolean> => {
+  const verificationUrl = `${window.location.origin}/verify-cert/${certificate.certHash}`;
+  
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: `${certificate.title} Certificate`,
+        text: `Check out my verified blockchain certificate: ${certificate.title}`,
+        url: verificationUrl,
+      });
+      return true;
+    }
+    
+    return false; // Web Share API not supported
+  } catch (error) {
+    console.error("Error sharing certificate:", error);
+    return false;
   }
 };

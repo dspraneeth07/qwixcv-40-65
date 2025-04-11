@@ -1,6 +1,7 @@
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
+import { BlockchainProvider } from "./context/BlockchainContext";
 import { Toaster } from "@/components/ui/toaster";
 import Index from "./pages/Index";
 import ResumeBuilder from "./pages/ResumeBuilder";
@@ -42,26 +43,28 @@ function App() {
 
   return (
     <ThemeProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/builder" element={<ResumeBuilder />} />
-          <Route path="/resume-preview" element={<ResumePreview />} />
-          <Route path="/share-to-company" element={<ShareToCompany />} />
-          <Route path="/job-board" element={<JobBoard />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/ats-scanner" element={<ATSScanner />} />
-          <Route path="/resume-compare" element={<ResumeCompare />} />
-          <Route path="/career-path-simulator" element={<CareerPathSimulator />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/certification-center" element={<CertificationCenter />} />
-          <Route path="/certification/:testId" element={<CertificationTest />} />
-          <Route path="/verify-cert/:certHash?" element={<CertificateVerification />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <Toaster />
-      </BrowserRouter>
+      <BlockchainProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/builder" element={<ResumeBuilder />} />
+            <Route path="/resume-preview" element={<ResumePreview />} />
+            <Route path="/share-to-company" element={<ShareToCompany />} />
+            <Route path="/job-board" element={<JobBoard />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/ats-scanner" element={<ATSScanner />} />
+            <Route path="/resume-compare" element={<ResumeCompare />} />
+            <Route path="/career-path-simulator" element={<CareerPathSimulator />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/certification-center" element={<CertificationCenter />} />
+            <Route path="/certification/:testId" element={<CertificationTest />} />
+            <Route path="/verify-cert/:certHash?" element={<CertificateVerification />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <Toaster />
+        </BrowserRouter>
+      </BlockchainProvider>
     </ThemeProvider>
   );
 }
