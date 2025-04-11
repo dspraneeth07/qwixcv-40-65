@@ -27,13 +27,29 @@ export const generateCertificateHash = (): string => {
 
 // Get user certificates from localStorage
 export const getUserCertificates = (): Certificate[] => {
-  const storedCerts = localStorage.getItem(CERTIFICATES_STORAGE_KEY);
-  return storedCerts ? JSON.parse(storedCerts) : [];
+  if (typeof window === 'undefined') return [];
+  
+  try {
+    const storedCerts = localStorage.getItem(CERTIFICATES_STORAGE_KEY);
+    const certs = storedCerts ? JSON.parse(storedCerts) : [];
+    console.log("Retrieved certificates from storage:", certs);
+    return certs;
+  } catch (error) {
+    console.error("Error retrieving certificates:", error);
+    return [];
+  }
 };
 
 // Save certificates to localStorage
 const saveCertificates = (certificates: Certificate[]): void => {
-  localStorage.setItem(CERTIFICATES_STORAGE_KEY, JSON.stringify(certificates));
+  if (typeof window === 'undefined') return;
+  
+  try {
+    localStorage.setItem(CERTIFICATES_STORAGE_KEY, JSON.stringify(certificates));
+    console.log("Saved certificates to storage:", certificates);
+  } catch (error) {
+    console.error("Error saving certificates:", error);
+  }
 };
 
 // Generate a certificate
@@ -73,6 +89,8 @@ export const generateCertificate = async (
   certificates.push(certificate);
   saveCertificates(certificates);
   
+  console.log("Generated new certificate:", certificate);
+  
   // Simulate blockchain delay
   await new Promise(resolve => setTimeout(resolve, 2000));
   
@@ -96,18 +114,32 @@ export const updateCertificateVisibility = (certificateId: string, isPublic: boo
 export const findCertificate = (identifier: string, method: VerificationMethod = 'certHash'): Certificate | null => {
   const certificates = getUserCertificates();
   
+  // Clean up the identifier by trimming whitespace
+  const cleanIdentifier = identifier.trim();
+  
+  console.log(`Finding certificate with ${method}: "${cleanIdentifier}"`, certificates);
+  
+  let foundCert: Certificate | null = null;
+  
   switch (method) {
     case 'certHash':
-      return certificates.find(cert => cert.certHash === identifier) || null;
+      foundCert = certificates.find(cert => cert.certHash === cleanIdentifier) || null;
+      break;
     case 'txHash':
-      return certificates.find(cert => cert.txHash === identifier) || null;
+      foundCert = certificates.find(cert => cert.txHash === cleanIdentifier) || null;
+      break;
     case 'uniqueId':
-      return certificates.find(cert => cert.uniqueId === identifier) || null;
+      foundCert = certificates.find(cert => cert.uniqueId === cleanIdentifier) || null;
+      break;
     case 'blockId':
-      return certificates.find(cert => cert.blockId.toString() === identifier) || null;
+      foundCert = certificates.find(cert => cert.blockId.toString() === cleanIdentifier) || null;
+      break;
     default:
-      return null;
+      foundCert = null;
   }
+  
+  console.log("Found certificate:", foundCert);
+  return foundCert;
 };
 
 // Verify a certificate
@@ -210,7 +242,9 @@ export const generateCertificatePDF = async (elementId: string, fileName: string
 export const shareCertificate = async (certificate: Certificate): Promise<boolean> => {
   if (!certificate) return false;
   
-  const verificationUrl = `${window.location.origin}/verify-cert/${certificate.certHash}`;
+  // Ensure the verification URL is consistent
+  const baseUrl = window.location.origin.replace(/\/+$/, '');
+  const verificationUrl = `${baseUrl}/verify-cert/${certificate.certHash}`;
   
   if (navigator.share) {
     try {

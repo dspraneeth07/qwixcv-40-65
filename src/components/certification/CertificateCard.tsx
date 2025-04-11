@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +29,8 @@ const CertificateCard = ({ certificate, onUpdateVisibility }: CertificateCardPro
   
   const { id, title, score, issuedDate, txHash, isPublic, certHash, blockId } = certificate;
   
-  const verificationUrl = `${window.location.origin}/verify-cert/${certHash}`;
+  const baseUrl = window.location.origin.replace(/\/+$/, '');
+  const verificationUrl = `${baseUrl}/verify-cert/${certHash}`;
   
   const toggleVisibility = () => {
     onUpdateVisibility(id, !isPublic);
@@ -48,119 +48,77 @@ const CertificateCard = ({ certificate, onUpdateVisibility }: CertificateCardPro
     setIsLoading(true);
     
     try {
-      // Create temporary div for PDF generation if not in view
       const tempDiv = document.createElement('div');
       tempDiv.id = `temp-cert-${id}`;
       tempDiv.style.position = 'absolute';
       tempDiv.style.left = '-9999px';
       document.body.appendChild(tempDiv);
       
-      // Create simplified certificate design for PDF with A4 landscape dimensions
-      tempDiv.innerHTML = `
-        <div style="padding: 40px; font-family: 'SF Pro Display', Arial, sans-serif; color: white; background: linear-gradient(to right, #3b82f6, #8b5cf6); width: 1122px; height: 793px; position: relative;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
-            <h2 style="font-size: 32px; font-weight: bold;">QwiXCertChain</h2>
-            <div style="background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.4);">
-              Blockchain Verified
-            </div>
-          </div>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <h1 style="font-size: 48px; font-weight: bold; margin-bottom: 20px;">${title}</h1>
-            <p style="font-size: 24px; opacity: 0.9; margin-bottom: 10px;">This certificate is awarded to</p>
-            <p style="font-size: 36px; font-weight: bold; margin-bottom: 30px;">${certificate.recipientName}</p>
-            <p style="font-size: 20px;">For successfully demonstrating proficiency with a score of <strong>${score}%</strong></p>
-          </div>
-          
-          <div style="display: flex; justify-content: space-between; margin-top: 60px;">
-            <div>
-              <p style="font-size: 18px; margin-bottom: 5px;">Issued by: ${certificate.issuer}</p>
-              <p style="font-size: 18px;">Issue Date: ${new Date(issuedDate).toLocaleDateString()}</p>
-            </div>
-            <div>
-              <p style="font-size: 18px; margin-bottom: 5px;">Certificate ID: ${certificate.uniqueId}</p>
-              <p style="font-size: 18px;">Blockchain: ${certificate.blockchainNetwork}</p>
-            </div>
-          </div>
-          
-          <div style="position: absolute; bottom: 40px; width: calc(100% - 80px);">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-              <div style="font-size: 12px;">
-                <p>Transaction: ${txHash.substring(0, 10)}...${txHash.substring(txHash.length - 5)}</p>
-                <p>Block ID: ${blockId || 'N/A'}</p>
-                <p>Certificate Hash: ${certHash}</p>
-              </div>
-              <div style="text-align: center; background: white; padding: 15px; border-radius: 8px;">
-                <img src="data:image/svg+xml;base64,${btoa(
-                  new XMLSerializer().serializeToString(
-                    document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-                  )
-                )}" alt="QR Code" width="100" height="100" />
-                <p style="color: #333; font-size: 12px; margin-top: 5px;">Scan to verify</p>
-              </div>
-            </div>
-            <p style="text-align: center; margin-top: 20px; font-size: 14px;">
-              Verify the authenticity of this certificate at: ${verificationUrl}
-            </p>
-          </div>
-        </div>
-      `;
-      
-      // Replace the placeholder QR code with a real one
-      const qrCodeImg = document.createElement('img');
-      // Use a different approach to generate QR code image
-      const qrComponent = document.createElement('div');
-      qrComponent.style.display = 'none';
-      document.body.appendChild(qrComponent);
-      
-      // Render the QR code to the hidden div
-      const qrElement = document.createElement('div');
-      qrComponent.appendChild(qrElement);
-      
-      // Create a temporary QR code container
-      const tempQrContainer = document.createElement('div');
-      tempQrContainer.id = 'temp-qr-container';
-      tempQrContainer.innerHTML = `
-        <div style="padding: 10px; background: white;">
-          <svg id="temp-qr-svg" width="100" height="100"></svg>
-        </div>
-      `;
-      document.body.appendChild(tempQrContainer);
+      const qrCodeCanvas = document.createElement('canvas');
+      qrCodeCanvas.id = 'temp-qr-canvas';
+      qrCodeCanvas.width = 150;
+      qrCodeCanvas.height = 150;
+      document.body.appendChild(qrCodeCanvas);
       
       try {
-        // Import necessary modules dynamically
-        const html2canvasModule = await import('html2canvas');
-        const html2canvas = html2canvasModule.default;
-        
-        // Create QR code SVG using the QRCode library
-        // Note: Using the qrcode.react library to generate QR code for display
-        // For PDF, we generate the QR code manually as SVG
-        const qrcodeModule = await import('qrcode');
-        const qrSvgString = await qrcodeModule.default.toString(verificationUrl, {
-          type: 'svg',
-          width: 100,
+        const QRCodeLibrary = await import('qrcode');
+        await QRCodeLibrary.toCanvas(qrCodeCanvas, verificationUrl, {
+          width: 150,
           margin: 0,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+          }
         });
         
-        // Insert the SVG string
-        const svgElement = document.getElementById('temp-qr-svg');
-        if (svgElement) {
-          svgElement.outerHTML = qrSvgString;
-        }
+        const qrDataUrl = qrCodeCanvas.toDataURL('image/png');
         
-        // Capture the QR code as an image
-        const qrCanvas = await html2canvas(document.getElementById('temp-qr-container') as HTMLElement);
-        qrCodeImg.src = qrCanvas.toDataURL('image/png');
-        qrCodeImg.width = 100;
-        qrCodeImg.height = 100;
+        tempDiv.innerHTML = `
+          <div style="padding: 40px; font-family: 'SF Pro Display', Arial, sans-serif; color: white; background: linear-gradient(to right, #3b82f6, #8b5cf6); width: 1122px; height: 793px; position: relative;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
+              <h2 style="font-size: 32px; font-weight: bold;">QwiXCertChain</h2>
+              <div style="background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.4);">
+                Blockchain Verified
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <h1 style="font-size: 48px; font-weight: bold; margin-bottom: 20px;">${title}</h1>
+              <p style="font-size: 24px; opacity: 0.9; margin-bottom: 10px;">This certificate is awarded to</p>
+              <p style="font-size: 36px; font-weight: bold; margin-bottom: 30px;">${certificate.recipientName}</p>
+              <p style="font-size: 20px;">For successfully demonstrating proficiency with a score of <strong>${score}%</strong></p>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; margin-top: 60px;">
+              <div>
+                <p style="font-size: 18px; margin-bottom: 5px;">Issued by: ${certificate.issuer}</p>
+                <p style="font-size: 18px;">Issue Date: ${new Date(issuedDate).toLocaleDateString()}</p>
+              </div>
+              <div>
+                <p style="font-size: 18px; margin-bottom: 5px;">Certificate ID: ${certificate.uniqueId}</p>
+                <p style="font-size: 18px;">Blockchain: ${certificate.blockchainNetwork}</p>
+              </div>
+            </div>
+            
+            <div style="position: absolute; bottom: 40px; width: calc(100% - 80px);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <div style="font-size: 12px;">
+                  <p>Transaction: ${txHash.substring(0, 10)}...${txHash.substring(txHash.length - 5)}</p>
+                  <p>Block ID: ${blockId || 'N/A'}</p>
+                  <p>Certificate Hash: ${certHash}</p>
+                </div>
+                <div style="text-align: center; background: white; padding: 15px; border-radius: 8px;">
+                  <img src="${qrDataUrl}" alt="QR Code" width="100" height="100" />
+                  <p style="color: #333; font-size: 12px; margin-top: 5px;">Scan to verify</p>
+                </div>
+              </div>
+              <p style="text-align: center; margin-top: 20px; font-size: 14px;">
+                Verify the authenticity of this certificate at: ${verificationUrl}
+              </p>
+            </div>
+          </div>
+        `;
         
-        // Replace the placeholder
-        const qrPlaceholder = tempDiv.querySelector('img');
-        if (qrPlaceholder && qrPlaceholder.parentNode) {
-          qrPlaceholder.parentNode.replaceChild(qrCodeImg, qrPlaceholder);
-        }
-        
-        // Generate the PDF
         const fileName = `${title.replace(/\s+/g, '_')}_Certificate.pdf`;
         await generateCertificatePDF(`temp-cert-${id}`, fileName);
         
@@ -172,17 +130,12 @@ const CertificateCard = ({ certificate, onUpdateVisibility }: CertificateCardPro
         console.error("Error processing QR code:", error);
         throw error;
       } finally {
-        // Clean up
         if (document.body.contains(tempDiv)) {
           document.body.removeChild(tempDiv);
         }
-        if (document.body.contains(tempQrContainer)) {
-          document.body.removeChild(tempQrContainer);
+        if (document.body.contains(qrCodeCanvas)) {
+          document.body.removeChild(qrCodeCanvas);
         }
-        if (document.body.contains(qrComponent)) {
-          document.body.removeChild(qrComponent);
-        }
-        setIsLoading(false);
       }
       
     } catch (error) {
@@ -192,6 +145,7 @@ const CertificateCard = ({ certificate, onUpdateVisibility }: CertificateCardPro
         description: "Failed to download certificate as PDF",
         variant: "destructive"
       });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -208,7 +162,6 @@ const CertificateCard = ({ certificate, onUpdateVisibility }: CertificateCardPro
           description: "Your certificate has been shared successfully",
         });
       } else {
-        // Fallback to copy link if Web Share API is not supported
         copyToClipboard();
       }
     } catch (error) {

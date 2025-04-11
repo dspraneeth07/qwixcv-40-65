@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,13 +42,14 @@ const CertificateVerifier = ({ initialHash }: CertificateVerifierProps) => {
 
   // Debug log certificates when component mounts
   useEffect(() => {
-    console.log("Available certificates:", getUserCertificates());
+    const certificates = getUserCertificates();
+    console.log("Available certificates:", certificates);
     console.log("Initial hash:", initialHash);
   }, [initialHash]);
 
   // Auto-verify if initialHash is provided
   useEffect(() => {
-    if (initialHash) {
+    if (initialHash && initialHash.trim() !== '') {
       console.log("Auto-verifying with hash:", initialHash);
       handleVerify();
     }
@@ -71,9 +71,12 @@ const CertificateVerifier = ({ initialHash }: CertificateVerifierProps) => {
     try {
       console.log("Verifying with:", { certHash, method: verificationMethod });
       
+      // Clean up the certHash to remove any whitespace
+      const cleanCertHash = certHash.trim();
+      
       // Only use valid verification methods for the verifyCertificate function
       const validMethod = verificationMethod === 'file' ? 'certHash' : verificationMethod;
-      const verificationResult = await verifyCertificate(certHash, validMethod);
+      const verificationResult = await verifyCertificate(cleanCertHash, validMethod);
       
       console.log("Verification result:", verificationResult);
       setResult(verificationResult);
@@ -228,16 +231,17 @@ const CertificateVerifier = ({ initialHash }: CertificateVerifierProps) => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
   
-  const verificationUrl = result?.certificate 
-    ? `${window.location.origin}/verify-cert/${result.certificate.certHash}` 
-    : `${window.location.origin}/verify-cert`;
-
   const verificationMethodOptions = [
     { value: 'certHash', label: 'Certificate Hash' },
     { value: 'txHash', label: 'Transaction Hash' },
     { value: 'blockId', label: 'Block ID' },
     { value: 'uniqueId', label: 'Certificate ID' }
   ];
+
+  const baseUrl = window.location.origin.replace(/\/+$/, '');
+  const verificationUrl = result?.certificate 
+    ? `${baseUrl}/verify-cert/${result.certificate.certHash}` 
+    : `${baseUrl}/verify-cert`;
 
   return (
     <Card className="w-full max-w-3xl mx-auto shadow-md">
