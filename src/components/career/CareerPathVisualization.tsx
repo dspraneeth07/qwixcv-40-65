@@ -2,7 +2,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 import { CareerPath, CareerNode } from "@/types/career";
-import { Toast } from "@/components/ui/toast";
 
 interface CareerPathVisualizationProps {
   path: CareerPath;
@@ -57,42 +56,40 @@ export const CareerPathVisualization = ({ path, onRoleSelect }: CareerPathVisual
     // Career path visualization objects
     const nodes: THREE.Mesh[] = [];
     const nodeObjects: { node: CareerNode, mesh: THREE.Mesh }[] = [];
-    const segmentLength = 10;
     
     // Create nodes and connections
-    path.nodes.forEach((node, index) => {
-      // Create a node sphere with a glowing material
+    path.nodes.forEach((careerNode, index) => {
+      // Create node sphere with a professional color scheme
       const nodeGeometry = new THREE.SphereGeometry(1, 32, 32);
       
-      // Different colors for different types of paths
+      // Use professional colors based on path type
       let nodeColor;
       if (path.type === "ambitious") {
-        nodeColor = new THREE.Color(0x8b5cf6); // Purple
-      } else if (path.type === "skills") {
         nodeColor = new THREE.Color(0x3b82f6); // Blue
-      } else {
+      } else if (path.type === "skills") {
         nodeColor = new THREE.Color(0x10b981); // Green
+      } else {
+        nodeColor = new THREE.Color(0x8b5cf6); // Purple
       }
       
       const nodeMaterial = new THREE.MeshStandardMaterial({
         color: nodeColor,
-        metalness: 0.2,
-        roughness: 0.5,
+        metalness: 0.3,
+        roughness: 0.4,
         emissive: nodeColor,
-        emissiveIntensity: 0.4,
+        emissiveIntensity: 0.3,
       });
       
       const nodeMesh = new THREE.Mesh(nodeGeometry, nodeMaterial);
       
-      // Position nodes along a curved path
-      const angle = index * 0.3; // Spread nodes in a gentle arc
-      const x = index * segmentLength - ((path.nodes.length - 1) * segmentLength) / 2;
-      const y = Math.sin(angle) * 5; // Gentle vertical curve
+      // Position nodes in a straight professional line with consistent spacing
+      const spacing = 10;
+      const x = index * spacing - ((path.nodes.length - 1) * spacing) / 2;
       
-      nodeMesh.position.set(x, y, 0);
+      nodeMesh.position.set(x, 0, 0);
       scene.add(nodeMesh);
       nodes.push(nodeMesh);
-      nodeObjects.push({ node, mesh: nodeMesh });
+      nodeObjects.push({ node: careerNode, mesh: nodeMesh });
       
       // Add a text label for the node
       const canvas = document.createElement('canvas');
@@ -107,7 +104,7 @@ export const CareerPathVisualization = ({ path, onRoleSelect }: CareerPathVisual
         context.font = 'bold 24px Arial';
         context.fillStyle = 'white';
         context.textAlign = 'center';
-        context.fillText(node.title, canvas.width / 2, canvas.height / 2);
+        context.fillText(careerNode.title, canvas.width / 2, canvas.height / 2);
         
         const texture = new THREE.CanvasTexture(canvas);
         const textMaterial = new THREE.MeshBasicMaterial({
@@ -118,44 +115,64 @@ export const CareerPathVisualization = ({ path, onRoleSelect }: CareerPathVisual
         
         const textGeometry = new THREE.PlaneGeometry(8, 4);
         const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-        textMesh.position.set(x, y - 2.5, 0);
+        textMesh.position.set(x, -2.5, 0);
         scene.add(textMesh);
       }
       
-      // Connect nodes with a glowing tube (except for the first node)
+      // Connect nodes with arrow tubes (except for the first node)
       if (index > 0) {
         const prevNode = nodes[index - 1];
         
-        // Create curve for the path between nodes
-        const curve = new THREE.CatmullRomCurve3([
-          new THREE.Vector3(prevNode.position.x, prevNode.position.y, prevNode.position.z),
-          new THREE.Vector3(x, y, 0)
-        ]);
+        // Create arrow connector between nodes
+        const start = new THREE.Vector3(prevNode.position.x + 1.2, prevNode.position.y, prevNode.position.z);
+        const end = new THREE.Vector3(nodeMesh.position.x - 1.2, nodeMesh.position.y, nodeMesh.position.z);
         
-        // Create tube geometry along the curve
-        const tubeGeometry = new THREE.TubeGeometry(
-          curve,
-          20,  // tubular segments
-          0.3, // tube radius
-          8,   // radial segments
-          false // closed
-        );
+        // Create the arrow shaft as a cylinder
+        const direction = new THREE.Vector3().subVectors(end, start);
+        const arrowLength = direction.length();
+        direction.normalize();
         
-        // Create glowing material for the tube
-        const tubeMaterial = new THREE.MeshStandardMaterial({
+        const arrowShaftGeometry = new THREE.CylinderGeometry(0.2, 0.2, arrowLength, 12);
+        const arrowShaftMaterial = new THREE.MeshStandardMaterial({
           color: nodeColor,
           transparent: true,
           opacity: 0.7,
           emissive: nodeColor,
+          emissiveIntensity: 0.3,
+        });
+        
+        const arrowShaft = new THREE.Mesh(arrowShaftGeometry, arrowShaftMaterial);
+        
+        // Position and rotate the arrow shaft to point from start to end
+        arrowShaft.position.copy(start).add(direction.clone().multiplyScalar(arrowLength / 2));
+        
+        // Calculate rotation to align cylinder with direction
+        const axis = new THREE.Vector3(0, 1, 0);
+        arrowShaft.quaternion.setFromUnitVectors(axis, direction);
+        arrowShaft.rotateX(Math.PI / 2);
+        
+        scene.add(arrowShaft);
+        
+        // Create arrow head as a cone
+        const arrowHeadGeometry = new THREE.ConeGeometry(0.4, 1, 12);
+        const arrowHeadMaterial = new THREE.MeshStandardMaterial({
+          color: nodeColor,
+          emissive: nodeColor,
           emissiveIntensity: 0.5,
         });
         
-        const tube = new THREE.Mesh(tubeGeometry, tubeMaterial);
-        scene.add(tube);
+        const arrowHead = new THREE.Mesh(arrowHeadGeometry, arrowHeadMaterial);
+        arrowHead.position.copy(end);
+        
+        // Align arrow head with direction
+        arrowHead.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+        arrowHead.rotateX(Math.PI / 2);
+        
+        scene.add(arrowHead);
       }
       
       // Add year labels
-      if (node.yearsFromNow >= 0) {
+      if (careerNode.yearsFromNow >= 0) {
         const yearCanvas = document.createElement('canvas');
         yearCanvas.width = 128;
         yearCanvas.height = 64;
@@ -166,10 +183,10 @@ export const CareerPathVisualization = ({ path, onRoleSelect }: CareerPathVisual
           yearContext.fillRect(0, 0, yearCanvas.width, yearCanvas.height);
           
           yearContext.font = '18px Arial';
-          yearContext.fillStyle = 'rgba(255, 255, 255, 0.7)';
+          yearContext.fillStyle = 'rgba(255, 255, 255, 0.8)';
           yearContext.textAlign = 'center';
           yearContext.fillText(
-            node.yearsFromNow > 0 ? `+${node.yearsFromNow} years` : 'Now', 
+            careerNode.yearsFromNow > 0 ? `+${careerNode.yearsFromNow} years` : 'Now', 
             yearCanvas.width / 2, 
             yearCanvas.height / 2
           );
@@ -183,7 +200,7 @@ export const CareerPathVisualization = ({ path, onRoleSelect }: CareerPathVisual
           
           const yearGeometry = new THREE.PlaneGeometry(4, 2);
           const yearMesh = new THREE.Mesh(yearGeometry, yearMaterial);
-          yearMesh.position.set(x, y + 2.5, 0);
+          yearMesh.position.set(x, 2.5, 0);
           scene.add(yearMesh);
         }
       }
@@ -204,7 +221,7 @@ export const CareerPathVisualization = ({ path, onRoleSelect }: CareerPathVisual
       const intersects = raycaster.intersectObjects(nodes);
       
       if (intersects.length > 0) {
-        const clickedNode = intersects[0].object;
+        const clickedNode = intersects[0].object as THREE.Mesh;
         const nodeObject = nodeObjects.find(obj => obj.mesh === clickedNode);
         
         if (nodeObject) {
@@ -212,10 +229,12 @@ export const CareerPathVisualization = ({ path, onRoleSelect }: CareerPathVisual
           
           // Highlight the selected node
           nodes.forEach(node => {
-            (node.material as THREE.MeshStandardMaterial).emissiveIntensity = 0.4;
+            const material = node.material as THREE.MeshStandardMaterial;
+            material.emissiveIntensity = 0.3;
           });
           
-          (clickedNode.material as THREE.MeshStandardMaterial).emissiveIntensity = 1.0;
+          const clickedMaterial = clickedNode.material as THREE.MeshStandardMaterial;
+          clickedMaterial.emissiveIntensity = 0.8;
         }
       }
     };
@@ -233,7 +252,7 @@ export const CareerPathVisualization = ({ path, onRoleSelect }: CareerPathVisual
       if (intersects.length > 0) {
         container.style.cursor = 'pointer';
         
-        const hoveredNode = intersects[0].object;
+        const hoveredNode = intersects[0].object as THREE.Mesh;
         const nodeObject = nodeObjects.find(obj => obj.mesh === hoveredNode);
         
         if (nodeObject) {
@@ -254,25 +273,14 @@ export const CareerPathVisualization = ({ path, onRoleSelect }: CareerPathVisual
     container.addEventListener('click', handleClick);
     container.addEventListener('mousemove', handleMouseMove);
     
-    // Add subtle camera movement
+    // Add professional camera movement
     let time = 0;
     const animate = () => {
       requestAnimationFrame(animate);
       
-      time += 0.002;
-      camera.position.y = Math.sin(time) * 2;
-      camera.position.x = Math.cos(time) * 5;
+      time += 0.001;
+      camera.position.y = Math.sin(time) * 1.5;
       camera.lookAt(0, 0, 0);
-      
-      // Animate nodes with a subtle pulse
-      nodes.forEach((node, index) => {
-        const scale = 1 + Math.sin(time * 2 + index) * 0.05;
-        node.scale.set(scale, scale, scale);
-        
-        // Also animate the emissive intensity for a glow effect
-        const material = node.material as THREE.MeshStandardMaterial;
-        material.emissiveIntensity = 0.4 + Math.sin(time * 2 + index) * 0.15;
-      });
       
       renderer.render(scene, camera);
     };
@@ -326,18 +334,19 @@ export const CareerPathVisualization = ({ path, onRoleSelect }: CareerPathVisual
       <div ref={containerRef} className="w-full h-full"></div>
       {tooltipContent && tooltipPosition && (
         <div
-          className="absolute bg-white shadow-lg rounded-lg p-3 z-50 w-56 text-left pointer-events-none animate-fade-in"
+          className="absolute bg-white shadow-lg rounded-lg p-3 z-50 w-64 text-left pointer-events-none"
           style={{
             left: `${tooltipPosition.x + 10}px`,
-            top: `${tooltipPosition.y + 10}px`,
-            transform: 'translate(-50%, -100%)'
+            top: `${tooltipPosition.y - 10}px`,
+            transform: 'translate(-50%, -100%)',
+            border: '1px solid rgba(226, 232, 240, 1)'
           }}
         >
-          <p className="font-medium">{tooltipContent.title}</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {tooltipContent.yearsFromNow > 0 ? `+${tooltipContent.yearsFromNow} years` : 'Current'}
+          <p className="font-medium text-gray-900">{tooltipContent.title}</p>
+          <p className="text-sm text-gray-600 mt-1">
+            {tooltipContent.yearsFromNow > 0 ? `+${tooltipContent.yearsFromNow} years` : 'Current Position'}
           </p>
-          <p className="text-xs mt-2">Click to view details</p>
+          <p className="text-xs mt-2 text-gray-500">Click to view details</p>
         </div>
       )}
     </div>

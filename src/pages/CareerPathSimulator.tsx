@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Upload, FileText, RefreshCw, Download, Info, Box, Brain, ArrowRight } from "lucide-react";
+import { Sparkles, Upload, RefreshCw, Download, Info, Box, Brain, ArrowRight, FilePlus2 } from "lucide-react";
 import { generateCareerPaths } from "@/utils/careerPathGenerator";
 import { CareerPathVisualization } from "@/components/career/CareerPathVisualization";
 import { resumeParser } from "@/utils/resumeParser";
@@ -25,16 +25,6 @@ const CareerPathSimulator = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
-  // Demo resume data for testing
-  const demoResumeData = {
-    currentRole: "Software Developer",
-    yearsOfExperience: 3,
-    skills: ["JavaScript", "React", "Node.js", "TypeScript", "HTML", "CSS", "Git"],
-    softSkills: ["Communication", "Problem Solving", "Teamwork"],
-    education: ["Bachelor of Science in Computer Science"],
-    certifications: ["AWS Certified Developer"]
-  };
-
   // Handle file upload
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -42,23 +32,22 @@ const CareerPathSimulator = () => {
 
     setIsLoading(true);
     try {
-      // In a real implementation, this would parse the PDF
-      // For demo purposes, we'll use the demo data
+      // Parse the resume with our AI-enhanced parser
       const parsedResume = await resumeParser(file);
-      setResumeData(parsedResume || demoResumeData);
+      setResumeData(parsedResume);
       
       toast({
-        title: "Resume uploaded successfully!",
-        description: "Now generating your career paths...",
+        title: "Resume analyzed successfully!",
+        description: "Generating your personalized career paths...",
       });
       
       // Generate career paths based on resume data
-      generatePaths();
+      generatePaths(parsedResume);
     } catch (error) {
       console.error("Error uploading resume:", error);
       toast({
-        title: "Error uploading resume",
-        description: "There was an issue processing your resume. Please try again.",
+        title: "Error processing resume",
+        description: "There was an issue analyzing your resume. Please try again with a different PDF.",
         variant: "destructive",
       });
     } finally {
@@ -66,25 +55,30 @@ const CareerPathSimulator = () => {
     }
   };
 
-  // Use existing resume from QwiX CV
-  const useExistingResume = () => {
-    setIsLoading(true);
-    // In a real app, this would fetch the user's resume data from the app's state
-    setTimeout(() => {
-      setResumeData(demoResumeData);
-      generatePaths();
-      setIsLoading(false);
-    }, 1000);
-  };
-
   // Generate career paths
-  const generatePaths = async () => {
+  const generatePaths = async (data: any = null) => {
     setIsLoading(true);
     try {
-      const paths = await generateCareerPaths(resumeData || demoResumeData);
+      const dataToUse = data || resumeData;
+      if (!dataToUse) {
+        toast({
+          title: "No resume data",
+          description: "Please upload your resume first.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      const paths = await generateCareerPaths(dataToUse);
       setCareerPaths(paths);
       setActivePathIndex(0);
       setSelectedRole(null);
+      
+      toast({
+        title: "Career paths generated",
+        description: "Your personalized career roadmap is ready to explore.",
+      });
     } catch (error) {
       console.error("Error generating career paths:", error);
       toast({
@@ -121,20 +115,6 @@ const CareerPathSimulator = () => {
   return (
     <MainLayout>
       <div className="container py-8 md:py-12 relative">
-        {/* Animated background elements */}
-        <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600/10 blur-3xl rounded-full animate-pulse"></div>
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-600/10 blur-3xl rounded-full animate-pulse" style={{ animationDelay: '1.5s' }}></div>
-          
-          {/* Dynamic grid pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="w-full h-full" style={{ 
-              backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.3) 1px, transparent 1px)',
-              backgroundSize: '40px 40px' 
-            }}></div>
-          </div>
-        </div>
-
         {/* Header with hackathon badge */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
           <div>
@@ -152,53 +132,53 @@ const CareerPathSimulator = () => {
         </div>
 
         {!resumeData ? (
-          <Card className="border shadow-lg mb-8 glassmorphism">
+          <Card className="border shadow-md mb-8">
             <CardHeader>
               <CardTitle>Upload Your Resume</CardTitle>
               <CardDescription>
-                Choose how you want to simulate your career paths
+                Upload your resume to generate personalized career path options
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div 
-                  className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-gray-400 transition-all cursor-pointer"
-                  onClick={triggerFileUpload}
-                >
-                  <Upload className="h-10 w-10 mx-auto text-gray-400 mb-4" />
-                  <h3 className="font-semibold text-lg mb-2">Upload Resume</h3>
-                  <p className="text-sm text-gray-500">
-                    Upload your resume in PDF format
-                  </p>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
+              <div 
+                className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-modern-blue-500 transition-all cursor-pointer bg-gray-50"
+                onClick={triggerFileUpload}
+              >
+                <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-modern-blue-100 text-modern-blue-500 mb-4">
+                  <FilePlus2 className="h-8 w-8" />
                 </div>
-
-                <div 
-                  className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-gray-400 transition-all cursor-pointer"
-                  onClick={useExistingResume}
+                <h3 className="font-semibold text-lg mb-2">Upload Resume (PDF)</h3>
+                <p className="text-sm text-gray-500 max-w-md mx-auto">
+                  Upload your resume to let our AI analyze your experience and skills to generate personalized career path options
+                </p>
+                <Button 
+                  variant="default" 
+                  className="mt-4 bg-modern-blue-600 hover:bg-modern-blue-700"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    triggerFileUpload();
+                  }}
                 >
-                  <FileText className="h-10 w-10 mx-auto text-gray-400 mb-4" />
-                  <h3 className="font-semibold text-lg mb-2">Use Existing Resume</h3>
-                  <p className="text-sm text-gray-500">
-                    Use the resume you've already created with QwiX CV
-                  </p>
-                </div>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Select PDF File
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
               </div>
             </CardContent>
           </Card>
         ) : (
           <>
             {/* Resume Summary */}
-            <Card className="border shadow-md mb-8 glassmorphism">
+            <Card className="border shadow-md mb-8">
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-center">
-                  <CardTitle>Resume Summary</CardTitle>
+                  <CardTitle>Resume Analysis</CardTitle>
                   <Button variant="outline" size="sm" onClick={() => setResumeData(null)}>
                     Change Resume
                   </Button>
@@ -227,16 +207,34 @@ const CareerPathSimulator = () => {
                     ))}
                   </div>
                 </div>
+                <div className="mt-4">
+                  <Label className="text-sm text-muted-foreground">Soft Skills</Label>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {resumeData.softSkills.map((skill: string, index: number) => (
+                      <Badge key={index} variant="outline" className="bg-gray-50">{skill}</Badge>
+                    ))}
+                  </div>
+                </div>
+                {resumeData.certifications && resumeData.certifications.length > 0 && (
+                  <div className="mt-4">
+                    <Label className="text-sm text-muted-foreground">Certifications</Label>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {resumeData.certifications.map((cert: string, index: number) => (
+                        <Badge key={index} variant="default" className="bg-modern-blue-100 text-modern-blue-800 hover:bg-modern-blue-200">{cert}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             {/* Career Path Visualization */}
-            <Card className="border shadow-lg mb-8 glassmorphism">
+            <Card className="border shadow-lg mb-8">
               <CardHeader>
                 <div className="flex justify-between items-center flex-wrap gap-4">
                   <CardTitle>Your Career Path Options</CardTitle>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={generatePaths} disabled={isLoading}>
+                    <Button variant="outline" size="sm" onClick={() => generatePaths()} disabled={isLoading}>
                       <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
                       Regenerate Paths
                     </Button>
@@ -254,7 +252,7 @@ const CareerPathSimulator = () => {
                 {isLoading ? (
                   <div className="h-96 flex flex-col items-center justify-center">
                     <div className="h-16 w-16 border-4 border-t-modern-blue-500 border-modern-blue-200 rounded-full animate-spin mb-4"></div>
-                    <p className="text-muted-foreground">Generating your career paths...</p>
+                    <p className="text-muted-foreground">Analyzing your career options...</p>
                   </div>
                 ) : careerPaths ? (
                   <>
@@ -265,28 +263,28 @@ const CareerPathSimulator = () => {
                       <TabsList className="grid w-full grid-cols-3 mb-6">
                         <TabsTrigger value="ambitious" className="flex items-center gap-2">
                           <Box className="h-4 w-4" />
-                          <span className="hidden sm:inline">Ambitious Path</span>
-                          <span className="sm:hidden">Ambitious</span>
+                          <span className="hidden sm:inline">Leadership Track</span>
+                          <span className="sm:hidden">Leadership</span>
                         </TabsTrigger>
                         <TabsTrigger value="skills" className="flex items-center gap-2">
                           <Brain className="h-4 w-4" />
-                          <span className="hidden sm:inline">Skills Growth</span>
-                          <span className="sm:hidden">Skills</span>
+                          <span className="hidden sm:inline">Technical Path</span>
+                          <span className="sm:hidden">Technical</span>
                         </TabsTrigger>
                         <TabsTrigger value="balanced" className="flex items-center gap-2">
                           <RefreshCw className="h-4 w-4" />
-                          <span className="hidden sm:inline">Balanced Path</span>
+                          <span className="hidden sm:inline">Balanced Growth</span>
                           <span className="sm:hidden">Balanced</span>
                         </TabsTrigger>
                       </TabsList>
 
                       <TabsContent value="ambitious" className="m-0">
-                        <div className="mb-4">
-                          <p className="text-sm text-muted-foreground">
+                        <div className="mb-4 p-4 bg-gray-50 rounded-md border border-gray-100">
+                          <p className="text-sm text-gray-700">
                             {careerPaths[0].description}
                           </p>
                         </div>
-                        <div className="h-[400px] lg:h-[500px] mb-4">
+                        <div className="h-[400px] lg:h-[500px] mb-4 border rounded-md overflow-hidden bg-gradient-to-b from-gray-50 to-white">
                           <CareerPathVisualization 
                             path={careerPaths[0]} 
                             onRoleSelect={handleRoleSelect}
@@ -294,12 +292,12 @@ const CareerPathSimulator = () => {
                         </div>
                       </TabsContent>
                       <TabsContent value="skills" className="m-0">
-                        <div className="mb-4">
-                          <p className="text-sm text-muted-foreground">
+                        <div className="mb-4 p-4 bg-gray-50 rounded-md border border-gray-100">
+                          <p className="text-sm text-gray-700">
                             {careerPaths[1].description}
                           </p>
                         </div>
-                        <div className="h-[400px] lg:h-[500px] mb-4">
+                        <div className="h-[400px] lg:h-[500px] mb-4 border rounded-md overflow-hidden bg-gradient-to-b from-gray-50 to-white">
                           <CareerPathVisualization 
                             path={careerPaths[1]} 
                             onRoleSelect={handleRoleSelect}
@@ -307,12 +305,12 @@ const CareerPathSimulator = () => {
                         </div>
                       </TabsContent>
                       <TabsContent value="balanced" className="m-0">
-                        <div className="mb-4">
-                          <p className="text-sm text-muted-foreground">
+                        <div className="mb-4 p-4 bg-gray-50 rounded-md border border-gray-100">
+                          <p className="text-sm text-gray-700">
                             {careerPaths[2].description}
                           </p>
                         </div>
-                        <div className="h-[400px] lg:h-[500px] mb-4">
+                        <div className="h-[400px] lg:h-[500px] mb-4 border rounded-md overflow-hidden bg-gradient-to-b from-gray-50 to-white">
                           <CareerPathVisualization 
                             path={careerPaths[2]} 
                             onRoleSelect={handleRoleSelect}
@@ -325,7 +323,7 @@ const CareerPathSimulator = () => {
                   <div className="h-96 flex flex-col items-center justify-center">
                     <Info className="h-12 w-12 text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">No career paths generated yet</p>
-                    <Button onClick={generatePaths} className="mt-4">
+                    <Button onClick={() => generatePaths()} className="mt-4 bg-modern-blue-600 hover:bg-modern-blue-700">
                       <Sparkles className="mr-2 h-4 w-4" />
                       Generate Career Paths
                     </Button>
@@ -342,13 +340,13 @@ const CareerPathSimulator = () => {
         )}
 
         {/* Feature Information */}
-        <Card className="border shadow-md mt-12 glassmorphism">
+        <Card className="border shadow-md mt-12">
           <CardHeader>
             <CardTitle className="text-lg">About Career Path Simulator™</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              This experimental AI-powered feature analyzes your resume to predict potential career trajectories. 
+              This AI-powered feature analyzes your resume to predict potential career trajectories. 
               It generates three different paths: an ambitious leadership route, a skills-focused technical path, 
               and a balanced path that prioritizes steady growth with work-life balance.
             </p>
