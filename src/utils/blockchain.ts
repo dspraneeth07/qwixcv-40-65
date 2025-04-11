@@ -223,9 +223,9 @@ export const generateCertificatePDF = async (elementId: string, fileName: string
   
   // Configure pdf options for standard certificate size (8.5" x 11")
   const options = {
-    margin: [0.5, 0.5],
+    margin: 0,
     filename: fileName,
-    image: { type: 'jpeg', quality: 0.98 },
+    image: { type: 'jpeg', quality: 1 },
     html2canvas: { scale: 2, useCORS: true, logging: true },
     jsPDF: { 
       unit: 'in', 

@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -50,31 +49,31 @@ const CertificateCard = ({ certificate, onUpdateVisibility }: CertificateCardPro
     setIsLoading(true);
     
     try {
+      // Create a temporary div to render the certificate
       const tempDiv = document.createElement('div');
       tempDiv.id = `temp-cert-${id}`;
       tempDiv.style.position = 'absolute';
       tempDiv.style.left = '-9999px';
       document.body.appendChild(tempDiv);
       
-      // First create a canvas with the QR code
-      const qrCanvas = document.createElement('canvas');
-      qrCanvas.width = 200;
-      qrCanvas.height = 200;
-      document.body.appendChild(qrCanvas);
-      
-      // Generate QR code using qrcode.react's toCanvas method
+      // Generate QR code as a data URL
       try {
         const QRCodeLibrary = await import('qrcode');
-        await QRCodeLibrary.toCanvas(qrCanvas, verificationUrl, {
-          width: 200,
-          margin: 0,
-          color: {
-            dark: '#000000',
-            light: '#FFFFFF'
-          }
-        });
         
-        const qrDataUrl = qrCanvas.toDataURL('image/png');
+        // Generate QR code as data URL directly
+        const qrDataUrl = await new Promise<string>((resolve, reject) => {
+          QRCodeLibrary.toDataURL(verificationUrl, {
+            width: 200,
+            margin: 1,
+            color: {
+              dark: '#000000',
+              light: '#FFFFFF'
+            }
+          }, (err, url) => {
+            if (err) reject(err);
+            else resolve(url);
+          });
+        });
         
         // Now create the PDF content with the QR code image
         tempDiv.innerHTML = `
@@ -112,7 +111,7 @@ const CertificateCard = ({ certificate, onUpdateVisibility }: CertificateCardPro
                   <p>Certificate Hash: ${certHash}</p>
                 </div>
                 <div style="text-align: center; background: white; padding: 15px; border-radius: 8px;">
-                  <img src="${qrDataUrl}" alt="QR Code" width="100" height="100" />
+                  <img src="${qrDataUrl}" alt="QR Code" width="120" height="120" />
                   <p style="color: #333; font-size: 12px; margin-top: 5px;">Scan to verify</p>
                 </div>
               </div>
@@ -137,9 +136,6 @@ const CertificateCard = ({ certificate, onUpdateVisibility }: CertificateCardPro
         // Clean up
         if (document.body.contains(tempDiv)) {
           document.body.removeChild(tempDiv);
-        }
-        if (document.body.contains(qrCanvas)) {
-          document.body.removeChild(qrCanvas);
         }
       }
       

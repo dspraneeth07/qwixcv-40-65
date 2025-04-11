@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -7,11 +8,12 @@ import TestResults from '@/components/certification/TestResults';
 import CertificateGenerator from '@/components/certification/CertificateGenerator';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, ArrowLeft } from "lucide-react";
+import { AlertTriangle, ArrowLeft, BookOpen } from "lucide-react";
 import { Question, Certificate } from '@/types/certification';
 import { useToast } from "@/components/ui/use-toast";
 import { getMockTestById } from '@/utils/mockData';
 import { Link } from 'react-router-dom';
+import { generateExamQuestions } from '@/utils/examQuestionGenerator';
 
 enum TestStage {
   INTRO,
@@ -33,6 +35,7 @@ const CertificationTest = () => {
     timeLimit: number;
     passingScore: number;
     questions: Question[];
+    topics: string[];
   } | null>(null);
   const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
   const [score, setScore] = useState(0);
@@ -40,9 +43,10 @@ const CertificationTest = () => {
   const [certificate, setCertificate] = useState<Certificate | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
   
   useEffect(() => {
-    // Get mock test data
+    // Get mock test data and then generate questions with AI
     const fetchTest = async () => {
       try {
         setIsLoading(true);
@@ -57,8 +61,35 @@ const CertificationTest = () => {
           return;
         }
         
+        // Initially set the test data with mock questions
         setTestData(test);
         console.log("Test data loaded:", test.title);
+        
+        // Now generate questions in the background
+        setIsGeneratingQuestions(true);
+        try {
+          const aiQuestions = await generateExamQuestions(
+            test.title, 
+            test.topics, 
+            test.questions.length
+          );
+          
+          // Update the test data with AI-generated questions
+          setTestData(prevData => {
+            if (!prevData) return null;
+            return {
+              ...prevData,
+              questions: aiQuestions
+            };
+          });
+          
+          console.log("AI-generated questions loaded");
+        } catch (genError) {
+          console.error("Error generating questions:", genError);
+          // Continue with mock questions if AI generation fails
+        } finally {
+          setIsGeneratingQuestions(false);
+        }
       } catch (err) {
         console.error("Failed to load test:", err);
         setError("Failed to load the test. Please try again.");
@@ -98,8 +129,6 @@ const CertificationTest = () => {
     navigate(0); // Refresh the page to reset the test
   };
   
-  // ... keep existing code (loading state rendering)
-  
   if (isLoading) {
     return (
       <MainLayout>
@@ -136,7 +165,6 @@ const CertificationTest = () => {
     <MainLayout>
       <div className="container py-10">
         {stage === TestStage.INTRO && (
-          // ... keep existing code (intro stage rendering)
           <>
             <QwiXCertHeader 
               title={testData.title} 
@@ -163,6 +191,29 @@ const CertificationTest = () => {
                   </div>
                 </div>
                 
+                {isGeneratingQuestions && (
+                  <div className="bg-white border border-blue-100 rounded-md p-3 mb-4 flex items-center">
+                    <div className="h-4 w-4 rounded-full border-2 border-blue-500 border-t-transparent animate-spin mr-2"></div>
+                    <span className="text-sm text-blue-800">
+                      Generating AI-powered questions for your certification...
+                    </span>
+                  </div>
+                )}
+                
+                <div className="bg-white border border-blue-100 rounded-md p-3 mb-4">
+                  <h4 className="text-sm font-medium text-blue-900 mb-2 flex items-center">
+                    <BookOpen className="h-4 w-4 mr-1" />
+                    Key Topics Covered
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {testData.topics.map((topic, index) => (
+                      <span key={index} className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+                        {topic}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                
                 <Alert className="mb-4">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertTitle>Important</AlertTitle>
@@ -186,8 +237,16 @@ const CertificationTest = () => {
                   <Button 
                     onClick={handleStartTest}
                     className="bg-gradient-to-r from-blue-500 to-purple-500 text-white"
+                    disabled={isGeneratingQuestions}
                   >
-                    Start Test
+                    {isGeneratingQuestions ? (
+                      <>
+                        <div className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin mr-2"></div>
+                        Generating Questions...
+                      </>
+                    ) : (
+                      "Start Test"
+                    )}
                   </Button>
                 </div>
               </div>
