@@ -23,17 +23,21 @@ export interface Certificate {
   testId: string;
   title: string;
   recipientName: string;
-  recipientEmail: string; // Added email field
+  recipientEmail: string;
   recipientId: string;
   score: number;
   issuedDate: string;
   txHash: string; // Blockchain transaction hash
   certHash: string; // Certificate hash for verification
   isPublic: boolean;
-  issuer: string; // Added issuer field
-  uniqueId: string; // Added unique ID field
+  issuer: string;
+  uniqueId: string;
   validUntil?: string; // Optional expiration date
-  blockchainNetwork: string; // Added blockchain network field
+  blockchainNetwork: string;
+  blockId?: string; // Block ID where certificate was stored
+  contractAddress?: string; // Smart contract address
+  smartContractStandard?: string; // ERC-721 or other standard
+  metadataUri?: string; // IPFS or metadata URI
 }
 
 export interface SkillGap {
@@ -42,7 +46,7 @@ export interface SkillGap {
   resourceUrl?: string;
 }
 
-// New blockchain transaction type
+// Blockchain transaction type
 export interface BlockchainTransaction {
   hash: string;
   timestamp: number;
@@ -50,4 +54,14 @@ export interface BlockchainTransaction {
   confirmations: number;
   network: string;
   status: 'confirmed' | 'pending';
+  blockId?: string; // Block identifier
+  gasUsed?: number; // Gas used for transaction
+  gasPrice?: string; // Gas price in Gwei
+  from?: string; // Sender address
+  to?: string; // Receiver address (contract)
+  contractCallMethod?: string; // Method called on contract
 }
+
+// New type for certificate verification methods
+export type VerificationMethod = 'certHash' | 'txHash' | 'blockId' | 'uniqueId' | 'qrCode' | 'file';
+
