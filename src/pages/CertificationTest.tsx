@@ -61,8 +61,15 @@ const CertificationTest = () => {
           return;
         }
         
-        // Initially set the test data with mock questions
-        setTestData(test);
+        // Extract topics from the test data
+        const mockTestTopics = test.topics || [];
+        
+        // Initially set the test data with mock questions and topics
+        setTestData({
+          ...test,
+          topics: mockTestTopics
+        });
+        
         console.log("Test data loaded:", test.title);
         
         // Now generate questions in the background
@@ -70,7 +77,7 @@ const CertificationTest = () => {
         try {
           const aiQuestions = await generateExamQuestions(
             test.title, 
-            test.topics, 
+            mockTestTopics, 
             test.questions.length
           );
           
