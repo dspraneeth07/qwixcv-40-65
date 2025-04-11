@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -99,6 +98,8 @@ const CertificationTest = () => {
     navigate(0); // Refresh the page to reset the test
   };
   
+  // ... keep existing code (loading state rendering)
+  
   if (isLoading) {
     return (
       <MainLayout>
@@ -135,6 +136,7 @@ const CertificationTest = () => {
     <MainLayout>
       <div className="container py-10">
         {stage === TestStage.INTRO && (
+          // ... keep existing code (intro stage rendering)
           <>
             <QwiXCertHeader 
               title={testData.title} 

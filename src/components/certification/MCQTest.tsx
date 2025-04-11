@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -16,7 +15,7 @@ interface MCQTestProps {
   questions: Question[];
   timeLimit: number; // in minutes
   passingScore: number;
-  onTestComplete: (score: number, passed: boolean) => void;
+  onTestComplete: (score: number, passed: boolean, answers: Record<number, string>) => void;
 }
 
 const MCQTest = ({ 
@@ -34,7 +33,6 @@ const MCQTest = ({
   const [isCompleted, setIsCompleted] = useState(false);
   const { toast } = useToast();
 
-  // Handle timer
   useEffect(() => {
     if (timeRemaining <= 0 || isCompleted) return;
     
@@ -106,17 +104,14 @@ const MCQTest = ({
     setIsSubmitting(true);
     
     try {
-      // Calculate score
       const score = calculateScore();
       const passed = score >= passingScore;
       
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       setIsCompleted(true);
-      onTestComplete(score, passed);
+      onTestComplete(score, passed, answers);
       
-      // If failed, set a cooldown period
       if (!passed) {
         const cooldownEnd = new Date();
         cooldownEnd.setHours(cooldownEnd.getHours() + 24);
