@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -62,7 +61,9 @@ const CertificateVerifier = ({ initialHash }: CertificateVerifierProps) => {
     setResult(null);
     
     try {
-      const verificationResult = await verifyCertificate(certHash, verificationMethod);
+      // Only use valid verification methods for the verifyCertificate function
+      const validMethod = verificationMethod === 'file' ? 'certHash' : verificationMethod;
+      const verificationResult = await verifyCertificate(certHash, validMethod);
       setResult(verificationResult);
       
       if (!verificationResult.isValid) {

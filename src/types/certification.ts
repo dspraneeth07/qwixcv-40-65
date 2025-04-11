@@ -62,6 +62,6 @@ export interface BlockchainTransaction {
   contractCallMethod?: string; // Method called on contract
 }
 
-// New type for certificate verification methods
-export type VerificationMethod = 'certHash' | 'txHash' | 'blockId' | 'uniqueId' | 'qrCode' | 'file';
+// Updated type for certificate verification methods - ensuring it matches the function parameters
+export type VerificationMethod = 'certHash' | 'txHash' | 'blockId' | 'uniqueId' | 'file';
 
