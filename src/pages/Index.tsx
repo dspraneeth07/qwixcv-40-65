@@ -5,6 +5,7 @@ import HeroSection from "@/components/home/HeroSection";
 import FeaturesSection from "@/components/home/FeaturesSection";
 import HowItWorksSection from "@/components/home/HowItWorksSection";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
+import CertificationSection from "@/components/home/CertificationSection";
 import CtaSection from "@/components/home/CtaSection";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, FileText, MessageSquare, BarChart } from "lucide-react";
@@ -32,6 +33,7 @@ const Index = () => {
       <HeroSection />
       <FeaturesSection />
       <HowItWorksSection />
+      <CertificationSection />
       
       {/* New Career Path Simulator Section */}
       <section className="py-20 bg-gradient-to-r from-indigo-50 to-purple-50">

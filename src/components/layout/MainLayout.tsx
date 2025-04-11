@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileText, Menu, Briefcase, Zap, FileCheck, MessageSquare, User, Instagram, Twitter, Linkedin, Globe, Sparkles } from "lucide-react";
+import { FileText, Menu, Briefcase, Zap, FileCheck, MessageSquare, User, Instagram, Twitter, Linkedin, Globe, Sparkles, Award, Shield } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 
@@ -12,6 +12,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     { name: "Resume Builder", href: "/builder" },
     { name: "ATS Scanner", href: "/ats-scanner" },
     { name: "Compare Resumes", href: "/resume-compare" },
+    { name: "QwiXCert", href: "/certification-center" },
     { name: "Job Board", href: "/job-board" },
     { name: "Career Path Simulator", href: "/career-path-simulator" },
   ];
@@ -26,6 +27,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     { name: "Resume Builder", href: "/builder", icon: FileText },
     { name: "ATS Scanner", href: "/ats-scanner", icon: Zap },
     { name: "Compare Resumes", href: "/resume-compare", icon: FileCheck },
+    { name: "QwiXCert", href: "/certification-center", icon: Shield },
     { name: "Job Board", href: "/job-board", icon: Briefcase },
     { name: "Career Simulator", href: "/career-path-simulator", icon: Sparkles },
   ];

@@ -2,11 +2,13 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Award, CheckCircle, FileCheck } from "lucide-react";
+import { Loader2, Award, CheckCircle, FileCheck, User, Mail, FileText } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Progress } from "@/components/ui/progress";
 import { Certificate } from "@/types/certification";
 import { generateCertificate } from "@/utils/blockchain";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface CertificateGeneratorProps {
   testId: string;
@@ -19,17 +21,39 @@ const CertificateGenerator = ({ testId, testTitle, score, onComplete }: Certific
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [step, setStep] = useState(0);
+  const [recipientName, setRecipientName] = useState("");
+  const [recipientEmail, setRecipientEmail] = useState("");
   const { toast } = useToast();
   
   const steps = [
     "Preparing certificate data",
     "Creating blockchain transaction",
     "Waiting for confirmation",
+    "Minting NFT certificate",
     "Finalizing certificate"
   ];
 
   const handleGenerate = async () => {
     if (isGenerating) return;
+    
+    // Validate form
+    if (!recipientName.trim()) {
+      toast({
+        title: "Name Required",
+        description: "Please enter your name for the certificate.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!recipientEmail.trim() || !recipientEmail.includes('@')) {
+      toast({
+        title: "Valid Email Required",
+        description: "Please enter a valid email address.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     setIsGenerating(true);
     setProgress(0);
@@ -45,11 +69,20 @@ const CertificateGenerator = ({ testId, testTitle, score, onComplete }: Certific
       // Step 3: Wait for confirmation
       await simulateStep(3);
       
-      // Step 4: Finalize certificate
+      // Step 4: Mint NFT certificate
       await simulateStep(4);
       
+      // Step 5: Finalize certificate
+      await simulateStep(5);
+      
       // Generate the certificate using blockchain
-      const certificate = await generateCertificate(testId, testTitle, score);
+      const certificate = await generateCertificate(
+        testId, 
+        testTitle, 
+        score, 
+        recipientName,
+        recipientEmail
+      );
       
       toast({
         title: "Certificate Generated",
@@ -71,10 +104,10 @@ const CertificateGenerator = ({ testId, testTitle, score, onComplete }: Certific
   
   const simulateStep = async (stepNumber: number) => {
     setStep(stepNumber - 1);
-    const baseProgress = (stepNumber - 1) * 25;
+    const baseProgress = (stepNumber - 1) * 20;
     
     // Simulate progress within step
-    for (let i = 0; i < 25; i += 5) {
+    for (let i = 0; i < 20; i += 4) {
       setProgress(baseProgress + i);
       await new Promise(resolve => setTimeout(resolve, 300));
     }
@@ -97,6 +130,51 @@ const CertificateGenerator = ({ testId, testTitle, score, onComplete }: Certific
             Generate your verifiable blockchain certificate to showcase your achievement.
           </p>
         </div>
+        
+        {!isGenerating && (
+          <div className="space-y-4 border p-4 rounded-md">
+            <h4 className="font-medium">Certificate Information</h4>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <div className="flex">
+                  <User className="h-5 w-5 text-muted-foreground mr-2 mt-2" />
+                  <Input 
+                    id="name" 
+                    value={recipientName} 
+                    onChange={(e) => setRecipientName(e.target.value)}
+                    placeholder="Enter your full name"
+                    disabled={isGenerating}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <div className="flex">
+                  <Mail className="h-5 w-5 text-muted-foreground mr-2 mt-2" />
+                  <Input 
+                    id="email" 
+                    type="email"
+                    value={recipientEmail} 
+                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    placeholder="Enter your email address"
+                    disabled={isGenerating}
+                  />
+                </div>
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-100 rounded p-3 text-sm text-blue-700">
+                <div className="flex">
+                  <FileText className="h-4 w-4 text-blue-500 mr-2 mt-0.5" />
+                  <span>
+                    This information will be used to generate your certificate and cannot be changed after issuance.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         
         {isGenerating && (
           <div className="space-y-4">
@@ -125,7 +203,7 @@ const CertificateGenerator = ({ testId, testTitle, score, onComplete }: Certific
           <p className="flex items-start">
             <FileCheck className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
             <span>
-              Your certificate will be permanently recorded on the blockchain, making it tamper-proof 
+              Your certificate will be permanently recorded on the Polygon blockchain, making it tamper-proof 
               and allowing employers to verify its authenticity with a simple link or QR code.
             </span>
           </p>
