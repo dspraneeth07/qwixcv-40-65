@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import MainLayout from '@/components/layouts/MainLayout';
+import MainLayout from '@/components/layout/MainLayout';
 import QwiXCertHeader from '@/components/certification/QwiXCertHeader';
 import WalletConnect from '@/components/blockchain/WalletConnect';
 import MCQTestList from '@/components/certification/MCQTestList';

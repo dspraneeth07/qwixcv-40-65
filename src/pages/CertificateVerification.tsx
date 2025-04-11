@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import MainLayout from '@/components/layouts/MainLayout';
+import MainLayout from '@/components/layout/MainLayout';
 import CertificateVerifier from '@/components/certification/CertificateVerifier';
 import QwiXCertHeader from '@/components/certification/QwiXCertHeader';
 import WalletConnect from '@/components/blockchain/WalletConnect';
@@ -34,7 +34,7 @@ const CertificateVerification = () => {
         </div>
         
         {showWalletWarning && (
-          <Alert variant="warning" className="mb-6">
+          <Alert variant="destructive" className="mb-6">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
               MetaMask is recommended for full blockchain verification. Without it, we'll use a fallback verification method.
