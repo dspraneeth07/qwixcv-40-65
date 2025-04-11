@@ -1,9 +1,24 @@
 
 import html2pdf from 'html2pdf.js';
 import { Certificate, BlockchainTransaction, VerificationMethod } from "@/types/certification";
+import { ethers } from 'ethers';
 
 // Mock certificates storage - this would be replaced with actual blockchain calls
 const CERTIFICATES_STORAGE_KEY = 'qwik_cv_certificates';
+
+// Get Ethereum provider
+export const getProvider = async () => {
+  if (typeof window !== 'undefined' && window.ethereum) {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    return { provider, signer: await provider.getSigner() };
+  }
+  
+  // Fallback to a public provider if MetaMask is not available
+  return { 
+    provider: new ethers.JsonRpcProvider('https://polygon-mumbai.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'),
+    signer: null
+  };
+};
 
 // Generate a unique certificate hash
 export const generateCertificateHash = (): string => {

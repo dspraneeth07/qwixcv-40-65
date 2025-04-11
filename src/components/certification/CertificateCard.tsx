@@ -108,26 +108,74 @@ const CertificateCard = ({ certificate, onUpdateVisibility }: CertificateCardPro
       
       // Replace the placeholder QR code with a real one
       const qrCodeImg = document.createElement('img');
-      const canvas = document.createElement('canvas');
-      QRCode.toCanvas(canvas, verificationUrl, { width: 100 });
-      qrCodeImg.src = canvas.toDataURL();
-      qrCodeImg.width = 100;
-      qrCodeImg.height = 100;
+      // Use a different approach to generate QR code image
+      const qrComponent = document.createElement('div');
+      qrComponent.style.display = 'none';
+      document.body.appendChild(qrComponent);
       
-      const qrPlaceholder = tempDiv.querySelector('img');
-      if (qrPlaceholder && qrPlaceholder.parentNode) {
-        qrPlaceholder.parentNode.replaceChild(qrCodeImg, qrPlaceholder);
-      }
+      // Render the QR code to the hidden div
+      const qrElement = document.createElement('div');
+      qrComponent.appendChild(qrElement);
       
-      const fileName = `${title.replace(/\s+/g, '_')}_Certificate.pdf`;
-      await generateCertificatePDF(`temp-cert-${id}`, fileName);
+      // Render QR code
+      const qrCodeInstance = <QRCode value={verificationUrl} size={100} />;
+      const tempQrContainer = document.createElement('div');
+      tempQrContainer.id = 'temp-qr-container';
+      document.body.appendChild(tempQrContainer);
       
-      // Clean up
-      document.body.removeChild(tempDiv);
-      
-      toast({
-        title: "Certificate Downloaded",
-        description: "Your certificate has been downloaded as a PDF",
+      // Use html2canvas directly to capture the QR code
+      import('html2canvas').then(async (html2canvasModule) => {
+        const html2canvas = html2canvasModule.default;
+        
+        // Create a temporary QR code element
+        document.getElementById('temp-qr-container')!.innerHTML = `
+          <div style="padding: 10px; background: white;">
+            <svg id="temp-qr-svg" width="100" height="100"></svg>
+          </div>
+        `;
+        
+        // Use the qrcode library directly to render to SVG
+        import('qrcode').then(async (qrcodeModule) => {
+          // Generate QR code string
+          const qrSvgString = await qrcodeModule.default.toString(verificationUrl, {
+            type: 'svg',
+            width: 100,
+            margin: 0,
+          });
+          
+          // Insert the SVG string
+          const svgElement = document.getElementById('temp-qr-svg');
+          if (svgElement) {
+            svgElement.outerHTML = qrSvgString;
+          }
+          
+          // Capture the QR code as an image
+          const qrCanvas = await html2canvas(document.getElementById('temp-qr-container')!);
+          qrCodeImg.src = qrCanvas.toDataURL('image/png');
+          qrCodeImg.width = 100;
+          qrCodeImg.height = 100;
+          
+          // Replace the placeholder
+          const qrPlaceholder = tempDiv.querySelector('img');
+          if (qrPlaceholder && qrPlaceholder.parentNode) {
+            qrPlaceholder.parentNode.replaceChild(qrCodeImg, qrPlaceholder);
+          }
+          
+          // Generate the PDF
+          const fileName = `${title.replace(/\s+/g, '_')}_Certificate.pdf`;
+          await generateCertificatePDF(`temp-cert-${id}`, fileName);
+          
+          // Clean up
+          document.body.removeChild(tempDiv);
+          document.body.removeChild(tempQrContainer);
+          
+          toast({
+            title: "Certificate Downloaded",
+            description: "Your certificate has been downloaded as a PDF",
+          });
+          
+          setIsLoading(false);
+        });
       });
     } catch (error) {
       console.error("Error generating PDF:", error);
@@ -136,7 +184,6 @@ const CertificateCard = ({ certificate, onUpdateVisibility }: CertificateCardPro
         description: "Failed to download certificate as PDF",
         variant: "destructive"
       });
-    } finally {
       setIsLoading(false);
     }
   };

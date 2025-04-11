@@ -41,6 +41,7 @@ export interface TestInfo {
   timeLimit: number;
   questionCount: number;
   passingScore: number;
+  category?: string; // Adding the category property as optional
 }
 
 export type VerificationMethod = 'certHash' | 'txHash' | 'blockId' | 'uniqueId' | 'file';
