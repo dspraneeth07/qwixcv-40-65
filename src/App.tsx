@@ -12,6 +12,7 @@ import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import ATSScanner from "./pages/ATSScanner";
 import ResumeCompare from "./pages/ResumeCompare";
+import CareerPathSimulator from "./pages/CareerPathSimulator"; // Add the new page
 import { useEffect } from "react";
 
 function App() {
@@ -48,6 +49,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/ats-scanner" element={<ATSScanner />} />
           <Route path="/resume-compare" element={<ResumeCompare />} />
+          <Route path="/career-path-simulator" element={<CareerPathSimulator />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />

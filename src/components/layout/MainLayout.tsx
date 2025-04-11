@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileText, Menu, Briefcase, Zap, FileCheck, MessageSquare, User, Instagram, Twitter, Linkedin, Globe } from "lucide-react";
+import { FileText, Menu, Briefcase, Zap, FileCheck, MessageSquare, User, Instagram, Twitter, Linkedin, Globe, Sparkles } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 
@@ -13,6 +13,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     { name: "ATS Scanner", href: "/ats-scanner" },
     { name: "Compare Resumes", href: "/resume-compare" },
     { name: "Job Board", href: "/job-board" },
+    { name: "Career Path Simulator", href: "/career-path-simulator" },
   ];
 
   const footerLinks = [
@@ -117,6 +118,10 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
               <Link to="/job-board" className="text-sm text-gray-300 hover:text-white font-poppins flex items-center gap-2">
                 <Briefcase className="h-4 w-4" />
                 Job Board
+              </Link>
+              <Link to="/career-path-simulator" className="text-sm text-gray-300 hover:text-white font-poppins flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                Career Simulator
               </Link>
             </div>
             
