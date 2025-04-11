@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,7 +23,6 @@ const AIResumeAnalysis: React.FC<AIResumeAnalysisProps> = ({ resumeData }) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [activeTab, setActiveTab] = useState('analysis');
 
-  // Function to generate a resume analysis and interview Q&A using Gemini API
   const analyzeResume = async () => {
     if (!resumeData) {
       toast({
@@ -40,7 +38,6 @@ const AIResumeAnalysis: React.FC<AIResumeAnalysisProps> = ({ resumeData }) => {
     setQuestions([]);
     
     try {
-      // Extract the most important details from resume for the API
       const relevantResumeData = {
         personalInfo: resumeData.personalInfo,
         jobTitle: resumeData.personalInfo?.jobTitle,
@@ -61,11 +58,9 @@ const AIResumeAnalysis: React.FC<AIResumeAnalysisProps> = ({ resumeData }) => {
         }))
       };
       
-      // First, get resume analysis
       const analysisResult = await getResumeAnalysisFromGemini(relevantResumeData);
       setAnalysis(analysisResult);
       
-      // Then, get interview Q&A
       const questionsResult = await getInterviewQuestionsFromGemini(relevantResumeData);
       setQuestions(questionsResult);
       
@@ -85,10 +80,9 @@ const AIResumeAnalysis: React.FC<AIResumeAnalysisProps> = ({ resumeData }) => {
     }
   };
 
-  // Function to call Gemini API for resume analysis
   const getResumeAnalysisFromGemini = async (resumeData: any): Promise<string> => {
     try {
-      const API_KEY = "AIzaSyDRuULswOC1iFSJr83VqRaeP1g8p0Vn4Lc"; // Using the existing API key
+      const API_KEY = "AIzaSyDRuULswOC1iFSJr83VqRaeP1g8p0Vn4Lc";
       const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
       
       const prompt = `
@@ -132,10 +126,9 @@ const AIResumeAnalysis: React.FC<AIResumeAnalysisProps> = ({ resumeData }) => {
     }
   };
 
-  // Function to call Gemini API for interview questions and answers
   const getInterviewQuestionsFromGemini = async (resumeData: any): Promise<Question[]> => {
     try {
-      const API_KEY = "AIzaSyDRuULswOC1iFSJr83VqRaeP1g8p0Vn4Lc"; // Using the existing API key
+      const API_KEY = "AIzaSyDRuULswOC1iFSJr83VqRaeP1g8p0Vn4Lc";
       const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
       
       const prompt = `
@@ -185,9 +178,7 @@ const AIResumeAnalysis: React.FC<AIResumeAnalysisProps> = ({ resumeData }) => {
       const data = await response.json();
       const textResponse = data.candidates[0].content.parts[0].text.trim();
       
-      // Extract the JSON array from the response
       try {
-        // The response might contain markdown code blocks, so we need to extract just the JSON
         const jsonMatch = textResponse.match(/\[\s*\{[\s\S]*\}\s*\]/);
         if (jsonMatch) {
           return JSON.parse(jsonMatch[0]);
@@ -196,7 +187,6 @@ const AIResumeAnalysis: React.FC<AIResumeAnalysisProps> = ({ resumeData }) => {
         console.error("Error parsing interview questions JSON:", parseError);
       }
       
-      // Fallback to empty array if parsing fails
       return [];
     } catch (error) {
       console.error("Error getting interview questions:", error);
@@ -204,7 +194,6 @@ const AIResumeAnalysis: React.FC<AIResumeAnalysisProps> = ({ resumeData }) => {
     }
   };
 
-  // Helper function to group questions by category
   const getQuestionsByCategory = (category: string) => {
     return questions.filter(q => q.category === category);
   };
@@ -265,9 +254,17 @@ const AIResumeAnalysis: React.FC<AIResumeAnalysisProps> = ({ resumeData }) => {
                 </div>
               ) : analysis ? (
                 <div className="prose max-w-none">
-                  {analysis.split('\n\n').map((paragraph, idx) => (
-                    <p key={idx}>{paragraph}</p>
-                  ))}
+                  {analysis.split('\n\n').map((paragraph, idx) => {
+                    const isHeading = paragraph.startsWith('**') && paragraph.endsWith(':**');
+                    return (
+                      <p 
+                        key={idx} 
+                        className={isHeading ? 'font-bold text-lg' : ''}
+                      >
+                        {paragraph}
+                      </p>
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-center text-muted-foreground py-4">No analysis available yet.</p>
@@ -281,7 +278,6 @@ const AIResumeAnalysis: React.FC<AIResumeAnalysisProps> = ({ resumeData }) => {
                 </div>
               ) : questions.length > 0 ? (
                 <div className="space-y-6">
-                  {/* Technical Questions */}
                   <div className="space-y-2">
                     <h3 className="text-lg font-medium">Technical Questions</h3>
                     <Accordion type="single" collapsible className="w-full">
@@ -300,7 +296,6 @@ const AIResumeAnalysis: React.FC<AIResumeAnalysisProps> = ({ resumeData }) => {
                     </Accordion>
                   </div>
                   
-                  {/* Experience Questions */}
                   <div className="space-y-2">
                     <h3 className="text-lg font-medium">Experience Questions</h3>
                     <Accordion type="single" collapsible className="w-full">
@@ -319,7 +314,6 @@ const AIResumeAnalysis: React.FC<AIResumeAnalysisProps> = ({ resumeData }) => {
                     </Accordion>
                   </div>
                   
-                  {/* Behavioral Questions */}
                   <div className="space-y-2">
                     <h3 className="text-lg font-medium">Behavioral Questions</h3>
                     <Accordion type="single" collapsible className="w-full">
@@ -338,7 +332,6 @@ const AIResumeAnalysis: React.FC<AIResumeAnalysisProps> = ({ resumeData }) => {
                     </Accordion>
                   </div>
                   
-                  {/* Career Questions */}
                   <div className="space-y-2">
                     <h3 className="text-lg font-medium">Career Questions</h3>
                     <Accordion type="single" collapsible className="w-full">
