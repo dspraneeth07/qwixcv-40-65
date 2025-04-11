@@ -216,7 +216,7 @@ const CertificateVerifier = ({ initialHash }: CertificateVerifierProps) => {
   
   const verificationUrl = result?.certificate 
     ? `${window.location.origin}/verify-cert/${result.certificate.certHash}` 
-    : '';
+    : `${window.location.origin}/verify-cert`;
 
   const verificationMethodOptions = [
     { value: 'certHash', label: 'Certificate Hash' },

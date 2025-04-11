@@ -13,7 +13,37 @@ const CertificateVerification = () => {
   useEffect(() => {
     // Scroll to top when component mounts
     window.scrollTo(0, 0);
-  }, []);
+    
+    // For demonstration, ensure at least one certificate exists in localStorage
+    const certificates = JSON.parse(localStorage.getItem('certificates') || '[]');
+    if (certificates.length === 0 && !certHash) {
+      // This is just to ensure there's always something to verify in the demo
+      const mockCertData = {
+        certificates: [{
+          id: "demo-cert-1",
+          testId: "test-blockchain-101",
+          title: "Blockchain Fundamentals",
+          recipientName: "Demo User",
+          recipientEmail: "demo@example.com",
+          recipientId: "user-1234",
+          score: 95,
+          issuedDate: new Date().toISOString(),
+          txHash: "0x" + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
+          certHash: certHash || ("cert_" + Array(32).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')),
+          isPublic: true,
+          issuer: "QwiXZen Certification Authority",
+          uniqueId: "QWIXCERT-" + Date.now().toString(36),
+          blockchainNetwork: "Ethereum Mainnet",
+          blockId: Math.floor(15000000 + Math.random() * 2000000).toString(),
+          contractAddress: "0x" + Array(40).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
+          smartContractStandard: "ERC-721",
+          metadataUri: "ipfs://Qm" + Array(44).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')
+        }]
+      };
+      
+      localStorage.setItem('certificates', JSON.stringify(mockCertData.certificates));
+    }
+  }, [certHash]);
   
   return (
     <MainLayout>
