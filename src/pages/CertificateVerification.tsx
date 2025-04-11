@@ -5,7 +5,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import CertificateVerifier from '@/components/certification/CertificateVerifier';
 import QwiXCertHeader from '@/components/certification/QwiXCertHeader';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, CheckCircle2, Certificate } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Award } from 'lucide-react';
 
 const CertificateVerification = () => {
   const { certHash } = useParams<{ certHash?: string }>();
@@ -36,7 +36,7 @@ const CertificateVerification = () => {
           
           <Button asChild className="w-full md:w-auto bg-gradient-to-r from-blue-500 to-purple-500">
             <Link to="/dashboard" className="flex items-center">
-              <Certificate className="mr-2 h-4 w-4" />
+              <Award className="mr-2 h-4 w-4" />
               View Your Certificates
             </Link>
           </Button>
