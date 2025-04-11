@@ -226,10 +226,13 @@ export const verifyCertificate = async (
     // Get transaction details
     const txReceipt = await provider.getTransactionReceipt(certificate.txHash);
     
+    // Fix: Ensure we handle the confirmations value as a number
+    const confirmations = txReceipt ? Number(txReceipt.confirmations) : 0;
+    
     const transaction: BlockchainTransaction = {
       hash: certificate.txHash,
       blockNumber: Number(certificate.blockId),
-      confirmations: txReceipt ? txReceipt.confirmations : 0,
+      confirmations: confirmations,
       timestamp: new Date(certificate.issuedDate).getTime(),
       from: txReceipt ? txReceipt.from : '',
       to: CONTRACT_ADDRESS,
