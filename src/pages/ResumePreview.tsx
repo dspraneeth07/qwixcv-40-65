@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
@@ -19,6 +18,7 @@ import { toast } from "@/components/ui/use-toast";
 import html2pdf from 'html2pdf.js';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import JobSuggestions from "@/components/resume/JobSuggestions";
+import AIResumeAnalysis from "@/components/resume/AIResumeAnalysis";
 
 interface Skills {
   professional?: string;
@@ -413,7 +413,7 @@ const ResumePreview = () => {
             />
           </div>
           
-          <div className="md:col-span-8">
+          <div className="md:col-span-8 space-y-6">
             <Card 
               id="resume-content" 
               ref={resumeRef} 
@@ -658,6 +658,11 @@ const ResumePreview = () => {
                 </div>
               )}
             </Card>
+            
+            {/* Add our new AI Resume Analysis component here */}
+            {resumeData && (
+              <AIResumeAnalysis resumeData={resumeData} />
+            )}
           </div>
         </div>
       </div>
