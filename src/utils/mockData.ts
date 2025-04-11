@@ -317,6 +317,7 @@ export const getMockTestById = (testId: string): {
   timeLimit: number;
   passingScore: number;
   questions: Question[];
+  topics: string[]; // Added the topics property to the return type
 } | null => {
   const allTests = getMockTests();
   const testInfo = allTests.find(test => test.id === testId);
@@ -356,6 +357,7 @@ export const getMockTestById = (testId: string): {
     description: testInfo.description,
     timeLimit: testInfo.timeLimit,
     passingScore: testInfo.passingScore,
-    questions: questions.slice(0, testInfo.questionCount)
+    questions: questions.slice(0, testInfo.questionCount),
+    topics: testInfo.topics || [] // Include topics from testInfo or default to empty array
   };
 };

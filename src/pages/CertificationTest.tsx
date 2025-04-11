@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -46,13 +45,11 @@ const CertificationTest = () => {
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
   
   useEffect(() => {
-    // Get mock test data and then generate questions with AI
     const fetchTest = async () => {
       try {
         setIsLoading(true);
         setError(null);
         
-        // Get mock test data
         const test = getMockTestById(testId);
         
         if (!test) {
@@ -61,27 +58,18 @@ const CertificationTest = () => {
           return;
         }
         
-        // Extract topics from the test data
-        const mockTestTopics = test.topics || [];
-        
-        // Initially set the test data with mock questions and topics
-        setTestData({
-          ...test,
-          topics: mockTestTopics
-        });
+        setTestData(test);
         
         console.log("Test data loaded:", test.title);
         
-        // Now generate questions in the background
         setIsGeneratingQuestions(true);
         try {
           const aiQuestions = await generateExamQuestions(
             test.title, 
-            mockTestTopics, 
+            test.topics, 
             test.questions.length
           );
           
-          // Update the test data with AI-generated questions
           setTestData(prevData => {
             if (!prevData) return null;
             return {
@@ -93,7 +81,6 @@ const CertificationTest = () => {
           console.log("AI-generated questions loaded");
         } catch (genError) {
           console.error("Error generating questions:", genError);
-          // Continue with mock questions if AI generation fails
         } finally {
           setIsGeneratingQuestions(false);
         }
@@ -128,12 +115,11 @@ const CertificationTest = () => {
       description: "Your blockchain certificate has been added to your profile.",
     });
     
-    // In a real app, you would send this to your backend
     console.log("Certificate generated:", newCertificate);
   };
   
   const handleRetry = () => {
-    navigate(0); // Refresh the page to reset the test
+    navigate(0);
   };
   
   if (isLoading) {
