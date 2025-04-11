@@ -1,5 +1,6 @@
 
 import { CareerPath, CareerNode, SkillRequirement, SkillGap } from "@/types/career";
+import { transformText } from "@/utils/huggingFaceTransformer";
 
 // Helper function to generate skill requirements
 const generateSkillRequirements = (skills: string[], level: number): SkillRequirement[] => {
@@ -79,23 +80,86 @@ const generateSkillGaps = (currentRole: string, targetRole: string): SkillGap[] 
   return selectedGaps;
 };
 
+// Generate skills based on job role
+const generateSkillsForRole = async (jobRole: string): Promise<string[]> => {
+  // Use the job role to generate appropriate skills
+  // This would ideally use the AI transformer to get relevant skills
+  let baseSkills: string[] = [];
+  
+  // Basic skill sets by role type
+  if (jobRole.toLowerCase().includes('develop') || jobRole.toLowerCase().includes('engineer') || jobRole.toLowerCase().includes('program')) {
+    baseSkills = ["JavaScript", "TypeScript", "React", "Node.js", "Git", "REST APIs", "SQL", "Testing", "CI/CD"];
+  } else if (jobRole.toLowerCase().includes('data') || jobRole.toLowerCase().includes('scientist') || jobRole.toLowerCase().includes('analyst')) {
+    baseSkills = ["Python", "SQL", "Statistics", "Machine Learning", "Data Visualization", "Pandas", "TensorFlow", "R", "Jupyter"];
+  } else if (jobRole.toLowerCase().includes('design') || jobRole.toLowerCase().includes('ux') || jobRole.toLowerCase().includes('ui')) {
+    baseSkills = ["Figma", "Adobe XD", "UI Design", "Wireframing", "User Research", "Prototyping", "Visual Design", "Design Systems", "Accessibility"];
+  } else if (jobRole.toLowerCase().includes('product') || jobRole.toLowerCase().includes('manager')) {
+    baseSkills = ["Product Strategy", "Roadmapping", "User Stories", "Agile", "Stakeholder Management", "Market Research", "Analytics", "A/B Testing", "Prioritization"];
+  } else if (jobRole.toLowerCase().includes('market') || jobRole.toLowerCase().includes('growth')) {
+    baseSkills = ["SEO", "Content Marketing", "Social Media", "Email Marketing", "Analytics", "Copywriting", "CRM", "Lead Generation", "Campaign Management"];
+  } else {
+    // Default skills for unknown roles
+    baseSkills = ["Communication", "Project Management", "Problem Solving", "Teamwork", "Time Management", "Critical Thinking", "Technical Skills", "Adaptability"];
+  }
+  
+  try {
+    // Try to enhance the skills using AI transformer
+    const enhancedSkillsText = await transformText(`Generate 8 specific professional skills for a ${jobRole} role, separated by commas.`);
+    if (enhancedSkillsText && enhancedSkillsText.length > 10) {
+      const enhancedSkills = enhancedSkillsText.split(',').map(skill => skill.trim());
+      if (enhancedSkills.length >= 5) {
+        return enhancedSkills;
+      }
+    }
+  } catch (error) {
+    console.error("Error enhancing skills with AI:", error);
+  }
+  
+  return baseSkills;
+};
+
 // Main function to generate career paths
 export const generateCareerPaths = async (resumeData: any): Promise<CareerPath[]> => {
   // Simulate API call delay
   await new Promise(resolve => setTimeout(resolve, 1500));
   
-  // Get basic information from resume
-  const { currentRole, yearsOfExperience, skills, softSkills } = resumeData;
-  const allSkills = [...skills, ...softSkills];
+  // Get basic information from resume or job role
+  const { currentRole } = resumeData;
   
-  // For demonstration, we'll create hard-coded career paths based on the user's current role
-  // In a real implementation, this would use the AI to generate personalized paths
+  // Generate skills based on the current role
+  const skills = await generateSkillsForRole(currentRole);
+  const allSkills = [...skills, "Communication", "Problem Solving", "Teamwork", "Critical Thinking", "Adaptability"];
+  
+  // Generate career paths based on the job role
+  // Use the AI transformer to enhance descriptions
+  let ambitiousDescription = "This accelerated path focuses on management and leadership positions, trading technical depth for breadth and people management skills.";
+  let skillsDescription = "This path emphasizes technical excellence and specialization, becoming an authority in your domain.";
+  let balancedDescription = "This path focuses on steady progression with emphasis on work-life balance and sustainable career growth.";
+  
+  try {
+    const enhancedAmbitiousDesc = await transformText(`Write a concise 1-2 sentence description of a leadership-focused career path for a ${currentRole}. Focus on management and growth.`);
+    if (enhancedAmbitiousDesc && enhancedAmbitiousDesc.length > 20) {
+      ambitiousDescription = enhancedAmbitiousDesc;
+    }
+    
+    const enhancedSkillsDesc = await transformText(`Write a concise 1-2 sentence description of a technical specialization career path for a ${currentRole}. Focus on technical depth.`);
+    if (enhancedSkillsDesc && enhancedSkillsDesc.length > 20) {
+      skillsDescription = enhancedSkillsDesc;
+    }
+    
+    const enhancedBalancedDesc = await transformText(`Write a concise 1-2 sentence description of a balanced career path for a ${currentRole}. Focus on work-life balance and steady progression.`);
+    if (enhancedBalancedDesc && enhancedBalancedDesc.length > 20) {
+      balancedDescription = enhancedBalancedDesc;
+    }
+  } catch (error) {
+    console.error("Error enhancing descriptions with AI:", error);
+  }
   
   // 1. Ambitious Path (Leadership)
   const ambitiousPath: CareerPath = {
     type: "ambitious",
     title: "Leadership Track",
-    description: "This accelerated path focuses on management and leadership positions, trading technical depth for breadth and people management skills.",
+    description: ambitiousDescription,
     nodes: [
       {
         title: currentRole,
@@ -148,7 +212,7 @@ export const generateCareerPaths = async (resumeData: any): Promise<CareerPath[]
   const skillsPath: CareerPath = {
     type: "skills",
     title: "Technical Specialization",
-    description: "This path emphasizes technical excellence and specialization, becoming an authority in your domain.",
+    description: skillsDescription,
     nodes: [
       {
         title: currentRole,
@@ -201,7 +265,7 @@ export const generateCareerPaths = async (resumeData: any): Promise<CareerPath[]
   const balancedPath: CareerPath = {
     type: "balanced",
     title: "Balanced Growth",
-    description: "This path focuses on steady progression with emphasis on work-life balance and sustainable career growth.",
+    description: balancedDescription,
     nodes: [
       {
         title: currentRole,
