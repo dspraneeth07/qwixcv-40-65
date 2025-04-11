@@ -12,7 +12,11 @@ import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import ATSScanner from "./pages/ATSScanner";
 import ResumeCompare from "./pages/ResumeCompare";
-import CareerPathSimulator from "./pages/CareerPathSimulator"; // Add the new page
+import CareerPathSimulator from "./pages/CareerPathSimulator";
+import Dashboard from "./pages/Dashboard";
+import CertificationCenter from "./pages/CertificationCenter";
+import CertificationTest from "./pages/CertificationTest";
+import CertificateVerification from "./pages/CertificateVerification";
 import { useEffect } from "react";
 
 function App() {
@@ -50,6 +54,10 @@ function App() {
           <Route path="/ats-scanner" element={<ATSScanner />} />
           <Route path="/resume-compare" element={<ResumeCompare />} />
           <Route path="/career-path-simulator" element={<CareerPathSimulator />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/certification-center" element={<CertificationCenter />} />
+          <Route path="/certification/:testId" element={<CertificationTest />} />
+          <Route path="/verify-cert/:certHash?" element={<CertificateVerification />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
