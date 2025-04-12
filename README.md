@@ -1,304 +1,167 @@
 
-# QWIK CV - AI-Powered Resume Builder
-
 <div align="center">
-  <h3>Build ATS-optimized resumes with AI assistance</h3>
+  <img src="public/og-image.png" alt="QWIK CV Banner" width="650px" />
+  
+  # QWIK CV
+  ### AI-Powered Resume Builder
+  
+  [![React](https://img.shields.io/badge/-React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
+  [![TypeScript](https://img.shields.io/badge/-TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+  [![Tailwind CSS](https://img.shields.io/badge/-Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+  [![Vite](https://img.shields.io/badge/-Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+  
+  **🏆 HackIndia 2025 Hackathon Submission by Team QwikZen**
 </div>
 
-![QWIK CV Banner](public/og-image.png)
+## 🚀 About QWIK CV
 
-## 🚀 Project Overview
+QWIK CV is an intelligent resume builder that leverages AI to create ATS-optimized resumes tailored to specific job descriptions. Our platform helps job seekers stand out in competitive markets by providing real-time optimization, blockchain-verified credentials, and career planning tools.
 
-QWIK CV is an advanced resume builder that leverages artificial intelligence to help job seekers create professional, ATS-optimized resumes tailored to specific job descriptions. The platform offers intelligent content suggestions, real-time ATS scoring, resume comparison tools, and automated job matching to streamline the job application process.
+## 👥 Team QwikZen
 
-## ✨ Key Features
+| Name | Role | Contact |
+|------|------|---------|
+| **Dhadi Sai Praneeth Reddy** | Team Lead & Full Stack Developer | 📱 +91 7416466619 <br> 📧 dspraneeth07@gmail.com |
+| **Kasireddy Manideep Reddy** | AI Engineer & Backend Developer | 📱 +91 9390424085 <br> 📧 kasireddymanideepreddy405@gmail.com |
+| **Pravalika Batchu** | UI/UX Designer | 📝 Roll: 1602-23-733-308 |
+| **Bhavana Vemula** | Backend Developer | |
+| **Vaishnavi Konda** | Frontend Developer | |
 
-### AI-Powered Resume Generation
-- **Smart Content Suggestions**: AI analyzes your input and suggests professional phrasing
-- **Section-by-Section Guidance**: Step-by-step assistance for each resume section
-- **Customizable Templates**: Professional designs with flexible formatting options
-- **Skills Gap Analysis**: Identifies missing skills based on job descriptions
+## 🌟 Key Features
 
-### ATS Optimization
-- **Real-time ATS Compatibility Scoring**: See how your resume performs against job descriptions
-- **Keyword Optimization**: Intelligent suggestions to improve keyword relevance
-- **Format Verification**: Ensures your resume uses ATS-friendly formatting
-- **Improvement Recommendations**: Targeted suggestions to boost your ATS score
+- **AI-Powered Resume Generation** - Smart content suggestions with section-by-section guidance
+- **ATS Optimization** - Real-time scoring against job descriptions with improvement recommendations
+- **Resume Comparison** - Side-by-side visualization with job requirements
+- **Blockchain Certifications** - Verifiable credentials secured on blockchain
+- **Career Path Simulator** - Visualize potential career trajectories and skill development paths
+- **Job Board & Matching** - Personalized job recommendations based on your resume
 
-### Resume Comparison
-- **Side-by-Side Visualization**: Compare your resume against job descriptions with visual feedback
-- **Keyword Highlighting**: See which skills and qualifications match job requirements
-- **Gap Identification**: Quickly spot missing qualifications and skills
-- **Match Percentage**: Quantified compatibility score with detailed breakdown
+## 🔄 Website Flow
 
-### Job Board & Matching
-- **Personalized Job Recommendations**: Tailored job listings based on your resume
-- **Search Filters**: Find opportunities by location, company, salary range, and more
-- **One-Click Apply**: Streamlined application process with your QWIK CV resume
-- **Application Tracking**: Monitor your job applications in one place
+```mermaid
+graph TD
+    A[Homepage] --> B[Create Account]
+    B --> C[Resume Builder]
+    C --> D[AI Content Enhancement]
+    C --> E[ATS Scanner]
+    C --> F[Resume Comparison]
+    C --> G[Blockchain Certification]
+    E --> H[Resume Optimization]
+    F --> H
+    G --> I[Certification Tests]
+    I --> J[Verified Credentials]
+    H --> K[Job Board]
+    J --> K
+    K --> L[Application Tracking]
+    C --> M[Career Path Simulator]
+    M --> N[Skill Development Roadmap]
+```
 
-### Blockchain Certifications
-- **Verifiable Credentials**: Blockchain-secured certifications for skills and achievements
-- **Certification Tests**: Online assessments that issue tamper-proof certificates
-- **Verification Portal**: Allow employers to verify your credentials
-- **Certificate Management**: Control which certifications appear on your resume
+1. **User Registration/Login**: Create an account to start building your professional profile
+2. **Resume Builder**: Create your resume with AI-powered section recommendations
+3. **ATS Optimization**: Scan your resume against job descriptions for compatibility
+4. **Skills Certification**: Take assessments to earn blockchain-verified credentials
+5. **Job Matching**: Discover and apply to relevant positions with your optimized resume
+6. **Career Planning**: Explore potential career paths and required skill development
 
-### Career Path Simulation
-- **Career Trajectory Visualization**: See potential career paths based on your current skills
-- **Skill Development Roadmap**: Identify skills needed for career advancement
-- **Salary Projections**: View estimated compensation at different career stages
-- **Learning Resource Recommendations**: Curated content to develop required skills
+## 💻 Tech Stack
 
-## 🛠️ Complete Technology Stack
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="96">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" width="48" height="48" alt="React" />
+        <br>React
+      </td>
+      <td align="center" width="96">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" width="48" height="48" alt="TypeScript" />
+        <br>TypeScript
+      </td>
+      <td align="center" width="96">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-plain.svg" width="48" height="48" alt="Tailwind" />
+        <br>Tailwind
+      </td>
+      <td align="center" width="96">
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/threejs/threejs-original.svg" width="48" height="48" alt="Three.js" />
+        <br>Three.js
+      </td>
+      <td align="center" width="96">
+        <img src="https://www.vectorlogo.zone/logos/ethereum/ethereum-icon.svg" width="48" height="48" alt="Ethereum" />
+        <br>Ethereum
+      </td>
+    </tr>
+    <tr>
+      <td align="center" width="96">
+        <img src="https://cdn.worldvectorlogo.com/logos/vitejs.svg" width="48" height="48" alt="Vite" />
+        <br>Vite
+      </td>
+      <td align="center" width="96">
+        <img src="https://www.vectorlogo.zone/logos/tanstack/tanstack-icon.svg" width="48" height="48" alt="TanStack" />
+        <br>React Query
+      </td>
+      <td align="center" width="96">
+        <img src="https://cdn.worldvectorlogo.com/logos/recharts.svg" width="48" height="48" alt="Recharts" />
+        <br>Recharts
+      </td>
+      <td align="center" width="96">
+        <img src="https://avatars.githubusercontent.com/u/75042455" width="48" height="48" alt="Radix UI" />
+        <br>Radix UI
+      </td>
+      <td align="center" width="96">
+        <img src="https://avatars.githubusercontent.com/u/139895814" width="48" height="48" alt="shadcn/ui" />
+        <br>shadcn/ui
+      </td>
+    </tr>
+  </table>
+</div>
 
-### Frontend Framework & Core Libraries
-- **React 18**: Component-based UI library for building the interactive interface
-- **TypeScript**: Statically typed JavaScript for enhanced code quality and developer experience
-- **Vite**: Modern, lightning-fast build tool and development server
+### Frontend Framework & UI
+- **React 18** with **TypeScript** for type-safe components
+- **Vite** for fast development and optimized production builds
+- **Tailwind CSS** for utility-first styling
+- **shadcn/ui** components built with Radix UI primitives
+- **Lucide Icons** for consistent UI iconography
+- **Three.js** for interactive 3D visualizations
 
-### Styling & UI Components
-- **Tailwind CSS**: Utility-first CSS framework for responsive design
-- **shadcn/ui**: High-quality UI components built with Radix UI and Tailwind
-- **Radix UI**: Low-level UI component primitives providing accessibility
-- **Lucide Icons**: Beautiful, consistent SVG icons
-- **@tailwindcss/typography**: Better typography defaults for Tailwind projects
-- **Three.js**: JavaScript 3D library for interactive visualizations
-- **Recharts**: Composable charting library for data visualization
+### State Management & Data Handling
+- **TanStack Query** (React Query) for data fetching & caching
+- **React Hook Form** with **Zod** validation
+- **Context API** and **Zustand** for state management
+- **html2pdf.js** and **jsPDF** for document generation
 
-### State Management & Data Fetching
-- **Tanstack Query (React Query)**: Data fetching, caching, and state management
-- **Context API**: React's built-in state management for global app state
-- **Zustand**: Lightweight state management solution for specific features
+### Blockchain Integration
+- **ethers.js** for Ethereum wallet implementation
+- **IPFS** for decentralized storage of certificates
 
-### Routing & Form Handling
-- **React Router v6**: Declarative routing for single page applications
-- **React Hook Form**: Form validation and handling with performance in mind
-- **Zod**: TypeScript-first schema validation with static type inference
+## 🏁 Getting Started
 
-### Document Generation & File Handling
-- **html2pdf.js**: Library for generating PDF documents from HTML content
-- **jsPDF**: PDF document generation from JavaScript
-- **react-to-print**: Component for printing React components
-
-### Utility Libraries
-- **date-fns**: Modern JavaScript date utility library
-- **qrcode.react**: QR code generator component for React
-- **lodash**: Utility library for common programming tasks
-
-### Web3 & Blockchain Integration
-- **ethers.js**: Complete Ethereum library and wallet implementation
-- **web3.js**: Ethereum JavaScript API for blockchain interactions
-- **IPFS (via HTTP Client)**: Decentralized storage system integration
-
-### Testing & Development Tools
-- **Vitest**: Test runner compatible with Vite
-- **Testing Library**: Simple and complete testing utilities
-- **ESLint**: JavaScript linting utility with TypeScript support
-- **Prettier**: Code formatter to maintain consistent style
-
-## 🌟 Feature Details
-
-### Resume Builder
-
-The Resume Builder is a comprehensive multi-step form guiding users through creating a professional resume:
-
-**Personal Information Section**
-- Full name and professional title input
-- Contact information collection (phone, email, location)
-- Professional summary with AI suggestions
-- Social media and portfolio links integration
-
-**Education Section**
-- Multiple education entries with degree, institution, date ranges
-- GPA, honors, and relevant coursework options
-- Automatic formatting with chronological ordering
-- Educational achievement highlighting
-
-**Experience Section**
-- Detailed work history with company, title, location, dates
-- AI-assisted bullet point generation for responsibilities
-- Achievement-focused content suggestions
-- Automatic chronological ordering with most recent first
-
-**Skills & Certifications**
-- Skill categorization (technical, soft, language)
-- Skill rating system for visual representation
-- Certification listing with expiration date tracking
-- AI-recommended skills based on entered experience
-
-**Projects & Publications**
-- Portfolio projects with descriptions and links
-- Publication citations with automatic formatting
-- GitHub repository integration
-- Media attachment options for visual showcase
-
-**References**
-- Reference management with contact information
-- Option for "References available upon request"
-- Reference letter attachment capability
-
-### ATS Scanner
-
-The ATS Scanner analyzes resumes against job descriptions for optimal matching:
-
-**Job Description Analysis**
-- Parse and extract key requirements from job listings
-- Identify required skills, qualifications, and experience
-- Determine educational requirements and preferences
-- Extract company values and culture attributes
-
-**Resume Evaluation**
-- Keyword matching against job description
-- Formatting compatibility check for ATS systems
-- Header and section structure analysis
-- File format verification (PDF optimization)
-
-**Scoring Dashboard**
-- Overall compatibility percentage
-- Section-by-section match analysis
-- Keyword presence visualization
-- Recommended improvements with priority levels
-
-**Improvement Recommendations**
-- Targeted skill additions based on job requirements
-- Phrasing enhancements for better keyword matching
-- Content restructuring suggestions
-- Format optimization recommendations
-
-### Resume Comparison Tool
-
-The Resume Comparison Tool provides visual matching between resumes and job descriptions:
-
-**Side-by-Side Visual Comparison**
-- Split-screen view of resume and job description
-- Synchronized scrolling for easy reference
-- Color-coded highlights for matches and gaps
-- Match percentage indicator with breakdown
-
-**Keyword Analysis**
-- Highlighted matching keywords and phrases
-- Missing keyword identification
-- Synonym recognition for conceptual matches
-- Industry-specific terminology recommendations
-
-**Interactive Visualization**
-- Skill match radar charts
-- Experience timeline comparison
-- Qualification fulfillment progress bars
-- 3D visualization of the matching process (Three.js)
-
-**Detailed Reports**
-- Exportable PDF comparison reports
-- Executive summary of match quality
-- Detailed match breakdown by section
-- Specific improvement recommendations
-
-### Blockchain Certification System
-
-The Blockchain Certification System provides verifiable credentials:
-
-**Certification Tests**
-- Multiple-choice assessment platform
-- Time-limited test sessions
-- Automatic scoring and result analysis
-- Pass/fail determination with threshold settings
-
-**Certificate Generation**
-- Blockchain transaction creation
-- Unique hash generation for each certificate
-- Smart contract interaction for minting
-- PDF certificate generation with verification details
-
-**Verification Portal**
-- Certificate lookup by ID or hash
-- QR code scanning for instant verification
-- Blockchain transaction confirmation
-- Certificate authenticity validation
-
-**Certificate Management**
-- User certificate dashboard
-- Public/private visibility controls
-- Certificate sharing capabilities
-- Download and export options
-
-### Career Path Simulator
-
-The Career Path Simulator helps users visualize career progression:
-
-**Career Trajectory Visualization**
-- Interactive career path timelines
-- Multiple path options based on different goals
-- Role progression with time estimations
-- Branching possibilities for career pivots
-
-**Role Details**
-- Comprehensive job descriptions
-- Required skills and qualifications
-- Typical salary ranges with regional adjustments
-- Industry demand forecasts
-
-**Skill Development Planning**
-- Gap analysis between current and target roles
-- Skill acquisition prioritization
-- Learning resource recommendations
-- Estimated time investment for skill development
-
-**Salary Projections**
-- Career earnings visualization
-- Comparison between different paths
-- Regional salary adjustment factors
-- Industry-specific compensation trends
-
-## 📈 Business Value
-
-QWIK CV delivers significant value to job seekers by:
-
-- **Reducing Application Time**: Streamlining the resume creation and optimization process
-- **Increasing Interview Chances**: Improving ATS compatibility and job-specific tailoring
-- **Career Development Insights**: Providing clear pathways for professional growth
-- **Credential Verification**: Offering blockchain-secured proof of qualifications
-- **Automated Job Matching**: Connecting users with relevant opportunities
-- **Skill Gap Identification**: Highlighting areas for professional development
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js & npm installed - [Install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-### Installation
-
-```sh
+```bash
 # Clone the repository
-git clone <YOUR_REPO_URL>
+git clone <repo-url>
 
-# Navigate to the project directory
+# Navigate to project directory
 cd qwik-cv
 
 # Install dependencies
 npm install
 
-# Start the development server
+# Start development server
 npm run dev
 ```
 
 ## 📱 Screenshots
 
-*[Insert screenshots of main application features here]*
+<div align="center">
+  <img src="public/placeholder.svg" alt="QWIK CV Interface" width="400px" />
+</div>
 
-## 👨‍💻 Development Team
+## 🔗 Links
 
-- **Sai Praneeth Reddy Dhadi** - Full Stack Developer
-- **Pravalika Batchu** - UI/UX Designer (1602-23-733-308)
-- **Bhavana Vemula** - Backend Developer
-- **Vaishnavi Konda** - Frontend Developer
+- [Project Demo](https://qwik-cv.vercel.app)
+- [GitHub Repository](https://github.com/qwikzen/qwik-cv)
+- [HackIndia 2025 Submission](https://hackindia2025.devfolio.co/projects)
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🙏 Acknowledgements
-
-- Icon library provided by [Lucide Icons](https://lucide.dev/)
-- UI components from [shadcn/ui](https://ui.shadcn.com/)
-- 3D visualizations powered by [Three.js](https://threejs.org/)
-- Blockchain integration inspired by [OpenCerts](https://opencerts.io/)
