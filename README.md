@@ -1,6 +1,5 @@
 
 <div align="center">
-  <img src="public/og-image.png" alt="QWIK CV Banner" width="650px" />
   
   # QWIK CV
   ### AI-Powered Resume Builder
