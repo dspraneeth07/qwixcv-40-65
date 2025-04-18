@@ -1,17 +1,9 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-
-export type UserRole = 'student' | 'organization' | 'admin';
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  profilePicture?: string;
-}
+import { User, UserRole } from '@/types/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -40,56 +32,98 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check for existing session on mount
-    const storedUser = localStorage.getItem('qwixed360_user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error('Error parsing stored user:', error);
-        localStorage.removeItem('qwixed360_user');
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+
+          setUser({
+            id: session.user.id,
+            email: session.user.email!,
+            name: profile?.full_name,
+            role: profile?.role as UserRole,
+            profilePicture: profile?.profile_picture,
+          });
+        } else {
+          setUser(null);
+        }
+        setIsLoading(false);
       }
-    }
-    setIsLoading(false);
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data: profile }) => {
+            if (profile) {
+              setUser({
+                id: session.user.id,
+                email: session.user.email!,
+                name: profile.full_name,
+                role: profile.role as UserRole,
+                profilePicture: profile.profile_picture,
+              });
+            }
+          });
+      }
+      setIsLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string, role: UserRole): Promise<boolean> => {
     setIsLoading(true);
     
     try {
-      // TODO: Replace with actual Supabase authentication
-      // This is a mock implementation until Supabase is integrated
-      if (email && password) {
-        // Mock successful login
-        const mockUser: User = {
-          id: `user-${Date.now()}`,
-          email,
-          name: email.split('@')[0],
-          role,
-        };
-        
-        setUser(mockUser);
-        localStorage.setItem('qwixed360_user', JSON.stringify(mockUser));
-        
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profile?.role !== role) {
+          await supabase.auth.signOut();
+          toast({
+            title: "Access Denied",
+            description: "Invalid role for this login type",
+            variant: "destructive",
+          });
+          return false;
+        }
+
         toast({
           title: "Login successful",
-          description: `Welcome back, ${mockUser.name}!`,
+          description: "Welcome back!",
         });
-        
         return true;
-      } else {
-        toast({
-          title: "Login failed",
-          description: "Invalid email or password",
-          variant: "destructive",
-        });
-        return false;
       }
-    } catch (error) {
+      return false;
+    } catch (error: any) {
       console.error('Login error:', error);
       toast({
         title: "Login failed",
-        description: "An error occurred during login",
+        description: error.message || "An error occurred during login",
         variant: "destructive",
       });
       return false;
@@ -102,40 +136,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     
     try {
-      // TODO: Replace with actual Supabase registration
-      // This is a mock implementation until Supabase is integrated
-      if (userData.email && userData.password) {
-        // Mock successful registration
-        const mockUser: User = {
-          id: `user-${Date.now()}`,
-          email: userData.email,
-          name: userData.fullName || userData.email.split('@')[0],
-          role,
-          profilePicture: userData.profilePicture,
-        };
-        
-        setUser(mockUser);
-        localStorage.setItem('qwixed360_user', JSON.stringify(mockUser));
-        
+      const { data, error } = await supabase.auth.signUp({
+        email: userData.email,
+        password: userData.password,
+        options: {
+          data: {
+            full_name: userData.fullName,
+            role: role,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
         toast({
           title: "Registration successful",
-          description: `Welcome to QwiXEd360°, ${mockUser.name}!`,
+          description: "Please check your email to verify your account",
         });
-        
         return true;
-      } else {
-        toast({
-          title: "Registration failed",
-          description: "Please complete all required fields",
-          variant: "destructive",
-        });
-        return false;
       }
-    } catch (error) {
+      return false;
+    } catch (error: any) {
       console.error('Registration error:', error);
       toast({
         title: "Registration failed",
-        description: "An error occurred during registration",
+        description: error.message || "An error occurred during registration",
         variant: "destructive",
       });
       return false;
@@ -144,31 +170,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = () => {
-    // Clear user data from state and local storage
-    setUser(null);
-    localStorage.removeItem('qwixed360_user');
-    navigate('/login');
-    
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out",
-    });
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Logout failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      setUser(null);
+      navigate('/login');
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out",
+      });
+    }
   };
 
   const forgotPassword = async (email: string): Promise<boolean> => {
     try {
-      // TODO: Replace with actual Supabase password reset
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      
+      if (error) throw error;
+      
       toast({
-        title: "Password reset link sent",
+        title: "Password reset email sent",
         description: "Please check your email for password reset instructions",
       });
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Password reset error:', error);
       toast({
-        title: "Error",
-        description: "Failed to send password reset link",
+        title: "Password reset failed",
+        description: error.message || "Failed to send password reset email",
         variant: "destructive",
       });
       return false;
@@ -189,3 +225,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </AuthContext.Provider>
   );
 };
+
