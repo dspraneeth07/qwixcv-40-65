@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   FileText,
-  FileCertificate,
+  Award,
   FileImage,
   Edit,
   Trash2,
@@ -218,7 +218,7 @@ export const DocumentsDashboard: React.FC = () => {
     } else if (fileType.includes('image')) {
       return <FileImage className="h-8 w-8 text-primary" />;
     } else if (fileType.includes('certificate')) {
-      return <FileCertificate className="h-8 w-8 text-primary" />;
+      return <Award className="h-8 w-8 text-primary" />;
     } else {
       return <FileCode className="h-8 w-8 text-primary" />;
     }

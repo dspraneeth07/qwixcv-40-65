@@ -101,7 +101,8 @@ const DocumentUploadPreview: React.FC<DocumentUploadPreviewProps> = ({
       </div>
 
       {/* Add CSS for the 3D cube animation */}
-      <style jsx>{`
+      <style>
+        {`
         .cube-wrapper {
           perspective: 800px;
           width: 100%;
@@ -143,7 +144,8 @@ const DocumentUploadPreview: React.FC<DocumentUploadPreviewProps> = ({
           0% { transform: rotateX(0deg) rotateY(0deg); }
           100% { transform: rotateX(360deg) rotateY(360deg); }
         }
-      `}</style>
+        `}
+      </style>
     </Card>
   );
 };
