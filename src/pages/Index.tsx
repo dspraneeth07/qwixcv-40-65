@@ -8,11 +8,14 @@ import TestimonialsSection from "@/components/home/TestimonialsSection";
 import CertificationSection from "@/components/home/CertificationSection";
 import CtaSection from "@/components/home/CtaSection";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, FileText, MessageSquare, BarChart } from "lucide-react";
+import { ArrowRight, Sparkles, FileText, MessageSquare, BarChart, GraduationCap, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/context/AuthContext";
 
 const Index = () => {
+  const { isAuthenticated, user } = useAuth();
+  
   return (
     <MainLayout>
       {/* Career Path Simulator Promo Banner */}
@@ -20,11 +23,25 @@ const Index = () => {
         <div className="container mx-auto">
           <p className="flex items-center justify-center text-lg font-medium text-indigo-900 gap-2">
             <Sparkles className="h-5 w-5 text-indigo-600" />
-            Try our new AI-powered Career Path Simulator™
+            {isAuthenticated ? (
+              <>
+                Welcome back, {user?.name}! Continue exploring AI-powered career tools
+              </>
+            ) : (
+              <>
+                Try our new AI-powered Career Development Suite
+              </>
+            )}
             <Button asChild variant="default" size="sm" className="bg-indigo-600 hover:bg-indigo-700 ml-4">
-              <Link to="/career-path-simulator">
-                Explore Now <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
+              {isAuthenticated ? (
+                <Link to="/dashboard">
+                  Go to Dashboard <ArrowRight className="ml-1 h-4 w-4" />
+                </Link>
+              ) : (
+                <Link to="/login">
+                  <LogIn className="mr-1 h-4 w-4" /> Log In
+                </Link>
+              )}
             </Button>
           </p>
         </div>
@@ -80,9 +97,15 @@ const Index = () => {
                 </li>
               </ul>
               <Button asChild size="lg" className="bg-indigo-600 hover:bg-indigo-700">
-                <Link to="/career-path-simulator">
-                  Try Career Path Simulator <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
+                {isAuthenticated ? (
+                  <Link to="/career-path-simulator">
+                    Try Career Path Simulator <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                ) : (
+                  <Link to="/register">
+                    Sign Up to Access <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                )}
               </Button>
             </div>
             
@@ -201,9 +224,15 @@ const Index = () => {
                 </li>
               </ul>
               <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-700">
-                <Link to="/builder">
-                  Create Resume & Get Interview Prep <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
+                {isAuthenticated ? (
+                  <Link to="/builder">
+                    Create Resume & Get Interview Prep <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                ) : (
+                  <Link to="/register">
+                    Sign Up to Access <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                )}
               </Button>
             </div>
           </div>

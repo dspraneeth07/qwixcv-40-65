@@ -1,32 +1,18 @@
 
+import { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { FileText, Menu, Briefcase, Zap, FileCheck, MessageSquare, User, Instagram, Twitter, Linkedin, Globe, Sparkles, Award, Shield } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useState } from "react";
+import { FileText, Instagram, Twitter, Linkedin, Globe, Sparkles, Award, Shield, User, MessageSquare, Briefcase, GraduationCap } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import PublicNavbar from "./PublicNavbar";
+import UserNavbar from "./UserNavbar";
 
-const MainLayout = ({ children }: { children: React.ReactNode }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const navigation = [
-    { name: "Resume Builder", href: "/builder" },
-    { name: "ATS Scanner", href: "/ats-scanner" },
-    { name: "Compare Resumes", href: "/resume-compare" },
-    { name: "QwiXCert", href: "/certification-center" },
-    { name: "Job Board", href: "/job-board" },
-    { name: "Career Path Simulator", href: "/career-path-simulator" },
-  ];
-
-  const footerLinks = [
-    { name: "Home", href: "/" },
-    { name: "About", href: "/about" },
-    { name: "Contact", href: "/contact" },
-  ];
+const MainLayout = ({ children }: { children: ReactNode }) => {
+  const { user, isAuthenticated } = useAuth();
 
   const productLinks = [
     { name: "Resume Builder", href: "/builder", icon: FileText },
-    { name: "ATS Scanner", href: "/ats-scanner", icon: Zap },
-    { name: "Compare Resumes", href: "/resume-compare", icon: FileCheck },
+    { name: "ATS Scanner", href: "/ats-scanner", icon: Sparkles },
+    { name: "Compare Resumes", href: "/resume-compare", icon: FileText },
     { name: "QwiXCert", href: "/certification-center", icon: Shield },
     { name: "Job Board", href: "/job-board", icon: Briefcase },
     { name: "Career Simulator", href: "/career-path-simulator", icon: Sparkles },
@@ -47,58 +33,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="border-b bg-gradient-to-r from-modern-blue-600 to-soft-purple text-white sticky top-0 z-50">
-        <div className="container flex h-16 items-center justify-between py-4">
-          <div className="flex items-center gap-2">
-            <Link 
-              to="/" 
-              className="flex items-center gap-2 text-xl font-bold text-white"
-            >
-              <FileText className="h-6 w-6" />
-              <span className="font-sf-pro tracking-tight">QwiX CV</span>
-            </Link>
-          </div>
-          
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className="text-sm font-medium text-white/90 transition-colors hover:text-white font-poppins"
-              >
-                {item.name}
-              </Link>
-            ))}
-          </div>
-          
-          {/* Mobile Navigation */}
-          <div className="flex md:hidden items-center">
-            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-white">
-                  <Menu className="h-6 w-6" />
-                  <span className="sr-only">Toggle menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[80%] sm:w-[385px] bg-gradient-to-b from-modern-blue-600 to-soft-purple text-white">
-                <div className="flex flex-col gap-6 pt-10">
-                  {navigation.map((item) => (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className="text-base font-medium text-white/90 transition-colors hover:text-white font-poppins"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-        </div>
-      </header>
+      {isAuthenticated ? <UserNavbar /> : <PublicNavbar />}
       
       <main className="flex-1 bg-gradient-to-b from-gray-50 to-white">
         {children}
@@ -109,11 +44,12 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           {/* Company description column */}
           <div className="md:col-span-4 flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              <span className="font-semibold font-sf-pro">QwiX CV</span>
+              <GraduationCap className="h-5 w-5" />
+              <span className="font-semibold font-sf-pro">QwiXEd360°</span>
             </div>
             <p className="text-sm text-gray-300 font-poppins max-w-md">
-              AI-powered resume builder helping job seekers create professional resumes optimized for ATS systems. Stand out and land your dream job.
+              AI-powered career platform helping job seekers create professional resumes optimized for ATS systems, 
+              gain certifications, and advance their career paths.
             </p>
           </div>
           
@@ -175,7 +111,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         
         <div className="container pt-8 border-t border-white/10">
           <p className="text-center text-sm text-gray-400 font-poppins">
-            © {new Date().getFullYear()} QwiX CV by QwikZen. All rights reserved.
+            © {new Date().getFullYear()} QwiXEd360° by QwikZen. All rights reserved.
           </p>
         </div>
       </footer>

@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
 import { BlockchainProvider } from "./context/BlockchainContext";
+import { AuthProvider } from "./context/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
 import Index from "./pages/Index";
 import ResumeBuilder from "./pages/ResumeBuilder";
@@ -18,6 +19,11 @@ import Dashboard from "./pages/Dashboard";
 import CertificationCenter from "./pages/CertificationCenter";
 import CertificationTest from "./pages/CertificationTest";
 import CertificateVerification from "./pages/CertificateVerification";
+import Login from "./pages/Auth/Login";
+import Register from "./pages/Auth/Register";
+import ForgotPassword from "./pages/Auth/ForgotPassword";
+import Unauthorized from "./pages/Auth/Unauthorized";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { useEffect } from "react";
 
 function App() {
@@ -45,24 +51,35 @@ function App() {
     <ThemeProvider>
       <BlockchainProvider>
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/builder" element={<ResumeBuilder />} />
-            <Route path="/resume-preview" element={<ResumePreview />} />
-            <Route path="/share-to-company" element={<ShareToCompany />} />
-            <Route path="/job-board" element={<JobBoard />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/ats-scanner" element={<ATSScanner />} />
-            <Route path="/resume-compare" element={<ResumeCompare />} />
-            <Route path="/career-path-simulator" element={<CareerPathSimulator />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/certification-center" element={<CertificationCenter />} />
-            <Route path="/certification/:testId" element={<CertificationTest />} />
-            <Route path="/verify-cert/:certHash?" element={<CertificateVerification />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Toaster />
+          <AuthProvider>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/verify-cert/:certHash?" element={<CertificateVerification />} />
+              <Route path="/unauthorized" element={<Unauthorized />} />
+
+              {/* Protected Routes - Student/Freelancer/Job Seeker */}
+              <Route path="/builder" element={<ProtectedRoute allowedRoles={['student']}><ResumeBuilder /></ProtectedRoute>} />
+              <Route path="/resume-preview" element={<ProtectedRoute allowedRoles={['student']}><ResumePreview /></ProtectedRoute>} />
+              <Route path="/share-to-company" element={<ProtectedRoute allowedRoles={['student']}><ShareToCompany /></ProtectedRoute>} />
+              <Route path="/job-board" element={<ProtectedRoute allowedRoles={['student']}><JobBoard /></ProtectedRoute>} />
+              <Route path="/ats-scanner" element={<ProtectedRoute allowedRoles={['student']}><ATSScanner /></ProtectedRoute>} />
+              <Route path="/resume-compare" element={<ProtectedRoute allowedRoles={['student']}><ResumeCompare /></ProtectedRoute>} />
+              <Route path="/career-path-simulator" element={<ProtectedRoute allowedRoles={['student']}><CareerPathSimulator /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/certification-center" element={<ProtectedRoute><CertificationCenter /></ProtectedRoute>} />
+              <Route path="/certification/:testId" element={<ProtectedRoute><CertificationTest /></ProtectedRoute>} />
+              
+              {/* Not Found */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
+          </AuthProvider>
         </BrowserRouter>
       </BlockchainProvider>
     </ThemeProvider>
