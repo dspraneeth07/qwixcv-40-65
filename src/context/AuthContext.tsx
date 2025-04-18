@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -94,51 +93,83 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password,
       });
 
-      if (error) throw error;
-
-      if (data.user) {
-        // Fetch user profile to verify role
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('role, full_name')
-          .eq('id', data.user.id)
-          .maybeSingle();
-
-        if (profileError) throw profileError;
-
-        // Check if profile exists and role matches
-        if (!profile || profile.role !== role) {
-          await supabase.auth.signOut();
-          toast({
-            title: "Access Denied",
-            description: "Invalid role for this login type",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-          return false;
-        }
-
-        // Set user in state immediately to prevent race condition
-        setUser({
-          id: data.user.id,
-          email: data.user.email!,
-          name: profile.full_name,
-          role: profile.role as UserRole,
-          profilePicture: null,
-        });
-
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-        });
-        
-        // Redirect immediately
-        navigate('/dashboard');
+      if (error) {
         setIsLoading(false);
-        return true;
+        toast({
+          title: "Login failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return false;
       }
-      setIsLoading(false);
-      return false;
+
+      if (!data.user) {
+        setIsLoading(false);
+        toast({
+          title: "Login failed",
+          description: "User not found",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Fetch user profile to verify role
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role, full_name')
+        .eq('id', data.user.id)
+        .maybeSingle();
+
+      if (profileError) {
+        setIsLoading(false);
+        toast({
+          title: "Login failed",
+          description: "Error fetching profile: " + profileError.message,
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Check if profile exists and role matches
+      if (!profile) {
+        await supabase.auth.signOut();
+        setIsLoading(false);
+        toast({
+          title: "Access Denied",
+          description: "User profile not found",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      if (profile.role !== role) {
+        await supabase.auth.signOut();
+        setIsLoading(false);
+        toast({
+          title: "Access Denied",
+          description: "Invalid role for this login type",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Set user in state immediately
+      setUser({
+        id: data.user.id,
+        email: data.user.email!,
+        name: profile.full_name,
+        role: profile.role as UserRole,
+        profilePicture: null,
+      });
+
+      toast({
+        title: "Login successful",
+        description: "Welcome back!",
+      });
+      
+      // Redirect immediately
+      navigate('/dashboard');
+      return true;
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
@@ -146,8 +177,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: error.message || "An error occurred during login",
         variant: "destructive",
       });
-      setIsLoading(false);
       return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 

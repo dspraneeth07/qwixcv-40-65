@@ -41,12 +41,14 @@ const Login: React.FC = () => {
     const [password, setPassword] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    // Clear any existing timeouts when component unmounts
     useEffect(() => {
+      // Reset form state when tab changes
       return () => {
-        // No specific cleanup needed
+        setEmail('');
+        setPassword('');
+        setIsSubmitting(false);
       };
-    }, []);
+    }, [role]);
     
     const handleLogin = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -69,8 +71,16 @@ const Login: React.FC = () => {
         }
       } catch (error) {
         setIsSubmitting(false);
+        console.error("Login form error:", error);
       }
     };
+    
+    // Reset submission state when auth context loading state changes
+    useEffect(() => {
+      if (!isLoading) {
+        setIsSubmitting(false);
+      }
+    }, [isLoading]);
     
     return (
       <form onSubmit={handleLogin} className="bg-white dark:bg-gray-800">
@@ -88,6 +98,7 @@ const Login: React.FC = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={isSubmitting}
               className="bg-white dark:bg-gray-700"
             />
           </div>
@@ -106,12 +117,14 @@ const Login: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={isSubmitting}
                 className="bg-white dark:bg-gray-700"
               />
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
+                disabled={isSubmitting}
                 className="absolute right-0 top-0 h-full px-3 py-2"
                 onClick={() => setShowPassword(!showPassword)}
               >
