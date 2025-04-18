@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { UserRole } from '@/types/auth';
@@ -21,8 +21,15 @@ interface LoginFormProps {
 const Login: React.FC = () => {
   const [activeTab, setActiveTab] = useState<UserRole>('student');
   const navigate = useNavigate();
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  
+  // If already authenticated, redirect to dashboard
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
   
   const handleTabChange = (role: string) => {
     setActiveTab(role as UserRole);
@@ -33,7 +40,13 @@ const Login: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [loginTimeout, setLoginTimeout] = useState<NodeJS.Timeout | null>(null);
+    
+    // Clear any existing timeouts when component unmounts
+    useEffect(() => {
+      return () => {
+        // No specific cleanup needed
+      };
+    }, []);
     
     const handleLogin = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -49,42 +62,15 @@ const Login: React.FC = () => {
       
       setIsSubmitting(true);
       
-      // Set a timeout to show an error if login takes too long
-      const timeout = setTimeout(() => {
-        if (isSubmitting) {
-          toast({
-            title: "Login taking longer than expected",
-            description: "Please check your internet connection",
-            variant: "destructive",
-          });
-        }
-      }, 10000); // 10 second timeout
-      
-      setLoginTimeout(timeout);
-      
       try {
         const success = await login(email, password, role);
-        
         if (!success) {
           setIsSubmitting(false);
         }
       } catch (error) {
         setIsSubmitting(false);
-      } finally {
-        if (loginTimeout) {
-          clearTimeout(loginTimeout);
-        }
       }
     };
-    
-    // Clear timeout on unmount
-    React.useEffect(() => {
-      return () => {
-        if (loginTimeout) {
-          clearTimeout(loginTimeout);
-        }
-      };
-    }, [loginTimeout]);
     
     return (
       <form onSubmit={handleLogin} className="bg-white dark:bg-gray-800">

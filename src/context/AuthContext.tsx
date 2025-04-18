@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -96,12 +97,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
 
       if (data.user) {
-        const { data: profile } = await supabase
+        // Fetch user profile to verify role
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('role')
+          .select('role, full_name')
           .eq('id', data.user.id)
           .maybeSingle();
 
+        if (profileError) throw profileError;
+
+        // Check if profile exists and role matches
         if (!profile || profile.role !== role) {
           await supabase.auth.signOut();
           toast({
@@ -113,16 +118,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return false;
         }
 
+        // Set user in state immediately to prevent race condition
+        setUser({
+          id: data.user.id,
+          email: data.user.email!,
+          name: profile.full_name,
+          role: profile.role as UserRole,
+          profilePicture: null,
+        });
+
         toast({
           title: "Login successful",
           description: "Welcome back!",
         });
         
-        setTimeout(() => {
-          setIsLoading(false);
-          navigate('/dashboard');
-        }, 300);
-        
+        // Redirect immediately
+        navigate('/dashboard');
+        setIsLoading(false);
         return true;
       }
       setIsLoading(false);

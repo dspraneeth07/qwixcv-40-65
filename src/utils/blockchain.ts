@@ -1,7 +1,10 @@
-
 import html2pdf from 'html2pdf.js';
 import { Certificate, BlockchainTransaction, VerificationMethod } from "@/types/certification";
 import { ethers } from 'ethers';
+import { NFTStorage } from 'nft.storage';
+
+// NFT.Storage API key for IPFS storage
+const NFT_STORAGE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweEU5MWE3NDQ0ODVBQUYyMTE1MzU1OTlkZGQwRTdGOTcyQzczNTIxNzQiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY1MTY2MTYyMzc5NywibmFtZSI6IlF3aXhCbG9jayJ9.iZVMeFkVe1Bw8IWkZJmGQPQKTLT9HnW83vubGolFbBI';
 
 // Mock certificates storage - this would be replaced with actual blockchain calls
 const CERTIFICATES_STORAGE_KEY = 'qwik_cv_certificates';
@@ -52,6 +55,39 @@ const saveCertificates = (certificates: Certificate[]): void => {
   }
 };
 
+// Get NFT.Storage client
+const getNftStorageClient = () => {
+  return new NFTStorage({ token: NFT_STORAGE_API_KEY });
+};
+
+// Upload certificate to IPFS
+const uploadCertificateToIPFS = async (certificate: Certificate): Promise<string> => {
+  const client = getNftStorageClient();
+  
+  // Create certificate metadata
+  const metadata = {
+    name: certificate.title,
+    description: `Certificate for ${certificate.recipientName} - ${certificate.title}`,
+    image: "https://qwixzen.com/certificates/template.png", // Placeholder image URL
+    properties: {
+      testId: certificate.testId,
+      score: certificate.score,
+      recipientName: certificate.recipientName,
+      recipientEmail: certificate.recipientEmail,
+      issuer: certificate.issuer,
+      issuedDate: certificate.issuedDate,
+      uniqueId: certificate.uniqueId
+    }
+  };
+  
+  // Convert to blob
+  const metadataBlob = new Blob([JSON.stringify(metadata)], { type: 'application/json' });
+  
+  // Store as NFT
+  const cid = await client.storeBlob(metadataBlob);
+  return `ipfs://${cid}`;
+};
+
 // Generate a certificate
 export const generateCertificate = async (
   testId: string, 
@@ -60,6 +96,7 @@ export const generateCertificate = async (
   recipientName: string,
   recipientEmail: string
 ): Promise<Certificate> => {
+  // Generate a unique transaction hash
   const txHash = `0x${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
   const blockId = Math.floor(Math.random() * 10000000);
   const certHash = generateCertificateHash();
@@ -84,17 +121,33 @@ export const generateCertificate = async (
     isPublic: true
   };
   
-  // Save to localStorage
-  const certificates = getUserCertificates();
-  certificates.push(certificate);
-  saveCertificates(certificates);
-  
-  console.log("Generated new certificate:", certificate);
-  
-  // Simulate blockchain delay
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  return certificate;
+  try {
+    // Upload to IPFS
+    const ipfsUri = await uploadCertificateToIPFS(certificate);
+    
+    // In a real implementation, we would mint an NFT here
+    // For now, we just store the IPFS URI in the certificate
+    certificate.ipfsUri = ipfsUri;
+    certificate.ipfsCid = ipfsUri.replace('ipfs://', '');
+    
+    // Save to localStorage
+    const certificates = getUserCertificates();
+    certificates.push(certificate);
+    saveCertificates(certificates);
+    
+    console.log("Generated new certificate:", certificate);
+    
+    return certificate;
+  } catch (error) {
+    console.error("Error generating certificate:", error);
+    
+    // Still save to localStorage in case of IPFS error
+    const certificates = getUserCertificates();
+    certificates.push(certificate);
+    saveCertificates(certificates);
+    
+    return certificate;
+  }
 };
 
 // Update certificate visibility

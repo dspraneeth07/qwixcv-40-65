@@ -1,8 +1,19 @@
+
 import { v4 as uuidv4 } from 'uuid';
+import { NFTStorage } from 'nft.storage';
 import { BlockchainDocument } from '@/types/blockchain';
+import { useBlockchain } from '@/context/BlockchainContext';
+
+// NFT.Storage API key for IPFS storage
+const NFT_STORAGE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweEU5MWE3NDQ0ODVBQUYyMTE1MzU1OTlkZGQwRTdGOTcyQzczNTIxNzQiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY1MTY2MTYyMzc5NywibmFtZSI6IlF3aXhCbG9jayJ9.iZVMeFkVe1Bw8IWkZJmGQPQKTLT9HnW83vubGolFbBI';
 
 // Local storage key for documents
 const DOCUMENTS_STORAGE_KEY = 'qwix_blockchain_documents';
+
+// Get NFT.Storage client
+const getNftStorageClient = () => {
+  return new NFTStorage({ token: NFT_STORAGE_API_KEY });
+};
 
 // Helper to get documents from localStorage
 export const getUserDocuments = (): BlockchainDocument[] => {
@@ -31,24 +42,40 @@ const saveDocuments = (documents: BlockchainDocument[]): void => {
   }
 };
 
-// Generate a unique blockchain hash
-const generateBlockchainHash = (): string => {
-  return `0x${Array.from({length: 40}, () => 
-    Math.floor(Math.random() * 16).toString(16)
-  ).join('')}`;
-};
-
-// Generate a unique block ID
-const generateBlockId = (): number => {
-  return Math.floor(Math.random() * 10000000) + 1000000;
+// Upload document to IPFS
+const uploadToIPFS = async (file: File, metadata: any): Promise<string> => {
+  const client = getNftStorageClient();
+  
+  // Create a Blob with metadata
+  const metadataBlob = new Blob([JSON.stringify({
+    name: metadata.fileName,
+    description: metadata.description || '',
+    properties: {
+      fileType: file.type,
+      fileSize: file.size,
+      timestamp: new Date().toISOString(),
+      ownerAddress: metadata.ownerAddress
+    }
+  })], { type: 'application/json' });
+  
+  // Store as NFT
+  const cid = await client.storeBlob(metadataBlob);
+  
+  // Also store the file content
+  const fileCid = await client.storeBlob(file);
+  
+  // Return both CIDs
+  return JSON.stringify({
+    metadata: `ipfs://${cid}`,
+    content: `ipfs://${fileCid}`
+  });
 };
 
 // Interface for document upload parameters
 interface DocumentUploadParams {
+  file: File;
   fileName: string;
   description?: string;
-  fileType: string;
-  fileSize: number;
   ownerAddress: string;
 }
 
@@ -56,26 +83,49 @@ interface DocumentUploadParams {
 export const uploadDocumentToBlockchain = async (
   params: DocumentUploadParams
 ): Promise<BlockchainDocument> => {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 2000));
+  // Upload to IPFS
+  const ipfsData = await uploadToIPFS(params.file, {
+    fileName: params.fileName,
+    description: params.description,
+    ownerAddress: params.ownerAddress
+  });
+  
+  const ipfsJson = JSON.parse(ipfsData);
+  const blockchainHash = `0x${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
+  const blockId = Math.floor(Math.random() * 10000000) + 1000000;
   
   const now = new Date().toISOString();
   const newDocument: BlockchainDocument = {
     id: uuidv4(),
     fileName: params.fileName,
     description: params.description || '',
-    fileType: params.fileType,
-    fileSize: params.fileSize,
+    fileType: params.file.type,
+    fileSize: params.file.size,
     timestamp: now,
-    blockchainHash: generateBlockchainHash(),
-    blockId: generateBlockId(),
-    blockchainStatus: Math.random() > 0.3 ? 'verified' : 'pending',
+    blockchainHash,
+    blockId,
+    blockchainStatus: 'pending',
     ownerAddress: params.ownerAddress,
+    ipfsUri: ipfsJson.metadata,
+    ipfsContentUri: ipfsJson.content
   };
+  
+  // In a full implementation, we would mint an NFT here
+  // For now, we just set up the data and save to localStorage
   
   const documents = getUserDocuments();
   documents.push(newDocument);
   saveDocuments(documents);
+  
+  // Simulate verification after a delay
+  setTimeout(() => {
+    const docs = getUserDocuments();
+    const docIndex = docs.findIndex(d => d.id === newDocument.id);
+    if (docIndex >= 0) {
+      docs[docIndex].blockchainStatus = 'verified';
+      saveDocuments(docs);
+    }
+  }, 5000);
   
   return newDocument;
 };
@@ -177,6 +227,8 @@ export const verifyDocumentByHash = async (hash: string): Promise<{
   if (!document) {
     return { isValid: false };
   }
+  
+  // If this were a full implementation, we would verify on the blockchain here
   
   return {
     isValid: true,

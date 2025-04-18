@@ -10,6 +10,10 @@ export interface BlockchainDocument {
   blockId: number;
   blockchainStatus: 'pending' | 'verified' | 'revoked';
   ownerAddress: string;
+  ipfsUri?: string; // IPFS URI for metadata
+  ipfsContentUri?: string; // IPFS URI for actual content
+  tokenId?: number; // NFT token ID if minted
+  txHash?: string; // Transaction hash if minted
 }
 
 export interface DocumentTransactionInfo {
