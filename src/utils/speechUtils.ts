@@ -1,3 +1,4 @@
+
 // Speech synthesis utility functions
 
 // Initialize speech synthesis
@@ -108,14 +109,14 @@ export const stopSpeaking = (): void => {
 
 // Initialize speech recognition
 export const initSpeechRecognition = () => {
-  if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+  if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
     console.error("Speech recognition not supported in this browser");
     return null;
   }
   
   // Use the appropriate implementation
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = new SpeechRecognition();
+  const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = new SpeechRecognitionAPI();
   
   // Configure recognition
   recognition.continuous = true;
@@ -128,7 +129,7 @@ export const initSpeechRecognition = () => {
 // Types for TypeScript
 declare global {
   interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
+    SpeechRecognition: new () => SpeechRecognition;
+    webkitSpeechRecognition: new () => SpeechRecognition;
   }
 }

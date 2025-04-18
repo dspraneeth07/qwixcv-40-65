@@ -97,8 +97,8 @@ export const Layout = ({ children }: LayoutProps) => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                      <AvatarImage src={user.photoURL || ''} alt={user.name || 'User'} />
+                      <AvatarFallback>{getInitials(user.name || 'User')}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
