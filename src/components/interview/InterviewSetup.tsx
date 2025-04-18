@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +11,6 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { 
-  FileUpload, 
   Upload, 
   RefreshCw, 
   ChevronRight, 
@@ -160,7 +158,7 @@ const InterviewSetup: React.FC<InterviewSetupProps> = ({ onComplete }) => {
                 <span className="flex flex-col items-center space-y-2">
                   {resumeFile ? (
                     <>
-                      <FileUpload className="h-10 w-10 text-green-500" />
+                      <Upload className="h-10 w-10 text-green-500" />
                       <span className="font-medium text-green-600">
                         {resumeFile.name}
                       </span>
