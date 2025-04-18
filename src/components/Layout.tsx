@@ -1,98 +1,158 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+
+import { ReactNode } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import WalletConnect from "@/components/blockchain/WalletConnect";
 import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ModeToggle } from '@/components/ui/mode-toggle';
-import { ThemeProvider } from '@/components/theme-provider';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { LogOut, User } from "lucide-react";
 
 interface LayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-interface User {
-  name: string;
-  email: string;
-  avatarUrl?: string; // Make avatarUrl optional
-}
+export const Layout = ({ children }: LayoutProps) => {
+  const { user, logout, isAuthenticated } = useAuth();
 
-// Mock user for demonstration
-const currentUser: User = {
-  name: "John Doe",
-  email: "john.doe@example.com",
-  avatarUrl: "/avatar-placeholder.png"
-};
+  const handleLogout = () => {
+    logout();
+  };
 
-export const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const getInitials = (name: string) => {
+    if (!name) return 'U';
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
+
   return (
-    <ThemeProvider defaultTheme="light">
-      <div className="flex min-h-screen flex-col">
-        {/* Header */}
-        <header className="sticky top-0 z-50 border-b bg-background">
-          <div className="container flex h-16 items-center justify-between">
-            <div className="flex items-center gap-6">
-              <Link to="/" className="font-bold text-xl flex items-center">
-                <span className="text-primary">QwiX</span>
-                <span className="text-muted-foreground ml-1">Career</span>
-              </Link>
-              <nav className="hidden md:flex gap-6">
-                <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
-                  Dashboard
-                </Link>
-                <Link to="/interview-coach" className="text-sm font-medium hover:text-primary transition-colors">
-                  Interview Coach
-                </Link>
-                <Link to="/resume-builder" className="text-sm font-medium hover:text-primary transition-colors">
-                  Resume Builder
-                </Link>
-                <Link to="/jobs" className="text-sm font-medium hover:text-primary transition-colors">
-                  Job Search
-                </Link>
-              </nav>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <ModeToggle />
-              
-              <div className="flex items-center gap-2">
-                <Avatar className="h-8 w-8">
-                  {currentUser.avatarUrl && (
-                    <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} />
-                  )}
-                  <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="hidden md:block text-sm">
-                  <div className="font-medium">{currentUser.name}</div>
-                </div>
-              </div>
-            </div>
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 items-center">
+          <Link to="/" className="flex items-center font-bold mr-8">
+            <span className="text-2xl font-extrabold mr-1 bg-gradient-to-r from-modern-blue-500 to-soft-purple bg-clip-text text-transparent">
+              QwiX
+            </span>
+            <span className="text-xl font-bold font-sf-pro">CV</span>
+          </Link>
+
+          <nav className="flex items-center space-x-4 lg:space-x-6 hidden md:flex">
+            <Link
+              to="/"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Home
+            </Link>
+            <Link
+              to="/builder"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Resume Builder
+            </Link>
+            <Link
+              to="/job-board"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Job Board
+            </Link>
+            <Link
+              to="/certification-center"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Certifications
+            </Link>
+            <Link
+              to="/career-path-simulator"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Career Paths
+            </Link>
+            <Link
+              to="/interview-coach"
+              className="text-sm font-medium text-primary transition-colors hover:text-primary"
+            >
+              Interview Coach
+            </Link>
+          </nav>
+
+          <div className="ml-auto flex items-center space-x-4">
+            <WalletConnect />
+
+            <ModeToggle />
+
+            {isAuthenticated && user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Dashboard</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button asChild size="sm">
+                <Link to="/login">Login</Link>
+              </Button>
+            )}
           </div>
-        </header>
-        
-        {/* Main content */}
-        <main className="flex-1">
-          {children}
-        </main>
-        
-        {/* Footer */}
-        <footer className="border-t py-6 bg-background">
-          <div className="container flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} QwiX Career. All rights reserved.
-            </div>
-            <div className="flex items-center gap-4">
-              <Link to="/privacy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                Privacy Policy
-              </Link>
-              <Link to="/terms" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                Terms of Service
-              </Link>
-              <Link to="/contact" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                Contact Us
-              </Link>
-            </div>
+        </div>
+      </header>
+
+      <main className="flex-1">{children}</main>
+
+      <footer className="py-6 md:px-8 md:py-0">
+        <div className="container flex flex-col items-center justify-between gap-4 md:h-16 md:flex-row">
+          <p className="text-sm text-muted-foreground">
+            &copy; {new Date().getFullYear()} QwiX CV. All rights reserved.
+          </p>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <Link
+              to="/about"
+              className="transition-colors hover:text-foreground"
+            >
+              About
+            </Link>
+            <Link
+              to="/contact"
+              className="transition-colors hover:text-foreground"
+            >
+              Contact
+            </Link>
           </div>
-        </footer>
-      </div>
-    </ThemeProvider>
+        </div>
+      </footer>
+    </div>
   );
 };
