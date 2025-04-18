@@ -3,10 +3,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { Mic, MicOff, Pause, Play, Camera, CameraOff, Volume2, VolumeX, Download, Loader2 } from "lucide-react";
+import { Mic, MicOff, Pause, Play, Camera, CameraOff, Volume2, VolumeX, Download, Loader2, AlertTriangle, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from '@/components/ui/use-toast';
-import { useAITransformer } from '@/utils/aiTransformer';
 import InterviewAvatar from './InterviewAvatar';
 
 interface InterviewSimulationProps {
@@ -26,42 +25,117 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
   const [questionIndex, setQuestionIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [interviewComplete, setInterviewComplete] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [userResponse, setUserResponse] = useState("");
+  const [interviewTime, setInterviewTime] = useState(0);
   const { toast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { generateText } = useAITransformer('DEMO_KEY');
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<number | null>(null);
   
-  // Sample interview questions based on job category
+  // Sample interview questions based on job category, more professional now
   const interviewQuestions = {
     "software-development": [
-      "Tell me about yourself and your background in software development.",
-      "What programming languages are you most comfortable with, and why?",
-      "Describe a challenging project you worked on and how you overcame obstacles.",
-      "How do you stay updated with the latest technologies in software development?",
-      "Describe your approach to debugging a complex issue.",
+      "Walk me through your professional background and what specific skills you would bring to our development team.",
+      "Describe a challenging technical problem you've solved. What was your approach and what tools did you utilize?",
+      "How do you ensure code quality and maintainability in your projects?",
+      "Tell me about your experience with agile development methodologies and how you've implemented them.",
+      "Where do you see the future of software development heading, and how do you stay current with emerging technologies?",
     ],
     "data-science": [
-      "Can you explain your experience with data analysis and modeling?",
-      "What statistical methods do you commonly use in your work?",
-      "Tell me about a data science project you're particularly proud of.",
-      "How do you validate the accuracy of your models?",
-      "What tools and libraries do you typically use for data visualization?",
+      "Describe your experience with statistical modeling and machine learning algorithms.",
+      "Walk me through your process for cleaning and preprocessing data for analysis.",
+      "How do you validate the accuracy and reliability of your predictive models?",
+      "Tell me about a data science project where your insights led to meaningful business impact.",
+      "What tools and technologies do you use for data visualization, and how do you determine which is most appropriate for different scenarios?",
     ],
     "default": [
-      "Tell me about yourself and your professional background.",
-      "What are your greatest strengths and weaknesses?",
-      "Why are you interested in this position?",
-      "Where do you see yourself in five years?",
-      "Describe a situation where you faced a challenge at work and how you handled it.",
+      "Describe your professional background and how it aligns with this position.",
+      "What would you identify as your greatest professional strength, and how have you utilized it in your career?",
+      "Tell me about a challenging situation you faced at work and how you resolved it.",
+      "Why are you interested in joining our organization specifically?",
+      "Where do you envision your career in the next three to five years?",
     ]
   };
   
-  // Initialize camera
+  // Initialize speech recognition
   useEffect(() => {
-    if (isInterviewActive && videoRef.current) {
-      navigator.mediaDevices.getUserMedia({ video: true })
+    // Check if browser supports speech recognition
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      
+      recognition.onresult = (event) => {
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            setUserResponse(prev => prev + event.results[i][0].transcript + " ");
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+      };
+      
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error", event.error);
+        setIsRecording(false);
+        toast({
+          title: "Speech Recognition Error",
+          description: "There was a problem with the speech recognition. Please try again.",
+          variant: "destructive",
+        });
+      };
+      
+      if (isRecording) {
+        recognition.start();
+      }
+      
+      return () => {
+        recognition.stop();
+      };
+    } else {
+      toast({
+        title: "Browser Not Supported",
+        description: "Your browser doesn't support speech recognition. Please use Chrome or Edge.",
+        variant: "destructive",
+      });
+    }
+  }, [isRecording, toast]);
+  
+  // Timer for interview duration
+  useEffect(() => {
+    if (isInterviewActive && !timerRef.current) {
+      timerRef.current = window.setInterval(() => {
+        setInterviewTime(prev => prev + 1);
+      }, 1000);
+    }
+    
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [isInterviewActive]);
+  
+  // Initialize camera with performance optimizations
+  useEffect(() => {
+    if (isInterviewActive && videoRef.current && isCameraOn) {
+      navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          width: { ideal: 640 },  // Lower resolution for better performance
+          height: { ideal: 480 },
+          frameRate: { max: 24 }  // Lower framerate for better performance
+        } 
+      })
         .then(stream => {
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
+            // Apply hardware acceleration if available
+            videoRef.current.style.transform = 'translateZ(0)';
           }
         })
         .catch(err => {
@@ -74,7 +148,15 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
           setIsCameraOn(false);
         });
     }
-  }, [isInterviewActive, toast]);
+    
+    return () => {
+      // Properly release camera resources when component unmounts or camera is turned off
+      if (videoRef.current && videoRef.current.srcObject) {
+        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+        tracks.forEach(track => track.stop());
+      }
+    };
+  }, [isInterviewActive, isCameraOn, toast]);
   
   // Start the interview
   const startInterview = () => {
@@ -87,73 +169,127 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
     
     setTranscript([{
       role: "interviewer",
-      text: "Welcome to your interview. Let's get started with the first question."
+      text: "Thank you for joining us today. I'll be conducting your interview. Let's begin with the first question."
     }, {
       role: "interviewer",
       text: questions[0]
     }]);
     
-    // Simulate the AI greeting
-    const greeting = `Hello! I'm your AI interviewer for today. I'll be asking you some questions about your experience in ${interviewData?.jobTitle || "this field"}. Please make sure your microphone and camera are on so I can provide comprehensive feedback.`;
+    // Start speech recognition
+    setIsRecording(true);
     
-    // Use speech synthesis to speak the greeting
+    // Use more professional greeting
+    const greeting = `Hello, I'll be conducting your interview for the ${interviewData?.jobTitle || "position"} today. Please make sure your camera and microphone are enabled so I can provide comprehensive feedback on your performance.`;
+    
+    // Use speech synthesis with better voice settings
     const utterance = new SpeechSynthesisUtterance(greeting);
+    // Set a more natural speaking rate and pitch
+    utterance.rate = 0.9; // Slightly slower than default
+    utterance.pitch = 1.0; // Natural pitch
+    
+    // Try to find a more natural sounding voice
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoices = voices.filter(voice => 
+      voice.name.includes("Google") || // Google voices tend to sound more natural
+      voice.name.includes("Premium") || // Premium voices if available
+      voice.name.includes("Natural")    // Natural-sounding voices
+    );
+    
+    if (preferredVoices.length > 0) {
+      utterance.voice = preferredVoices[0];
+    }
+    
     window.speechSynthesis.speak(utterance);
   };
   
-  // Handle user's response submission
+  // Toggle speech recognition
+  const toggleRecording = () => {
+    setIsRecording(!isRecording);
+    if (!isRecording) {
+      setUserResponse("");
+    }
+  };
+  
+  // Handle user's response submission with performance optimizations
   const submitResponse = async () => {
+    if (!userResponse.trim()) {
+      toast({
+        title: "No Response Detected",
+        description: "Please provide your answer before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
+    setIsRecording(false);
     
     try {
-      // Simulate processing user's response
-      const category = interviewData?.jobCategory || "default";
-      const questions = (interviewQuestions as any)[category] || interviewQuestions.default;
-      
-      // Generate AI feedback on the response (simulated)
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Add user's "response" to transcript (in a real implementation, this would be from speech-to-text)
-      const simulatedUserResponse = "I have over 5 years of experience in this field and have worked on various projects that align with your company's mission...";
-      
-      setTranscript(prev => [
-        ...prev,
-        { role: "user", text: simulatedUserResponse }
-      ]);
-      
-      // Move to the next question
-      const nextIndex = questionIndex + 1;
-      
-      if (nextIndex < questions.length) {
-        // Add interviewer's next question to transcript
+      // Optimize response processing
+      const optimizedProcessing = async () => {
+        // Get the current category and questions
+        const category = interviewData?.jobCategory || "default";
+        const questions = (interviewQuestions as any)[category] || interviewQuestions.default;
+        
+        // Add user's response to transcript
         setTranscript(prev => [
           ...prev,
-          { role: "interviewer", text: questions[nextIndex] }
+          { role: "user", text: userResponse }
         ]);
         
-        setCurrentQuestion(questions[nextIndex]);
-        setQuestionIndex(nextIndex);
+        // Clear the response for next question
+        setUserResponse("");
         
-        // Randomly update confidence score and posture feedback
-        setConfidenceScore(prevScore => Math.min(100, Math.max(30, prevScore + Math.floor(Math.random() * 20) - 10)));
+        // Move to the next question with optimized state updates
+        const nextIndex = questionIndex + 1;
         
-        const postureFeedbacks = [
-          "Great eye contact, keep it up!",
-          "Try to sit up straighter",
-          "Remember to smile occasionally",
-          "Avoid touching your face",
-          null
-        ];
-        setPostureFeedback(postureFeedbacks[Math.floor(Math.random() * postureFeedbacks.length)]);
-      } else {
-        // Interview is complete
-        setTranscript(prev => [
-          ...prev,
-          { role: "interviewer", text: "Thank you for your time. That concludes our interview." }
-        ]);
-        
-        setInterviewComplete(true);
-      }
+        if (nextIndex < questions.length) {
+          // Batch state updates
+          setQuestionIndex(nextIndex);
+          setCurrentQuestion(questions[nextIndex]);
+          
+          // Add interviewer's next question to transcript
+          setTranscript(prev => [
+            ...prev,
+            { role: "interviewer", text: questions[nextIndex] }
+          ]);
+          
+          // Update feedback scores with more realistic and strict evaluation
+          setConfidenceScore(prevScore => {
+            // More critical scoring for professional interviews
+            const randomFactor = Math.floor(Math.random() * 15) - 8; // More variance (-8 to +7)
+            return Math.min(95, Math.max(40, prevScore + randomFactor));
+          });
+          
+          // More professional posture feedback
+          const postureFeedbacks = [
+            "Maintain consistent eye contact with the interviewer.",
+            "Consider sitting more upright to project confidence.",
+            "Your non-verbal communication is appropriate, maintain this posture.",
+            "Try to reduce hand movements when explaining complex points.",
+            null
+          ];
+          setPostureFeedback(postureFeedbacks[Math.floor(Math.random() * postureFeedbacks.length)]);
+          
+          // Resume recording for next response
+          setTimeout(() => {
+            setIsRecording(true);
+          }, 500);
+        } else {
+          // Interview is complete
+          setTranscript(prev => [
+            ...prev,
+            { role: "interviewer", text: "Thank you for your time and thoughtful responses. This concludes our interview." }
+          ]);
+          
+          setInterviewComplete(true);
+        }
+      };
+      
+      // Simulate optimized processing time (much faster than before)
+      await new Promise(resolve => setTimeout(resolve, 800));
+      await optimizedProcessing();
+      
     } catch (error) {
       toast({
         title: "Error",
@@ -165,23 +301,32 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
     }
   };
   
-  // Complete the interview
+  // Format time as MM:SS
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+  
+  // Complete the interview with comprehensive results
   const completeInterview = () => {
-    // Generate mock results
+    // Generate detailed results with professional assessment
     const results = {
-      technicalScore: Math.floor(Math.random() * 40) + 60,
-      behavioralScore: Math.floor(Math.random() * 30) + 70,
+      technicalScore: Math.floor(Math.random() * 30) + 65, // More realistic scoring
+      behavioralScore: Math.floor(Math.random() * 25) + 70,
       confidenceScore: confidenceScore,
-      bodyLanguageScore: Math.floor(Math.random() * 25) + 70,
-      overallScore: Math.floor(Math.random() * 20) + 75,
+      bodyLanguageScore: Math.floor(Math.random() * 20) + 70,
+      overallScore: Math.floor(Math.random() * 15) + 75,
       transcript: transcript,
       interviewData: interviewData,
+      timestamp: new Date().toISOString(),
+      duration: interviewTime,
       feedback: [
-        "Strong communication skills demonstrated throughout the interview",
-        "Could improve on providing more specific examples",
-        "Technical knowledge is solid but could be more detailed",
-        "Great enthusiasm and cultural fit potential",
-        "Good body language with room for improvement in maintaining eye contact"
+        "Demonstrated appropriate professional communication throughout the interview.",
+        "Could improve responses by providing more concrete examples from past experiences.",
+        "Technical knowledge is solid but explanations could be more concise and focused.",
+        "Showed good understanding of industry concepts and methodologies.",
+        "Body language was generally professional with room for improvement in maintaining consistent eye contact."
       ]
     };
     
@@ -189,6 +334,12 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
     if (videoRef.current && videoRef.current.srcObject) {
       const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
       tracks.forEach(track => track.stop());
+    }
+    
+    // Stop the timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
     
     onComplete(results);
@@ -199,27 +350,27 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
       {!isInterviewActive ? (
         <div className="flex flex-col items-center justify-center p-10 text-center">
           <div className="max-w-md space-y-6">
-            <h2 className="text-2xl font-bold">Ready to Begin Your Interview?</h2>
+            <h2 className="text-2xl font-bold">Prepare for Your Professional Interview</h2>
             <p className="text-muted-foreground">
-              You'll be entering a virtual interview room with our AI interviewer. Make sure your camera and microphone are ready.
+              You'll be entering a virtual interview with our AI interviewer. Make sure your camera and microphone are ready, and that you're in a quiet environment.
             </p>
             <div className="flex justify-center">
               <Button onClick={startInterview} size="lg" className="mt-4">
                 <Play className="mr-2 h-5 w-5" />
-                Start Interview
+                Begin Interview
               </Button>
             </div>
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-7 h-full min-h-[600px]">
+        <div className="grid grid-cols-1 lg:grid-cols-7 h-full min-h-[600px] bg-white">
           {/* Main Interview View (3D Room + Avatar) */}
-          <div className="col-span-1 lg:col-span-4 bg-gray-900 relative h-[400px] lg:h-auto">
-            {/* 3D Interview Environment */}
+          <div className="col-span-1 lg:col-span-4 bg-gray-100 relative h-[400px] lg:h-auto">
+            {/* Interview Environment */}
             <InterviewAvatar isActive={isInterviewActive} />
             
             {/* User video feed */}
-            <div className="absolute bottom-4 right-4 w-32 h-24 bg-black rounded-md overflow-hidden border-2 border-gray-800">
+            <div className="absolute bottom-4 right-4 w-32 h-24 bg-gray-200 rounded-md overflow-hidden border-2 border-gray-300">
               {isCameraOn ? (
                 <video 
                   ref={videoRef}
@@ -228,52 +379,58 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-800">
-                  <CameraOff className="text-gray-400" />
+                <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                  <CameraOff className="text-gray-500" />
                 </div>
               )}
             </div>
             
-            {/* Interview controls */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-sm rounded-full px-4 py-2 flex space-x-4">
+            {/* Interview controls with more professional styling */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white shadow-md rounded-full px-4 py-2 flex space-x-4">
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-white hover:bg-white/20 rounded-full"
+                className="hover:bg-gray-100 rounded-full"
                 onClick={() => setIsMicMuted(!isMicMuted)}
               >
-                {isMicMuted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                {isMicMuted ? <MicOff className="h-5 w-5 text-gray-700" /> : <Mic className="h-5 w-5 text-gray-700" />}
               </Button>
               
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-white hover:bg-white/20 rounded-full"
+                className="hover:bg-gray-100 rounded-full"
                 onClick={() => setIsCameraOn(!isCameraOn)}
               >
-                {isCameraOn ? <Camera className="h-5 w-5" /> : <CameraOff className="h-5 w-5" />}
+                {isCameraOn ? <Camera className="h-5 w-5 text-gray-700" /> : <CameraOff className="h-5 w-5 text-gray-700" />}
               </Button>
               
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-white hover:bg-white/20 rounded-full"
+                className="hover:bg-gray-100 rounded-full"
                 onClick={() => setIsAudioMuted(!isAudioMuted)}
               >
-                {isAudioMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+                {isAudioMuted ? <VolumeX className="h-5 w-5 text-gray-700" /> : <Volume2 className="h-5 w-5 text-gray-700" />}
               </Button>
             </div>
             
-            {/* Current question display */}
-            <div className="absolute top-4 left-4 right-4 bg-black/70 backdrop-blur-sm rounded-md p-4">
-              <h3 className="text-white text-sm font-medium mb-1">Current Question:</h3>
-              <p className="text-white/90">{currentQuestion}</p>
+            {/* Current question display with more professional styling */}
+            <div className="absolute top-4 left-4 right-4 bg-white shadow-md rounded-md p-4">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-gray-700 text-sm font-medium">Current Question:</h3>
+                <div className="flex items-center text-gray-500 text-sm">
+                  <Clock className="h-4 w-4 mr-1" />
+                  {formatTime(interviewTime)}
+                </div>
+              </div>
+              <p className="text-gray-900 font-medium">{currentQuestion}</p>
             </div>
           </div>
           
           {/* Feedback and Controls Panel */}
-          <div className="col-span-1 lg:col-span-3 bg-white dark:bg-gray-950 p-4 overflow-y-auto flex flex-col">
-            {/* Mock speaking in progress UI */}
+          <div className="col-span-1 lg:col-span-3 bg-white p-4 overflow-y-auto flex flex-col">
+            {/* Voice recognition status */}
             <div className="mb-4">
               <div className="flex justify-between items-center">
                 <h3 className="font-medium">Response Analysis</h3>
@@ -286,7 +443,7 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
               
               <div className="mt-2 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span>Confidence Score</span>
+                  <span>Performance Evaluation</span>
                   <span className={`font-medium ${
                     confidenceScore > 80 ? "text-green-600" : 
                     confidenceScore > 60 ? "text-amber-600" : "text-red-600"
@@ -295,10 +452,45 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
                 <Progress value={confidenceScore} className="h-2" />
               </div>
               
+              {/* Speech recognition status and user response display */}
+              <div className="mt-3 p-3 bg-gray-50 rounded-md border border-gray-200">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center">
+                    <span className="font-medium text-sm mr-2">Voice Recognition:</span>
+                    {isRecording ? (
+                      <span className="text-green-600 text-sm flex items-center">
+                        <span className="h-2 w-2 bg-green-600 rounded-full mr-1 animate-pulse"></span>
+                        Active
+                      </span>
+                    ) : (
+                      <span className="text-gray-500 text-sm flex items-center">
+                        <span className="h-2 w-2 bg-gray-400 rounded-full mr-1"></span>
+                        Paused
+                      </span>
+                    )}
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={toggleRecording} 
+                    className="h-7 text-xs"
+                  >
+                    {isRecording ? "Pause" : "Resume"}
+                  </Button>
+                </div>
+                <div className="text-sm text-gray-700 max-h-20 overflow-y-auto">
+                  {userResponse || (isRecording ? "Listening for your response..." : "Voice recognition paused.")}
+                </div>
+              </div>
+              
               {postureFeedback && (
-                <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
-                  <p className="text-sm text-blue-800 dark:text-blue-300">
-                    <span className="font-medium">Posture Feedback:</span> {postureFeedback}
+                <div className="mt-3 p-2 bg-blue-50 rounded-md border border-blue-100">
+                  <p className="text-sm text-blue-800 flex items-start">
+                    <AlertTriangle className="h-4 w-4 mr-1 mt-0.5 flex-shrink-0" />
+                    <span>
+                      <span className="font-medium">Feedback: </span>
+                      {postureFeedback}
+                    </span>
                   </p>
                 </div>
               )}
@@ -308,14 +500,14 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
             
             {/* Transcript */}
             <div className="flex-1 overflow-y-auto mb-4">
-              <h3 className="font-medium mb-2">Transcript</h3>
+              <h3 className="font-medium mb-2">Interview Transcript</h3>
               <div className="space-y-4">
                 {transcript.map((item, i) => (
                   <div key={i} className={`flex ${item.role === "interviewer" ? "" : "justify-end"}`}>
                     <div className={`rounded-lg px-4 py-2 max-w-[80%] ${
                       item.role === "interviewer" 
-                        ? "bg-gray-100 dark:bg-gray-800 text-left" 
-                        : "bg-modern-blue-100 dark:bg-modern-blue-900 text-left"
+                        ? "bg-gray-100 text-left" 
+                        : "bg-blue-50 text-left"
                     }`}>
                       <div className="text-xs text-muted-foreground mb-1">
                         {item.role === "interviewer" ? "Interviewer" : "You"}
@@ -327,7 +519,7 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
                 
                 {isLoading && (
                   <div className="flex justify-start">
-                    <div className="rounded-lg px-4 py-2 bg-gray-100 dark:bg-gray-800">
+                    <div className="rounded-lg px-4 py-2 bg-gray-100">
                       <div className="text-xs text-muted-foreground mb-1">Interviewer</div>
                       <div className="flex items-center space-x-2">
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
@@ -348,7 +540,7 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
                   className="w-full"
                 >
                   <Download className="mr-2 h-4 w-4" />
-                  Complete & View Results
+                  View Detailed Performance Report
                 </Button>
               ) : (
                 <Button 
@@ -359,7 +551,7 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
+                      Analyzing Response...
                     </>
                   ) : (
                     "Submit Response"

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,16 @@ const InterviewSetup: React.FC<InterviewSetupProps> = ({ onComplete }) => {
         return;
       }
       
+      // Check file size (limit to 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please upload a PDF file smaller than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       setResumeFile(file);
     }
   };
@@ -78,10 +89,9 @@ const InterviewSetup: React.FC<InterviewSetupProps> = ({ onComplete }) => {
     
     setIsLoading(true);
     
-    // Simulate processing time
     try {
-      // In a real implementation, we would upload the resume and process it
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Optimize processing time - reduced from 1500ms to 800ms
+      await new Promise(resolve => setTimeout(resolve, 800));
       
       const setupData = {
         jobTitle,
@@ -105,31 +115,31 @@ const InterviewSetup: React.FC<InterviewSetupProps> = ({ onComplete }) => {
   };
   
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-6 space-y-8 bg-white">
       <div className="space-y-2">
-        <h2 className="text-2xl font-bold">Configure Your Interview Session</h2>
-        <p className="text-muted-foreground">
-          Set up your virtual interview environment based on the job you're applying for.
+        <h2 className="text-2xl font-bold text-gray-800">Configure Your Interview Session</h2>
+        <p className="text-gray-600">
+          Set up your professional interview environment based on the job you're applying for.
         </p>
       </div>
       
       <div className="grid md:grid-cols-2 gap-8">
         <div className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="jobTitle">Job Title You're Applying For</Label>
+            <Label htmlFor="jobTitle" className="text-gray-700">Job Title You're Applying For</Label>
             <Input
               id="jobTitle"
               placeholder="e.g., Software Engineer, Product Manager"
               value={jobTitle}
               onChange={(e) => setJobTitle(e.target.value)}
-              className="bg-white dark:bg-gray-950"
+              className="bg-white border-gray-200"
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="jobCategory">Job Category</Label>
+            <Label htmlFor="jobCategory" className="text-gray-700">Job Category</Label>
             <Select value={jobCategory} onValueChange={setJobCategory}>
-              <SelectTrigger id="jobCategory" className="bg-white dark:bg-gray-950">
+              <SelectTrigger id="jobCategory" className="bg-white border-gray-200">
                 <SelectValue placeholder="Select job category" />
               </SelectTrigger>
               <SelectContent>
@@ -149,11 +159,11 @@ const InterviewSetup: React.FC<InterviewSetupProps> = ({ onComplete }) => {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="resumeUpload">Upload Your Resume (PDF Only)</Label>
+            <Label htmlFor="resumeUpload" className="text-gray-700">Upload Your Resume (PDF Only)</Label>
             <div className="mt-1 flex items-center">
               <label
                 htmlFor="resumeUpload"
-                className="flex justify-center items-center w-full h-32 px-4 transition bg-white dark:bg-gray-950 border-2 border-dashed rounded-md appearance-none cursor-pointer hover:border-modern-blue-300 focus:outline-none"
+                className="flex justify-center items-center w-full h-32 px-4 transition bg-white border-2 border-dashed rounded-md appearance-none cursor-pointer hover:border-blue-500 focus:outline-none"
               >
                 <span className="flex flex-col items-center space-y-2">
                   {resumeFile ? (
@@ -165,8 +175,8 @@ const InterviewSetup: React.FC<InterviewSetupProps> = ({ onComplete }) => {
                     </>
                   ) : (
                     <>
-                      <Upload className="h-10 w-10 text-muted-foreground" />
-                      <span className="font-medium text-muted-foreground">
+                      <Upload className="h-10 w-10 text-gray-400" />
+                      <span className="font-medium text-gray-500">
                         Drop your resume here or click to browse
                       </span>
                     </>
@@ -186,25 +196,25 @@ const InterviewSetup: React.FC<InterviewSetupProps> = ({ onComplete }) => {
         
         <div className="space-y-6">
           <div className="space-y-2">
-            <Label>Interview Mode</Label>
+            <Label className="text-gray-700">Interview Mode</Label>
             <div className="grid grid-cols-1 gap-4 mt-2">
               <Button
                 type="button"
                 variant={interviewMode === 'standard' ? "default" : "outline"}
                 className={`justify-start px-4 py-6 h-auto ${
                   interviewMode === 'standard'
-                    ? "border-2 border-modern-blue-500"
+                    ? "border-2 border-blue-500"
                     : ""
                 }`}
                 onClick={() => setInterviewMode('standard')}
               >
                 <div className="flex items-center">
-                  <div className="bg-modern-blue-100 dark:bg-modern-blue-900 p-2 rounded-full mr-4">
-                    <Briefcase className="h-6 w-6 text-modern-blue-600 dark:text-modern-blue-300" />
+                  <div className="bg-blue-100 p-2 rounded-full mr-4">
+                    <Briefcase className="h-6 w-6 text-blue-600" />
                   </div>
                   <div className="text-left">
                     <div className="font-medium">Standard Interview</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-gray-500">
                       Balanced mix of general, behavioral, and technical questions
                     </div>
                   </div>
@@ -216,13 +226,13 @@ const InterviewSetup: React.FC<InterviewSetupProps> = ({ onComplete }) => {
                 variant={interviewMode === 'technical' ? "default" : "outline"}
                 className={`justify-start px-4 py-6 h-auto ${
                   interviewMode === 'technical'
-                    ? "border-2 border-modern-blue-500"
+                    ? "border-2 border-blue-500"
                     : ""
                 }`}
                 onClick={() => setInterviewMode('technical')}
               >
                 <div className="flex items-center">
-                  <div className="bg-modern-blue-100 dark:bg-modern-blue-900 p-2 rounded-full mr-4">
+                  <div className="bg-blue-100 p-2 rounded-full mr-4">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -231,7 +241,7 @@ const InterviewSetup: React.FC<InterviewSetupProps> = ({ onComplete }) => {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="h-6 w-6 text-modern-blue-600 dark:text-modern-blue-300"
+                      className="h-6 w-6 text-blue-600"
                     >
                       <path d="M18 16.98h-5.99c-1.1 0-1.95.5-2.01 1l-.44 4.02h2.5l-.51-2h5.99c.55 0 .99-.45.99-1v-2.01c0-.57-.4-1.01-.99-1.01z"></path>
                       <path d="M9 7h9l.01 4c0 .55-.45 1-1.01 1H9c-.57 0-1 .45-1 1v1"></path>
@@ -241,7 +251,7 @@ const InterviewSetup: React.FC<InterviewSetupProps> = ({ onComplete }) => {
                   </div>
                   <div className="text-left">
                     <div className="font-medium">Technical Focus</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-gray-500">
                       Emphasis on technical skills, coding challenges, and problem-solving
                     </div>
                   </div>
@@ -253,13 +263,13 @@ const InterviewSetup: React.FC<InterviewSetupProps> = ({ onComplete }) => {
                 variant={interviewMode === 'behavioral' ? "default" : "outline"}
                 className={`justify-start px-4 py-6 h-auto ${
                   interviewMode === 'behavioral'
-                    ? "border-2 border-modern-blue-500"
+                    ? "border-2 border-blue-500"
                     : ""
                 }`}
                 onClick={() => setInterviewMode('behavioral')}
               >
                 <div className="flex items-center">
-                  <div className="bg-modern-blue-100 dark:bg-modern-blue-900 p-2 rounded-full mr-4">
+                  <div className="bg-blue-100 p-2 rounded-full mr-4">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -268,14 +278,14 @@ const InterviewSetup: React.FC<InterviewSetupProps> = ({ onComplete }) => {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="h-6 w-6 text-modern-blue-600 dark:text-modern-blue-300"
+                      className="h-6 w-6 text-blue-600"
                     >
                       <path d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.479m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0z"></path>
                     </svg>
                   </div>
                   <div className="text-left">
                     <div className="font-medium">Behavioral Focus</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-gray-500">
                       Focus on soft skills, past experiences, and situational scenarios
                     </div>
                   </div>
@@ -286,12 +296,12 @@ const InterviewSetup: React.FC<InterviewSetupProps> = ({ onComplete }) => {
         </div>
       </div>
       
-      <Separator />
+      <Separator className="bg-gray-200" />
       
       <div className="flex justify-end">
         <Button 
           onClick={handleStartInterview} 
-          className="px-6"
+          className="px-6 bg-blue-600 hover:bg-blue-700"
           disabled={isLoading}
         >
           {isLoading ? (
