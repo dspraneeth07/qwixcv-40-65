@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Award, BarChart3, BookOpen, Users, Building2 } from "lucide-react";
+import { FileText, Award, BarChart3, BookOpen, Users, Building2, Shield } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import InterviewCoachCard from '@/components/dashboard/InterviewCoachCard';
@@ -91,6 +91,26 @@ const StudentDashboard = ({ stats }: { stats: UserStats }) => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <InterviewCoachCard />
+        
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              Blockchain Document Vault
+            </CardTitle>
+            <CardDescription>
+              Securely store and verify your professional documents on the blockchain
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link to="/blockchain-vault">
+                <Shield className="mr-2 h-4 w-4" />
+                Access Digital Vault
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
