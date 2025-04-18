@@ -1,3 +1,4 @@
+
 // Speech synthesis utility functions
 
 // Initialize speech synthesis
@@ -123,6 +124,79 @@ export const initSpeechRecognition = () => {
   recognition.lang = 'en-US';
   
   return recognition;
+};
+
+// Analyze speech for tone, pace, and filler words
+export const analyzeSpeech = (text: string): {
+  paceScore: number;
+  toneScore: number;
+  fillerWordCount: number;
+  fillerWords: string[];
+  suggestions: string[];
+} => {
+  const fillerWords = ['um', 'uh', 'like', 'you know', 'actually', 'basically', 'literally', 'sort of', 'kind of'];
+  const lowConfidenceWords = ['maybe', 'perhaps', 'i think', 'i guess', 'not sure', 'if possible'];
+  
+  // Count filler words
+  const fillerWordMatches: string[] = [];
+  let fillerWordCount = 0;
+  
+  fillerWords.forEach(word => {
+    const regex = new RegExp('\\b' + word + '\\b', 'gi');
+    const matches = text.match(regex);
+    if (matches) {
+      fillerWordCount += matches.length;
+      fillerWordMatches.push(`"${word}" (${matches.length}x)`);
+    }
+  });
+  
+  // Check for confidence indicators
+  let confidenceScore = 100;
+  lowConfidenceWords.forEach(word => {
+    const regex = new RegExp('\\b' + word + '\\b', 'gi');
+    const matches = text.match(regex);
+    if (matches) {
+      confidenceScore -= matches.length * 5; // Reduce 5 points per low confidence phrase
+    }
+  });
+  
+  // Analyze pace (word count per sentence)
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  const wordCount = text.split(/\s+/).filter(w => w.length > 0).length;
+  const wordsPerSentence = sentences.length > 0 ? wordCount / sentences.length : 0;
+  
+  // Score pace (ideal is 10-20 words per sentence)
+  let paceScore = 100;
+  if (wordsPerSentence > 25) {
+    paceScore = Math.max(50, 100 - (wordsPerSentence - 25) * 5);
+  } else if (wordsPerSentence < 5) {
+    paceScore = Math.max(50, 100 - (5 - wordsPerSentence) * 10);
+  }
+  
+  // Generate suggestions
+  const suggestions: string[] = [];
+  
+  if (fillerWordCount > 3) {
+    suggestions.push(`Try to reduce filler words like ${fillerWordMatches.slice(0, 3).join(', ')}.`);
+  }
+  
+  if (confidenceScore < 80) {
+    suggestions.push("Use more confident language by avoiding phrases like 'I think' or 'maybe'.");
+  }
+  
+  if (wordsPerSentence > 25) {
+    suggestions.push("Try using shorter, more concise sentences for clarity.");
+  } else if (wordsPerSentence < 5) {
+    suggestions.push("Consider providing more detailed answers with fuller sentences.");
+  }
+  
+  return {
+    paceScore: Math.min(100, Math.max(0, paceScore)),
+    toneScore: Math.min(100, Math.max(0, confidenceScore)),
+    fillerWordCount,
+    fillerWords: fillerWordMatches,
+    suggestions
+  };
 };
 
 // Types for TypeScript - moved to global.d.ts

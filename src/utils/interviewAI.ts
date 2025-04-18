@@ -1,6 +1,6 @@
 
 import { InterviewSettings } from '@/components/interview/InterviewSetup';
-import { InterviewMessage } from '@/types/interview';
+import { InterviewMessage, InterviewFeedback } from '@/types/interview';
 
 // Analyze resume and generate questions based on the resume and job details
 export const analyzeResumeAndGenerateQuestions = async (
@@ -10,19 +10,40 @@ export const analyzeResumeAndGenerateQuestions = async (
   try {
     console.log('Analyzing resume and generating questions...');
     
-    // Prepare prompt for Gemini
+    // Prepare prompt for Gemini, customized for difficulty and type
+    let difficultyContext = 'standard';
+    if (settings.difficulty === 'easy') {
+      difficultyContext = 'beginner-friendly, supportive';
+    } else if (settings.difficulty === 'hard') {
+      difficultyContext = 'challenging, in-depth, thorough';
+    }
+    
+    let typeContext = '';
+    if (settings.interviewType === 'technical') {
+      typeContext = 'Focus exclusively on technical skills, knowledge, and problem-solving abilities.';
+    } else if (settings.interviewType === 'behavioral') {
+      typeContext = 'Focus exclusively on behavioral competencies, soft skills, and past experiences.';
+    } else {
+      typeContext = 'Include a balanced mix of both technical and behavioral questions.';
+    }
+    
     const prompt = `
-    You're an AI interview coach conducting a job interview. 
+    You're an AI interview coach conducting a ${difficultyContext} job interview. 
     I'm applying for: ${settings.jobTitle} (${settings.jobLevel} level).
     This is a ${settings.duration} minute interview.
+    ${typeContext}
     
     Here is my resume:
     ${settings.resumeText}
     
     Based on my resume and the job I'm applying for:
     1. Generate 8-10 thoughtful interview questions that are specifically tailored to my background, skills, and the job requirements.
-    2. Include a mix of behavioral, technical, and situational questions relevant to the position.
-    3. Focus on my experience and skills mentioned in the resume.
+    2. ${settings.interviewType === 'technical' ? 'Focus on technical knowledge, problem-solving, and specific technologies mentioned in my resume.' : 
+       settings.interviewType === 'behavioral' ? 'Focus on behavioral questions that probe my soft skills, teamwork, leadership, and past experiences.' : 
+       'Include a mix of behavioral, technical, and situational questions relevant to the position.'}
+    3. The questions should be ${settings.difficulty === 'easy' ? 'approachable and straightforward' : 
+                                settings.difficulty === 'hard' ? 'challenging and thought-provoking' : 
+                                'moderately challenging'}
     4. Include questions about specific projects or achievements mentioned in my resume.
     5. ONLY return the list of questions, with each question on its own line.
     6. Do not include any other text, explanations, or numbering.
@@ -108,6 +129,7 @@ export const evaluateAnswer = async (
     Keep your response concise, friendly, and focused on helping the candidate improve.
     Remain supportive and encouraging while providing honest evaluation.
     Speak directly to the candidate using "you" language.
+    Format your response with markdown for better readability (use bold, bullets, etc).
     `;
     
     // Make API call to Gemini
@@ -149,7 +171,7 @@ export const evaluateAnswer = async (
   }
 };
 
-// Generate a summary of the interview
+// Generate a comprehensive summary of the interview
 export const generateInterviewSummary = async (
   messages: InterviewMessage[],
   jobTitle: string,
@@ -171,13 +193,41 @@ export const generateInterviewSummary = async (
     Here is the interview transcript:
     ${conversation}
     
-    Based on this interview, please provide:
-    1. A brief summary of the candidate's performance (2-3 sentences)
-    2. 3 key strengths demonstrated in the interview
-    3. 2 areas for improvement with specific advice
-    4. Overall assessment and preparation advice
+    Based on this interview, please provide a comprehensive evaluation:
     
-    Format your response in a professional, constructive manner. Focus on being helpful and actionable.
+    # Interview Summary
+    
+    [Provide a brief summary of the candidate's overall performance (2-3 sentences)]
+    
+    ## Performance Metrics
+    
+    ### Technical Knowledge (Score: X/100)
+    [Evaluate the candidate's technical knowledge and skills relevant to the position]
+    
+    ### Communication Skills (Score: X/100)
+    [Evaluate the candidate's clarity, structure, and effectiveness of communication]
+    
+    ### Problem-Solving Ability (Score: X/100)
+    [Evaluate how well the candidate approached and solved problems or answered challenging questions]
+    
+    ### Professional Presentation (Score: X/100)
+    [Evaluate the candidate's overall professional presence]
+    
+    ## Key Strengths
+    - [Strength 1]
+    - [Strength 2]
+    - [Strength 3]
+    
+    ## Areas for Improvement
+    - [Area 1]: [Specific advice for improvement]
+    - [Area 2]: [Specific advice for improvement]
+    
+    ## Action Plan
+    1. [Specific action to improve]
+    2. [Specific action to improve]
+    3. [Specific action to improve]
+    
+    Format your response in markdown for better readability. Be specific, constructive, and actionable in your feedback.
     `;
     
     // Make API call to Gemini
@@ -220,17 +270,172 @@ export const generateInterviewSummary = async (
     
     You demonstrated good communication skills and provided relevant examples from your experience. Your answers showed enthusiasm for the ${jobTitle} position.
     
-    ## Strengths
+    ## Performance Metrics
+    
+    ### Technical Knowledge (Score: 75/100)
+    Your technical knowledge was satisfactory, showing a good understanding of the core concepts related to the position.
+    
+    ### Communication Skills (Score: 80/100)
+    You communicated your thoughts clearly with good structure and examples.
+    
+    ### Problem-Solving Ability (Score: 70/100)
+    You approached problems methodically but could benefit from more structured problem-solving techniques.
+    
+    ### Professional Presentation (Score: 85/100)
+    You maintained a professional demeanor throughout the interview.
+    
+    ## Key Strengths
     - Clear communication style
     - Good examples from past experience
     - Strong understanding of the role
     
     ## Areas for Improvement
-    - Provide more specific, quantifiable achievements
-    - Structure answers using the STAR method (Situation, Task, Action, Result)
+    - Technical depth: Provide more in-depth technical explanations
+    - Specific examples: Quantify your achievements with metrics when possible
+    - Structured responses: Use the STAR method more consistently
     
-    ## Overall Assessment
-    You're on the right track! Continue practicing structured responses and researching the company more deeply before your actual interviews.
+    ## Action Plan
+    1. Practice the STAR method (Situation, Task, Action, Result) for behavioral questions
+    2. Prepare more detailed technical explanations for common interview questions
+    3. Research the company more deeply before your actual interviews
     `;
+  }
+};
+
+// Generate a comprehensive feedback report
+export const generateInterviewFeedback = async (
+  messages: InterviewMessage[],
+  voiceAnalysis: any,
+  postureAnalysis: any,
+  settings: InterviewSettings,
+  apiKey: string
+): Promise<InterviewFeedback> => {
+  try {
+    // This is a mock implementation that would normally call an AI API
+    // In a real implementation, this would call Gemini API to generate detailed feedback
+    
+    const technicalScore = Math.floor(Math.random() * 30) + 65;
+    const communicationScore = Math.floor(Math.random() * 25) + 70;
+    const problemSolvingScore = Math.floor(Math.random() * 20) + 75;
+    const presentationScore = Math.floor(Math.random() * 15) + 80;
+    
+    const feedback: InterviewFeedback = {
+      technical: {
+        score: technicalScore,
+        strengths: [
+          "Demonstrated good knowledge of core concepts",
+          "Provided relevant examples from past projects",
+          "Showed understanding of industry best practices"
+        ],
+        weaknesses: [
+          "Could improve depth in some technical areas",
+          "Explanations could be more concise and focused"
+        ],
+        suggestions: [
+          "Prepare more detailed technical answers",
+          "Practice explaining complex concepts simply",
+          "Research latest trends in your field"
+        ]
+      },
+      communication: {
+        score: communicationScore,
+        voice: voiceAnalysis || {
+          paceScore: 80,
+          toneScore: 75,
+          fillerWordCount: 8,
+          fillerWords: ["um (3x)", "like (2x)", "you know (3x)"],
+          suggestions: ["Reduce filler words by pausing instead of saying 'um' or 'like'"]
+        },
+        clarity: 80,
+        structure: 75,
+        suggestions: [
+          "Structure responses using the STAR method",
+          "Be more concise in your explanations",
+          "Use more professional vocabulary"
+        ]
+      },
+      presentation: {
+        score: presentationScore,
+        posture: postureAnalysis || {
+          posture: 'good',
+          eyeContact: 'neutral',
+          gestures: 'appropriate',
+          dressCode: 'formal',
+          suggestions: ["Maintain more consistent eye contact with the interviewer"]
+        },
+        confidence: 80,
+        professionalism: 85,
+        suggestions: [
+          "Maintain consistent eye contact",
+          "Sit up straighter to project confidence",
+          "Use purposeful hand gestures to emphasize key points"
+        ]
+      },
+      overall: {
+        score: Math.floor((technicalScore + communicationScore + problemSolvingScore + presentationScore) / 4),
+        strengths: [
+          "Professional communication style",
+          "Good technical foundation",
+          "Positive and engaging attitude"
+        ],
+        improvementAreas: [
+          "More structured responses",
+          "Deeper technical explanations",
+          "Reduced use of filler words"
+        ],
+        nextSteps: [
+          "Practice with mock interviews focusing on STAR method",
+          "Record yourself to identify and reduce filler words",
+          "Research the company more deeply before interviews"
+        ]
+      }
+    };
+    
+    return feedback;
+    
+  } catch (error) {
+    console.error('Error generating feedback:', error);
+    
+    // Return a default feedback object if the API fails
+    return {
+      technical: {
+        score: 75,
+        strengths: ["Good technical foundation", "Relevant experience"],
+        weaknesses: ["Could provide more depth"],
+        suggestions: ["Prepare more detailed technical answers"]
+      },
+      communication: {
+        score: 80,
+        voice: {
+          paceScore: 80,
+          toneScore: 75,
+          fillerWordCount: 5,
+          fillerWords: ["um", "like"],
+          suggestions: ["Reduce filler words"]
+        },
+        clarity: 80,
+        structure: 75,
+        suggestions: ["Structure responses using the STAR method"]
+      },
+      presentation: {
+        score: 85,
+        posture: {
+          posture: 'good',
+          eyeContact: 'neutral',
+          gestures: 'appropriate',
+          dressCode: 'formal',
+          suggestions: ["Maintain more consistent eye contact"]
+        },
+        confidence: 80,
+        professionalism: 85,
+        suggestions: ["Project more confidence"]
+      },
+      overall: {
+        score: 80,
+        strengths: ["Professional demeanor", "Good communication"],
+        improvementAreas: ["Response structure", "Technical depth"],
+        nextSteps: ["Practice mock interviews", "Research companies thoroughly"]
+      }
+    };
   }
 };

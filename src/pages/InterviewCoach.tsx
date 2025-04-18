@@ -8,13 +8,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Bot, AlertCircle, User, Check, ArrowLeft, Clock, ClipboardList, Lightbulb } from "lucide-react";
+import { useToast } from '@/components/ui/use-toast';
+import { Loader2, Bot, AlertCircle, User, Check, ArrowLeft, Clock, ClipboardList, Lightbulb, Camera, BarChart } from "lucide-react";
 import InterviewSetup, { InterviewSettings } from '@/components/interview/InterviewSetup';
 import SpeechController from '@/components/interview/SpeechController';
-import { InterviewMessage, InterviewState } from '@/types/interview';
+import PostureAnalyzer from '@/components/interview/PostureAnalyzer';
+import VoiceAnalysisDisplay from '@/components/interview/VoiceAnalysisDisplay';
+import { InterviewMessage, InterviewState, VoiceAnalysis, PostureAnalysis, InterviewFeedback } from '@/types/interview';
 import { 
-  speakText, stopSpeaking, initSpeechRecognition, initSpeechSynthesis, getBestInterviewVoice 
+  speakText, stopSpeaking, initSpeechRecognition, initSpeechSynthesis, getBestInterviewVoice, analyzeSpeech
 } from '@/utils/speechUtils';
 import { 
   analyzeResumeAndGenerateQuestions, evaluateAnswer, generateInterviewSummary 
@@ -45,6 +47,11 @@ const InterviewCoach: React.FC = () => {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [transcript, setTranscript] = useState('');
+  
+  // State for video and posture analysis
+  const [isCameraEnabled, setIsCameraEnabled] = useState(false);
+  const [postureAnalysis, setPostureAnalysis] = useState<PostureAnalysis | null>(null);
+  const [voiceAnalysis, setVoiceAnalysis] = useState<VoiceAnalysis | null>(null);
   
   // References
   const speechRecognition = useRef<SpeechRecognition | null>(null);
@@ -153,6 +160,11 @@ const InterviewCoach: React.FC = () => {
     setIsProcessing(true);
     setSettings(interviewSettings);
     
+    // Initialize camera if enabled
+    if (interviewSettings.useCamera) {
+      setIsCameraEnabled(true);
+    }
+    
     try {
       // Generate questions based on resume
       const questions = await analyzeResumeAndGenerateQuestions(
@@ -173,16 +185,25 @@ const InterviewCoach: React.FC = () => {
       // Start interview
       setIsInterviewStarted(true);
       
-      // Add intro message
+      // Add intro message based on difficulty
       setTimeout(() => {
-        const introMessage: InterviewMessage = {
+        let introMessage = `Hello! I'm your interview coach for the ${interviewSettings.jobTitle} position. I'll ask you some questions based on your resume, and provide feedback on your answers. Let's get started with the first question.`;
+        
+        // Adjust intro based on difficulty
+        if (interviewSettings.difficulty === 'hard') {
+          introMessage = `Welcome to your interview for the ${interviewSettings.jobTitle} position. Today's session will be challenging but constructive. I expect concise, well-structured responses that demonstrate your expertise. Let's begin.`;
+        } else if (interviewSettings.difficulty === 'easy') {
+          introMessage = `Hi there! Thanks for joining this practice interview for the ${interviewSettings.jobTitle} role. This will be a friendly conversation to help you prepare. Feel free to take your time with answers, and I'll provide helpful feedback throughout. Let's start with an easy question.`;
+        }
+        
+        const message: InterviewMessage = {
           id: Date.now().toString(),
           role: 'assistant',
-          content: `Hello! I'm your interview coach for the ${interviewSettings.jobTitle} position. I'll ask you some questions based on your resume, and provide feedback on your answers. Let's get started with the first question.`,
+          content: introMessage,
           timestamp: new Date()
         };
         
-        addMessage(introMessage);
+        addMessage(message);
         
         // Ask first question after a short delay
         setTimeout(() => {
@@ -260,8 +281,26 @@ const InterviewCoach: React.FC = () => {
       
       addMessage(thinkingMessage);
       
+      // Analyze the speech for tone, pace, and filler words
+      const speechAnalysis = analyzeSpeech(response);
+      setVoiceAnalysis(speechAnalysis);
+      
       // Get the current question
       const currentQuestion = interviewState.questions[interviewState.currentQuestionIndex];
+      
+      // Additional difficulty parameters for the evaluation
+      const difficultyParams = settings?.difficulty 
+        ? `Be ${settings.difficulty === 'hard' ? 'strict and critical' : 
+             settings.difficulty === 'easy' ? 'supportive and encouraging' : 
+             'balanced'} in your feedback.` 
+        : '';
+      
+      // Additional type parameters for the evaluation
+      const typeParams = settings?.interviewType
+        ? `Focus on ${settings.interviewType === 'technical' ? 'technical accuracy and depth' :
+             settings.interviewType === 'behavioral' ? 'communication skills and experience' :
+             'both technical knowledge and communication skills'}.`
+        : '';
       
       // Evaluate the answer
       const feedback = await evaluateAnswer(
@@ -275,11 +314,22 @@ const InterviewCoach: React.FC = () => {
       // Remove thinking message
       removeMessage(thinkingMessage.id);
       
+      // Enhance feedback with voice analysis insights
+      let enhancedFeedback = feedback;
+      
+      if (speechAnalysis.suggestions.length > 0) {
+        enhancedFeedback += `\n\n**Communication Note:** ${speechAnalysis.suggestions[0]}`;
+      }
+      
+      if (postureAnalysis?.suggestions.length) {
+        enhancedFeedback += `\n\n**Presentation Note:** ${postureAnalysis.suggestions[0]}`;
+      }
+      
       // Add feedback message
       const feedbackMessage: InterviewMessage = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: feedback,
+        content: enhancedFeedback,
         timestamp: new Date()
       };
       
@@ -288,7 +338,7 @@ const InterviewCoach: React.FC = () => {
       // Speak the feedback if speech is enabled
       if (isSpeechEnabled) {
         speakText(
-          feedback,
+          enhancedFeedback.replace(/\*\*/g, ''), // Remove markdown formatting
           () => setIsSpeaking(true),
           () => {
             setIsSpeaking(false);
@@ -350,7 +400,7 @@ const InterviewCoach: React.FC = () => {
     const finishingMessage: InterviewMessage = {
       id: Date.now().toString(),
       role: 'assistant',
-      content: "That concludes our interview. I'll now prepare a summary of your performance.",
+      content: "That concludes our interview. I'll now prepare a comprehensive summary of your performance.",
       timestamp: new Date()
     };
     
@@ -367,7 +417,24 @@ const InterviewCoach: React.FC = () => {
     }
     
     try {
-      // Generate interview summary
+      // Generate interview summary with additional parameters
+      const difficultyParams = settings?.difficulty 
+        ? `This was a ${settings.difficulty} level interview.` 
+        : '';
+      
+      const typeParams = settings?.interviewType
+        ? `This was a ${settings.interviewType} interview.`
+        : '';
+      
+      const voiceParams = voiceAnalysis 
+        ? `Voice analysis: Pace score: ${voiceAnalysis.paceScore}%, Tone score: ${voiceAnalysis.toneScore}%, Filler words: ${voiceAnalysis.fillerWordCount}.` 
+        : '';
+      
+      const postureParams = postureAnalysis
+        ? `Posture analysis: Posture: ${postureAnalysis.posture}, Eye contact: ${postureAnalysis.eyeContact}, Gestures: ${postureAnalysis.gestures}, Dress code: ${postureAnalysis.dressCode}.`
+        : '';
+      
+      // Generate summary with enhanced parameters
       const summary = await generateInterviewSummary(
         interviewState.messages,
         settings?.jobTitle || '',
@@ -448,6 +515,9 @@ const InterviewCoach: React.FC = () => {
       summary: null
     });
     setTranscript('');
+    setVoiceAnalysis(null);
+    setPostureAnalysis(null);
+    setIsCameraEnabled(false);
   };
   
   const startListening = () => {
@@ -485,6 +555,14 @@ const InterviewCoach: React.FC = () => {
       stopSpeaking();
       setIsSpeaking(false);
     }
+  };
+  
+  const toggleCamera = () => {
+    setIsCameraEnabled(prev => !prev);
+  };
+  
+  const handlePostureUpdate = (analysis: PostureAnalysis) => {
+    setPostureAnalysis(analysis);
   };
   
   // Render message bubble
@@ -567,6 +645,20 @@ const InterviewCoach: React.FC = () => {
                   {settings.duration} min Interview
                 </Badge>
               )}
+              
+              {settings?.useCamera && (
+                <Badge variant="outline" className="ml-2">
+                  <Camera className="h-3.5 w-3.5 mr-1.5" />
+                  Camera Analysis
+                </Badge>
+              )}
+              
+              {settings?.interviewType && (
+                <Badge variant="outline" className="ml-2">
+                  <BarChart className="h-3.5 w-3.5 mr-1.5" />
+                  {settings.interviewType.charAt(0).toUpperCase() + settings.interviewType.slice(1)}
+                </Badge>
+              )}
             </div>
           )}
         </div>
@@ -623,9 +715,9 @@ const InterviewCoach: React.FC = () => {
                         3
                       </div>
                       <div>
-                        <h3 className="font-medium">Get Real-time Feedback</h3>
+                        <h3 className="font-medium">Get Comprehensive Feedback</h3>
                         <p className="text-sm text-muted-foreground">
-                          Receive personalized feedback on your answers, helping you improve
+                          Receive personalized feedback on your answers, voice, posture, and appearance
                         </p>
                       </div>
                     </div>
@@ -645,10 +737,10 @@ const InterviewCoach: React.FC = () => {
                   
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Voice Interaction</AlertTitle>
+                    <AlertTitle>Advanced Analysis</AlertTitle>
                     <AlertDescription>
-                      This feature uses your microphone for speech recognition and your speakers for voice output. 
-                      Please ensure your device permissions are set correctly.
+                      Enable camera access for posture and appearance analysis. Your voice will be analyzed 
+                      for tone, confidence, and filler words to help you improve your presentation.
                     </AlertDescription>
                   </Alert>
                 </CardContent>
@@ -656,65 +748,125 @@ const InterviewCoach: React.FC = () => {
             </div>
           </div>
         ) : (
-          <Card className="h-[calc(100vh-200px)] flex flex-col">
-            <CardHeader className="border-b p-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle className="text-xl font-bold">
-                    {settings?.jobTitle} Interview
-                  </CardTitle>
-                  <CardDescription>
-                    {settings?.jobLevel} level position • Resume: {settings?.resumeFileName}
-                  </CardDescription>
-                </div>
-                
-                {interviewState.isFinished && (
-                  <Badge variant="default" className="bg-green-500">
-                    <Check className="h-3.5 w-3.5 mr-1" />
-                    Interview Complete
-                  </Badge>
-                )}
-              </div>
-            </CardHeader>
-            
-            <div className="flex-1 overflow-hidden relative">
-              <ScrollArea className="absolute inset-0 p-4">
-                {interviewState.messages.length === 0 ? (
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-center">
-                      <Loader2 className="h-8 w-8 text-primary mx-auto mb-4 animate-spin" />
-                      <p className="text-muted-foreground">Preparing your interview...</p>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="md:col-span-3">
+              <Card className="h-[calc(100vh-200px)] flex flex-col">
+                <CardHeader className="border-b p-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle className="text-xl font-bold">
+                        {settings?.jobTitle} Interview
+                      </CardTitle>
+                      <CardDescription>
+                        {settings?.jobLevel} level position • Resume: {settings?.resumeFileName}
+                      </CardDescription>
                     </div>
-                  </div>
-                ) : (
-                  <div className="space-y-1">
-                    {interviewState.messages.map(renderMessage)}
-                    <div ref={messagesEndRef} />
                     
-                    {/* Transcript display while listening */}
-                    {isListening && transcript && (
-                      <div className="flex justify-end items-center mt-2">
-                        <div className="bg-gray-100 text-gray-600 px-3 py-2 rounded-lg text-sm italic max-w-[85%]">
-                          {transcript}
-                        </div>
-                      </div>
+                    {interviewState.isFinished && (
+                      <Badge variant="default" className="bg-green-500">
+                        <Check className="h-3.5 w-3.5 mr-1" />
+                        Interview Complete
+                      </Badge>
                     )}
                   </div>
-                )}
-              </ScrollArea>
+                </CardHeader>
+                
+                <div className="flex-1 overflow-hidden relative">
+                  <ScrollArea className="absolute inset-0 p-4">
+                    {interviewState.messages.length === 0 ? (
+                      <div className="h-full flex items-center justify-center">
+                        <div className="text-center">
+                          <Loader2 className="h-8 w-8 text-primary mx-auto mb-4 animate-spin" />
+                          <p className="text-muted-foreground">Preparing your interview...</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        {interviewState.messages.map(renderMessage)}
+                        <div ref={messagesEndRef} />
+                        
+                        {/* Transcript display while listening */}
+                        {isListening && transcript && (
+                          <div className="flex justify-end items-center mt-2">
+                            <div className="bg-gray-100 text-gray-600 px-3 py-2 rounded-lg text-sm italic max-w-[85%]">
+                              {transcript}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </ScrollArea>
+                </div>
+                
+                <Separator />
+                
+                <SpeechController
+                  isInterviewStarted={isInterviewStarted}
+                  isSpeaking={isSpeaking}
+                  isListening={isListening}
+                  onStartListening={startListening}
+                  onStopListening={stopListening}
+                  onToggleSpeech={toggleSpeech}
+                  isSpeechEnabled={isSpeechEnabled}
+                  isCameraEnabled={isCameraEnabled}
+                  onToggleCamera={settings?.useCamera ? toggleCamera : undefined}
+                  interviewType={settings?.interviewType}
+                  difficulty={settings?.difficulty}
+                />
+              </Card>
             </div>
             
-            <Separator />
-            
-            <SpeechController
-              isInterviewStarted={isInterviewStarted}
-              isSpeaking={isSpeaking}
-              isListening={isListening}
-              onStartListening={startListening}
-              onStopListening={stopListening}
-              onToggleSpeech={toggleSpeech}
-            />
-          </Card>
+            <div className="md:block">
+              <Card>
+                <CardHeader className="py-3 px-4">
+                  <CardTitle className="text-lg">Performance Analysis</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="px-4 pb-4 space-y-4">
+                    {/* Voice Analysis */}
+                    <VoiceAnalysisDisplay analysis={voiceAnalysis} />
+                    
+                    {/* Posture Analysis */}
+                    {settings?.useCamera && (
+                      <PostureAnalyzer 
+                        enabled={isCameraEnabled} 
+                        onAnalysisUpdate={handlePostureUpdate} 
+                      />
+                    )}
+                    
+                    {/* Interview Tips */}
+                    <Card className="mt-3">
+                      <CardContent className="p-3">
+                        <h3 className="text-sm font-medium mb-2">Interview Tips</h3>
+                        <ul className="space-y-2 text-xs text-muted-foreground">
+                          <li className="flex items-start">
+                            <Check className="h-3.5 w-3.5 text-green-500 mr-1.5 mt-0.5" />
+                            Use the STAR method (Situation, Task, Action, Result) for behavioral questions
+                          </li>
+                          <li className="flex items-start">
+                            <Check className="h-3.5 w-3.5 text-green-500 mr-1.5 mt-0.5" />
+                            Be concise and specific in your answers
+                          </li>
+                          <li className="flex items-start">
+                            <Check className="h-3.5 w-3.5 text-green-500 mr-1.5 mt-0.5" />
+                            Maintain good posture and eye contact with the interviewer
+                          </li>
+                          <li className="flex items-start">
+                            <Check className="h-3.5 w-3.5 text-green-500 mr-1.5 mt-0.5" />
+                            Avoid filler words like "um," "uh," and "like"
+                          </li>
+                          <li className="flex items-start">
+                            <Check className="h-3.5 w-3.5 text-green-500 mr-1.5 mt-0.5" />
+                            Dress professionally for the interview
+                          </li>
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         )}
       </div>
     </Layout>

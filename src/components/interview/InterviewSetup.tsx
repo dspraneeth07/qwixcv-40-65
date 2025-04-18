@@ -5,10 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Briefcase, ClipboardCheck, Timer } from "lucide-react";
+import { Briefcase, ClipboardCheck, Timer, Camera, Brain } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import ResumeUploader from './ResumeUploader';
 
 export type JobLevel = 'entry' | 'mid' | 'senior' | 'executive';
+export type InterviewDifficulty = 'easy' | 'medium' | 'hard';
+export type InterviewType = 'technical' | 'behavioral' | 'mixed';
 
 export interface InterviewSettings {
   jobTitle: string;
@@ -16,6 +19,9 @@ export interface InterviewSettings {
   resumeText: string;
   resumeFileName: string;
   duration: number;
+  useCamera?: boolean;
+  difficulty?: InterviewDifficulty;
+  interviewType?: InterviewType;
 }
 
 interface InterviewSetupProps {
@@ -29,6 +35,9 @@ const InterviewSetup = ({ onStartInterview, isProcessing }: InterviewSetupProps)
   const [resumeText, setResumeText] = useState('');
   const [resumeFileName, setResumeFileName] = useState('');
   const [duration, setDuration] = useState(15);
+  const [useCamera, setUseCamera] = useState(false);
+  const [difficulty, setDifficulty] = useState<InterviewDifficulty>('medium');
+  const [interviewType, setInterviewType] = useState<InterviewType>('mixed');
   
   const handleResumeProcessed = (text: string, fileName: string) => {
     setResumeText(text);
@@ -41,7 +50,10 @@ const InterviewSetup = ({ onStartInterview, isProcessing }: InterviewSetupProps)
       jobLevel,
       resumeText,
       resumeFileName,
-      duration
+      duration,
+      useCamera,
+      difficulty,
+      interviewType
     });
   };
   
@@ -52,7 +64,7 @@ const InterviewSetup = ({ onStartInterview, isProcessing }: InterviewSetupProps)
       <CardHeader>
         <CardTitle className="flex items-center">
           <Briefcase className="h-5 w-5 text-primary mr-2" />
-          Interview Setup
+          Advanced Interview Setup
         </CardTitle>
         <CardDescription>
           Upload your resume and specify the job details to get started
@@ -114,6 +126,58 @@ const InterviewSetup = ({ onStartInterview, isProcessing }: InterviewSetupProps)
           </div>
           
           <div className="space-y-2">
+            <Label htmlFor="difficulty">Interview Difficulty</Label>
+            <Select 
+              value={difficulty} 
+              onValueChange={(value: InterviewDifficulty) => setDifficulty(value)}
+              disabled={isProcessing}
+            >
+              <SelectTrigger id="difficulty" className="flex gap-2">
+                <Brain className="h-4 w-4" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="easy">Easy - Friendly Interview</SelectItem>
+                <SelectItem value="medium">Medium - Standard Interview</SelectItem>
+                <SelectItem value="hard">Hard - Challenging Interview</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="type">Interview Type</Label>
+            <Select 
+              value={interviewType} 
+              onValueChange={(value: InterviewType) => setInterviewType(value)}
+              disabled={isProcessing}
+            >
+              <SelectTrigger id="type">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="technical">Technical</SelectItem>
+                <SelectItem value="behavioral">Behavioral</SelectItem>
+                <SelectItem value="mixed">Mixed (Technical & Behavioral)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="use-camera">Enable Camera Analysis</Label>
+              <p className="text-xs text-muted-foreground">
+                Analyze posture, eye contact, and attire
+              </p>
+            </div>
+            <Switch
+              id="use-camera"
+              checked={useCamera}
+              onCheckedChange={setUseCamera}
+              disabled={isProcessing}
+            />
+          </div>
+          
+          <div className="space-y-2">
             <Label className="block mb-2">Resume</Label>
             <ResumeUploader 
               onResumeProcessed={handleResumeProcessed} 
@@ -134,7 +198,7 @@ const InterviewSetup = ({ onStartInterview, isProcessing }: InterviewSetupProps)
           ) : (
             <>
               <ClipboardCheck className="h-4 w-4 mr-2" />
-              Start Interview
+              Start Advanced Interview
             </>
           )}
         </Button>
