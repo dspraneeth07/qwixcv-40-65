@@ -1,4 +1,3 @@
-
 // Speech synthesis utility functions
 
 // Initialize speech synthesis
@@ -126,10 +125,4 @@ export const initSpeechRecognition = () => {
   return recognition;
 };
 
-// Types for TypeScript
-declare global {
-  interface Window {
-    SpeechRecognition: new () => SpeechRecognition;
-    webkitSpeechRecognition: new () => SpeechRecognition;
-  }
-}
+// Types for TypeScript - moved to global.d.ts
