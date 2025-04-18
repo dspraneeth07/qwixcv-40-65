@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -32,39 +31,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
 
   useEffect(() => {
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .maybeSingle();
 
-          setUser({
-            id: session.user.id,
-            email: session.user.email!,
-            name: profile?.full_name,
-            role: profile?.role as UserRole,
-            profilePicture: profile?.profile_picture,
-          });
-        } else {
-          setUser(null);
-        }
-        setIsLoading(false);
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data: profile }) => {
             if (profile) {
               setUser({
                 id: session.user.id,
@@ -74,10 +50,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 profilePicture: profile.profile_picture,
               });
             }
-          });
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+          }
+        } else {
+          setUser(null);
+        }
+        setIsLoading(false);
       }
-      setIsLoading(false);
-    });
+    );
+
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          setIsLoading(false);
+          return;
+        }
+        
+        // Session exists but we don't need to set user here
+        // The onAuthStateChange listener will handle it
+      } catch (error) {
+        console.error('Error checking session:', error);
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
 
     return () => {
       subscription.unsubscribe();
@@ -100,15 +100,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .from('profiles')
           .select('role')
           .eq('id', data.user.id)
-          .single();
+          .maybeSingle();
 
-        if (profile?.role !== role) {
+        if (!profile || profile.role !== role) {
           await supabase.auth.signOut();
           toast({
             title: "Access Denied",
             description: "Invalid role for this login type",
             variant: "destructive",
           });
+          setIsLoading(false);
           return false;
         }
 
@@ -116,8 +117,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           title: "Login successful",
           description: "Welcome back!",
         });
+        
+        setTimeout(() => {
+          setIsLoading(false);
+          navigate('/dashboard');
+        }, 300);
+        
         return true;
       }
+      setIsLoading(false);
       return false;
     } catch (error: any) {
       console.error('Login error:', error);
@@ -126,9 +134,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: error.message || "An error occurred during login",
         variant: "destructive",
       });
-      return false;
-    } finally {
       setIsLoading(false);
+      return false;
     }
   };
 
@@ -225,4 +232,3 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </AuthContext.Provider>
   );
 };
-

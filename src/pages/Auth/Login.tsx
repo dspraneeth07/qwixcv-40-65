@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -32,6 +33,7 @@ const Login: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [loginTimeout, setLoginTimeout] = useState<NodeJS.Timeout | null>(null);
     
     const handleLogin = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -46,17 +48,46 @@ const Login: React.FC = () => {
       }
       
       setIsSubmitting(true);
-      const success = await login(email, password, role);
       
-      if (success) {
-        navigate('/dashboard');
+      // Set a timeout to show an error if login takes too long
+      const timeout = setTimeout(() => {
+        if (isSubmitting) {
+          toast({
+            title: "Login taking longer than expected",
+            description: "Please check your internet connection",
+            variant: "destructive",
+          });
+        }
+      }, 10000); // 10 second timeout
+      
+      setLoginTimeout(timeout);
+      
+      try {
+        const success = await login(email, password, role);
+        
+        if (!success) {
+          setIsSubmitting(false);
+        }
+      } catch (error) {
+        setIsSubmitting(false);
+      } finally {
+        if (loginTimeout) {
+          clearTimeout(loginTimeout);
+        }
       }
-      
-      setIsSubmitting(false);
     };
     
+    // Clear timeout on unmount
+    React.useEffect(() => {
+      return () => {
+        if (loginTimeout) {
+          clearTimeout(loginTimeout);
+        }
+      };
+    }, [loginTimeout]);
+    
     return (
-      <form onSubmit={handleLogin}>
+      <form onSubmit={handleLogin} className="bg-white dark:bg-gray-800">
         <CardHeader>
           <CardTitle className="text-2xl">{title}</CardTitle>
           <CardDescription>{subtitle}</CardDescription>
@@ -71,6 +102,7 @@ const Login: React.FC = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              className="bg-white dark:bg-gray-700"
             />
           </div>
           <div className="space-y-2">
@@ -88,6 +120,7 @@ const Login: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="bg-white dark:bg-gray-700"
               />
               <Button
                 type="button"
@@ -109,7 +142,11 @@ const Login: React.FC = () => {
           </div>
         </CardContent>
         <CardFooter className="flex justify-between flex-col space-y-4">
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          <Button 
+            type="submit" 
+            className="w-full bg-primary hover:bg-primary/90" 
+            disabled={isSubmitting}
+          >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -135,9 +172,9 @@ const Login: React.FC = () => {
   
   return (
     <AuthLayout>
-      <Card className="w-full max-w-lg mx-auto shadow-xl border-0 bg-white/80 backdrop-blur-md dark:bg-gray-900/80">
+      <Card className="w-full max-w-lg mx-auto shadow-xl border-0 bg-white/95 backdrop-blur-md">
         <Tabs defaultValue="student" value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="grid grid-cols-3 w-full">
+          <TabsList className="grid grid-cols-3 w-full bg-gray-100 dark:bg-gray-700">
             <TabsTrigger value="student" className="flex items-center space-x-2">
               <GraduationCap className="h-4 w-4" />
               <span className="hidden sm:inline">Student/Freelancer</span>
