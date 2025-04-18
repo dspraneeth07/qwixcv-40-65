@@ -2,11 +2,30 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useBlockchain } from '@/context/BlockchainContext';
-import { Shield, Wallet, LockKeyhole } from "lucide-react";
+import { Shield, Wallet, LockKeyhole, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { hasMetaMask } from '@/utils/metaMaskDetector';
+import { useToast } from "@/components/ui/use-toast";
 
 export const ConnectWalletPrompt: React.FC = () => {
   const { connectWallet } = useBlockchain();
+  const { toast } = useToast();
+  
+  const handleConnect = async () => {
+    if (!hasMetaMask()) {
+      toast({
+        title: "MetaMask not detected",
+        description: "Please install MetaMask to use blockchain features",
+        variant: "destructive"
+      });
+      
+      // Open MetaMask download page in a new tab
+      window.open("https://metamask.io/download/", "_blank");
+      return;
+    }
+    
+    connectWallet();
+  };
   
   return (
     <div className="flex items-center justify-center py-10">
@@ -47,12 +66,21 @@ export const ConnectWalletPrompt: React.FC = () => {
             </div>
           </div>
           
-          <Button onClick={connectWallet} className="w-full">
-            <Wallet className="mr-2 h-4 w-4" />
-            Connect Wallet
-          </Button>
+          {hasMetaMask() ? (
+            <Button onClick={handleConnect} className="w-full">
+              <Wallet className="mr-2 h-4 w-4" />
+              Connect MetaMask
+            </Button>
+          ) : (
+            <Button onClick={handleConnect} className="w-full">
+              <Download className="mr-2 h-4 w-4" />
+              Install MetaMask
+            </Button>
+          )}
         </CardContent>
       </Card>
     </div>
   );
 };
+
+export default ConnectWalletPrompt;

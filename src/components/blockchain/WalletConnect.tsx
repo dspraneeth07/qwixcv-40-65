@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useBlockchain } from '@/context/BlockchainContext';
 import { Button } from "@/components/ui/button";
-import { Wallet, ExternalLink, LogOut } from "lucide-react";
+import { Wallet, ExternalLink, LogOut, Download, AlertTriangle } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,10 +11,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { hasMetaMask } from '@/utils/blockchain';
+import { 
+  hasMetaMask, 
+  requestMetaMaskAccounts, 
+  getMetaMaskChainId,
+  switchToPolygonMumbai 
+} from '@/utils/metaMaskDetector';
+import { useToast } from '@/components/ui/use-toast';
 
 export const WalletConnect: React.FC = () => {
   const { isConnected, account, balance, chainId, connectWallet, disconnectWallet } = useBlockchain();
+  const { toast } = useToast();
+  const [isMetaMaskInstalled, setIsMetaMaskInstalled] = useState(false);
+
+  // Check if MetaMask is installed
+  useEffect(() => {
+    setIsMetaMaskInstalled(hasMetaMask());
+  }, []);
 
   const truncateAddress = (address: string | null): string => {
     if (!address) return '';
@@ -63,6 +76,32 @@ export const WalletConnect: React.FC = () => {
     window.open(explorerUrl, '_blank');
   };
 
+  const handleConnectWallet = async () => {
+    if (!isMetaMaskInstalled) {
+      toast({
+        title: "MetaMask not detected",
+        description: "Please install MetaMask to use blockchain features",
+        variant: "destructive"
+      });
+      
+      // Open MetaMask installation page
+      window.open('https://metamask.io/download/', '_blank');
+      return;
+    }
+
+    try {
+      // Connect wallet using BlockchainContext
+      await connectWallet();
+    } catch (error) {
+      console.error("Error connecting to MetaMask:", error);
+      toast({
+        title: "Connection failed",
+        description: "Could not connect to MetaMask. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (isConnected && account) {
     return (
       <DropdownMenu>
@@ -101,18 +140,23 @@ export const WalletConnect: React.FC = () => {
     );
   }
 
-  // Only show connect button if MetaMask is available
-  if (hasMetaMask()) {
+  // MetaMask not installed
+  if (!isMetaMaskInstalled) {
     return (
-      <Button onClick={connectWallet}>
-        <Wallet className="mr-2 h-4 w-4" />
-        Connect Wallet
+      <Button variant="outline" onClick={handleConnectWallet} className="flex items-center gap-2">
+        <Download className="h-4 w-4" />
+        <span>Install MetaMask</span>
       </Button>
     );
   }
 
-  // Return an empty div with the same width to maintain layout
-  return <div className="min-w-[180px]"></div>;
+  // MetaMask installed but not connected
+  return (
+    <Button onClick={handleConnectWallet} className="flex items-center gap-2">
+      <Wallet className="h-4 w-4" />
+      <span>Connect Wallet</span>
+    </Button>
+  );
 };
 
 export default WalletConnect;

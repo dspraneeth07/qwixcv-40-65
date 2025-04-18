@@ -103,10 +103,13 @@ const SpeechController: React.FC<SpeechControllerProps> = ({
         <div className="flex items-center">
           <div className="mr-2 flex items-center">
             {isListening ? (
-              <span className="text-green-600 text-sm flex items-center">
-                <span className="h-2 w-2 bg-green-600 rounded-full mr-1 animate-pulse"></span>
-                Listening
-              </span>
+              <div className="flex flex-col">
+                <span className="text-green-600 text-sm flex items-center">
+                  <span className="h-2 w-2 bg-green-600 rounded-full mr-1 animate-pulse"></span>
+                  Listening
+                </span>
+                <span className="text-xs text-muted-foreground">Speak clearly and confidently</span>
+              </div>
             ) : (
               <span className="text-gray-500 text-sm flex items-center">
                 <span className="h-2 w-2 bg-gray-400 rounded-full mr-1"></span>
@@ -141,6 +144,13 @@ const SpeechController: React.FC<SpeechControllerProps> = ({
                 <Mic className="h-4 w-4 mr-2" />
                 Start Listening
               </>
+            )}
+            
+            {isListening && (
+              <span className="absolute -top-2 -right-2 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+              </span>
             )}
           </Button>
         </div>

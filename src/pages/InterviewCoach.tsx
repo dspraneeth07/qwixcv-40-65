@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Layout } from '@/components/Layout';
+import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -617,7 +617,7 @@ const InterviewCoach: React.FC = () => {
   };
   
   return (
-    <Layout>
+    <MainLayout>
       <div className="container mx-auto py-6">
         <div className="mb-6 flex items-center">
           {isInterviewStarted && (
@@ -749,7 +749,8 @@ const InterviewCoach: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="md:col-span-3">
+            <div className="md:col-span-3 relative">
+              {/* Real-time feedback will be integrated directly in components */}
               <Card className="h-[calc(100vh-200px)] flex flex-col">
                 <CardHeader className="border-b p-4">
                   <div className="flex justify-between items-center">
@@ -869,7 +870,7 @@ const InterviewCoach: React.FC = () => {
           </div>
         )}
       </div>
-    </Layout>
+    </MainLayout>
   );
 };
 

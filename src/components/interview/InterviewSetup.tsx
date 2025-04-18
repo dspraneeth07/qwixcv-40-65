@@ -162,19 +162,32 @@ const InterviewSetup = ({ onStartInterview, isProcessing }: InterviewSetupProps)
             </Select>
           </div>
           
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label htmlFor="use-camera">Enable Camera Analysis</Label>
-              <p className="text-xs text-muted-foreground">
-                Analyze posture, eye contact, and attire
-              </p>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="use-camera">Enable Camera Analysis</Label>
+                <p className="text-xs text-muted-foreground">
+                  Analyze posture, eye contact, and attire
+                </p>
+              </div>
+              <Switch
+                id="use-camera"
+                checked={useCamera}
+                onCheckedChange={setUseCamera}
+                disabled={isProcessing}
+              />
             </div>
-            <Switch
-              id="use-camera"
-              checked={useCamera}
-              onCheckedChange={setUseCamera}
-              disabled={isProcessing}
-            />
+            
+            {useCamera && (
+              <div className="bg-blue-50 p-3 rounded-md">
+                <p className="text-blue-700 text-xs flex items-start">
+                  <Camera className="h-4 w-4 mr-1.5 flex-shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Enhanced Analysis Enabled:</strong> You'll receive real-time feedback on posture, eye contact, gestures, and professional appearance during the interview.
+                  </span>
+                </p>
+              </div>
+            )}
           </div>
           
           <div className="space-y-2">
