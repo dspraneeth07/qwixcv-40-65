@@ -62,47 +62,49 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
   // Initialize speech recognition
   useEffect(() => {
     // Check if browser supports speech recognition
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      
-      recognition.onresult = (event) => {
-        let interimTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          if (event.results[i].isFinal) {
-            setUserResponse(prev => prev + event.results[i][0].transcript + " ");
-          } else {
-            interimTranscript += event.results[i][0].transcript;
-          }
-        }
-      };
-      
-      recognition.onerror = (event) => {
-        console.error("Speech recognition error", event.error);
-        setIsRecording(false);
-        toast({
-          title: "Speech Recognition Error",
-          description: "There was a problem with the speech recognition. Please try again.",
-          variant: "destructive",
-        });
-      };
-      
-      if (isRecording) {
-        recognition.start();
-      }
-      
-      return () => {
-        recognition.stop();
-      };
-    } else {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       toast({
         title: "Browser Not Supported",
         description: "Your browser doesn't support speech recognition. Please use Chrome or Edge.",
         variant: "destructive",
       });
+      return;
     }
+    
+    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognitionAPI();
+    
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    
+    recognition.onresult = (event) => {
+      let interimTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          setUserResponse(prev => prev + event.results[i][0].transcript + " ");
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
+      }
+    };
+    
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error", event.error);
+      setIsRecording(false);
+      toast({
+        title: "Speech Recognition Error",
+        description: "There was a problem with the speech recognition. Please try again.",
+        variant: "destructive",
+      });
+    };
+    
+    if (isRecording) {
+      recognition.start();
+    }
+    
+    return () => {
+      recognition.stop();
+    };
   }, [isRecording, toast]);
   
   // Timer for interview duration
