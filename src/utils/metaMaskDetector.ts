@@ -1,20 +1,23 @@
 
 // MetaMask detection utility
+import { toast } from "@/hooks/use-toast";
 
-// Define the type for Ethereum window object
 interface WindowWithEthereum extends Window {
   ethereum?: {
     request: (args: any) => Promise<any>;
     on: (event: string, callback: any) => void;
     removeListener: (event: string, callback: any) => void;
     isMetaMask?: boolean;
+    selectedAddress?: string | null;
+    chainId?: string;
   };
 }
+
+export const POLYGON_MUMBAI_CHAIN_ID = '0x13881'; // 80001 in hex
 
 // Helper function to check if MetaMask is installed and accessible
 export const hasMetaMask = (): boolean => {
   const windowWithEthereum = window as WindowWithEthereum;
-  
   return (
     typeof windowWithEthereum !== 'undefined' &&
     typeof windowWithEthereum.ethereum !== 'undefined' &&
@@ -27,6 +30,14 @@ export const requestMetaMaskAccounts = async (): Promise<string[]> => {
   const windowWithEthereum = window as WindowWithEthereum;
   
   if (!hasMetaMask()) {
+    toast({
+      title: "MetaMask Required",
+      description: "Please install MetaMask to use blockchain features. Installation window will open automatically.",
+      variant: "destructive"
+    });
+    
+    // Open MetaMask in a new tab
+    window.open('https://metamask.io/download/', '_blank');
     throw new Error("MetaMask is not installed");
   }
   
@@ -35,9 +46,32 @@ export const requestMetaMaskAccounts = async (): Promise<string[]> => {
       method: 'eth_requestAccounts' 
     });
     
-    return accounts || [];
-  } catch (error) {
-    console.error("Error requesting accounts from MetaMask:", error);
+    if (!accounts || accounts.length === 0) {
+      throw new Error("No accounts found");
+    }
+    
+    // Successfully connected
+    toast({
+      title: "Wallet Connected",
+      description: `Connected to ${accounts[0].substring(0, 6)}...${accounts[0].substring(accounts[0].length - 4)}`,
+    });
+    
+    return accounts;
+  } catch (error: any) {
+    if (error.code === 4001) {
+      // User rejected the connection
+      toast({
+        title: "Connection Rejected",
+        description: "You rejected the connection request.",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Connection Failed",
+        description: "Failed to connect to MetaMask. Please try again.",
+        variant: "destructive"
+      });
+    }
     throw error;
   }
 };
@@ -74,7 +108,7 @@ export const addPolygonMumbaiNetwork = async (): Promise<boolean> => {
     await windowWithEthereum.ethereum?.request({
       method: 'wallet_addEthereumChain',
       params: [{
-        chainId: '0x13881', // 80001 in hex
+        chainId: POLYGON_MUMBAI_CHAIN_ID,
         chainName: 'Polygon Mumbai Testnet',
         nativeCurrency: {
           name: 'MATIC',
@@ -86,9 +120,26 @@ export const addPolygonMumbaiNetwork = async (): Promise<boolean> => {
       }]
     });
     
+    toast({
+      title: "Network Added",
+      description: "Polygon Mumbai Testnet has been added to your wallet",
+    });
+    
     return true;
-  } catch (error) {
-    console.error("Error adding Polygon Mumbai network to MetaMask:", error);
+  } catch (error: any) {
+    if (error.code === 4001) {
+      toast({
+        title: "Network Add Rejected",
+        description: "You rejected adding the Polygon Mumbai network",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Network Add Failed",
+        description: "Failed to add Polygon Mumbai network. Please try again.",
+        variant: "destructive"
+      });
+    }
     return false;
   }
 };
@@ -104,7 +155,12 @@ export const switchToPolygonMumbai = async (): Promise<boolean> => {
   try {
     await windowWithEthereum.ethereum?.request({
       method: 'wallet_switchEthereumChain',
-      params: [{ chainId: '0x13881' }], // 0x13881 is 80001 in hex
+      params: [{ chainId: POLYGON_MUMBAI_CHAIN_ID }],
+    });
+    
+    toast({
+      title: "Network Switched",
+      description: "Successfully switched to Polygon Mumbai Testnet",
     });
     
     return true;
@@ -114,7 +170,70 @@ export const switchToPolygonMumbai = async (): Promise<boolean> => {
       return addPolygonMumbaiNetwork();
     }
     
-    console.error("Error switching to Polygon Mumbai network:", error);
+    if (error.code === 4001) {
+      toast({
+        title: "Network Switch Rejected",
+        description: "You rejected switching to the Polygon Mumbai network",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "Network Switch Failed",
+        description: "Failed to switch to Polygon Mumbai network. Please try again.",
+        variant: "destructive"
+      });
+    }
     return false;
   }
+};
+
+// Get current connected account
+export const getCurrentAccount = async (): Promise<string | null> => {
+  const windowWithEthereum = window as WindowWithEthereum;
+  
+  if (!hasMetaMask()) {
+    return null;
+  }
+  
+  try {
+    const accounts = await windowWithEthereum.ethereum?.request({
+      method: 'eth_accounts'
+    });
+    
+    return accounts && accounts.length > 0 ? accounts[0] : null;
+  } catch (error) {
+    console.error("Error getting current account:", error);
+    return null;
+  }
+};
+
+// Setup MetaMask event listeners
+export const setupMetaMaskEvents = (
+  onAccountsChanged: (accounts: string[]) => void,
+  onChainChanged: (chainId: string) => void,
+  onDisconnect: () => void
+) => {
+  const windowWithEthereum = window as WindowWithEthereum;
+  
+  if (!hasMetaMask()) {
+    return () => {};
+  }
+  
+  // Handle account changes
+  windowWithEthereum.ethereum?.on('accountsChanged', onAccountsChanged);
+  
+  // Handle chain changes
+  windowWithEthereum.ethereum?.on('chainChanged', onChainChanged);
+  
+  // Handle disconnect
+  windowWithEthereum.ethereum?.on('disconnect', onDisconnect);
+  
+  // Return cleanup function
+  return () => {
+    if (windowWithEthereum.ethereum) {
+      windowWithEthereum.ethereum.removeListener('accountsChanged', onAccountsChanged);
+      windowWithEthereum.ethereum.removeListener('chainChanged', onChainChanged);
+      windowWithEthereum.ethereum.removeListener('disconnect', onDisconnect);
+    }
+  };
 };
