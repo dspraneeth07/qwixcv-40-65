@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Award, BarChart3, BookOpen, Users, Building2 } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import InterviewCoachCard from '@/components/dashboard/InterviewCoachCard';
 
 interface UserStats {
   interviews_attempted: number;
@@ -26,65 +27,71 @@ interface OrgStats {
 
 const StudentDashboard = ({ stats }: { stats: UserStats }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <FileText className="h-5 w-5 text-primary" />
-            Resume Analytics
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Resumes Generated</span>
-              <span className="font-medium">{stats.resumes_generated}</span>
+    <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              Resume Analytics
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Resumes Generated</span>
+                <span className="font-medium">{stats.resumes_generated}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Average Score</span>
+                <span className="font-medium">{stats.resume_score}%</span>
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Average Score</span>
-              <span className="font-medium">{stats.resume_score}%</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Award className="h-5 w-5 text-primary" />
-            Certifications
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Earned</span>
-              <span className="font-medium">{stats.certifications_earned}</span>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Award className="h-5 w-5 text-primary" />
+              Certifications
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Earned</span>
+                <span className="font-medium">{stats.certifications_earned}</span>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Users className="h-5 w-5 text-primary" />
-            Interview Practice
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Attempts</span>
-              <span className="font-medium">{stats.interviews_attempted}</span>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              Interview Practice
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Attempts</span>
+                <span className="font-medium">{stats.interviews_attempted}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Progress</span>
+                <span className="font-medium">{stats.career_track_progress}%</span>
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Progress</span>
-              <span className="font-medium">{stats.career_track_progress}%</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <InterviewCoachCard />
+      </div>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileText, Menu, ChevronDown, User, Settings, LogOut, BarChart, Award, Sparkles, Briefcase, Shield, LucideIcon, GraduationCap } from "lucide-react";
+import { FileText, Menu, ChevronDown, User, Settings, LogOut, BarChart, Award, Sparkles, Briefcase, Shield, LucideIcon, GraduationCap, MessageSquare } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -96,6 +96,7 @@ const UserNavbar = () => {
   const jobTools = [
     { name: "Job Board", href: "/job-board", icon: Briefcase },
     { name: "Career Path Simulator", href: "/career-path-simulator", icon: Sparkles },
+    { name: "Interview Coach", href: "/interview-coach", icon: MessageSquare },
   ];
 
   return (
