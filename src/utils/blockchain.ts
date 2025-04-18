@@ -1,3 +1,4 @@
+
 import html2pdf from 'html2pdf.js';
 import { Certificate, BlockchainTransaction, VerificationMethod } from "@/types/certification";
 import { ethers } from 'ethers';
@@ -127,17 +128,20 @@ export const generateCertificate = async (
     
     // In a real implementation, we would mint an NFT here
     // For now, we just store the IPFS URI in the certificate
-    certificate.ipfsUri = ipfsUri;
-    certificate.ipfsCid = ipfsUri.replace('ipfs://', '');
+    const updatedCertificate = {
+      ...certificate,
+      ipfsUri: ipfsUri,
+      ipfsCid: ipfsUri.replace('ipfs://', '')
+    };
     
     // Save to localStorage
     const certificates = getUserCertificates();
-    certificates.push(certificate);
+    certificates.push(updatedCertificate);
     saveCertificates(certificates);
     
-    console.log("Generated new certificate:", certificate);
+    console.log("Generated new certificate:", updatedCertificate);
     
-    return certificate;
+    return updatedCertificate;
   } catch (error) {
     console.error("Error generating certificate:", error);
     

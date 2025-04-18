@@ -1,7 +1,6 @@
-
 import { v4 as uuidv4 } from 'uuid';
 import { NFTStorage } from 'nft.storage';
-import { BlockchainDocument } from '@/types/blockchain';
+import { BlockchainDocument, DocumentUploadParams } from '@/types/blockchain';
 import { useBlockchain } from '@/context/BlockchainContext';
 
 // NFT.Storage API key for IPFS storage
@@ -70,14 +69,6 @@ const uploadToIPFS = async (file: File, metadata: any): Promise<string> => {
     content: `ipfs://${fileCid}`
   });
 };
-
-// Interface for document upload parameters
-interface DocumentUploadParams {
-  file: File;
-  fileName: string;
-  description?: string;
-  ownerAddress: string;
-}
 
 // Upload document to blockchain
 export const uploadDocumentToBlockchain = async (

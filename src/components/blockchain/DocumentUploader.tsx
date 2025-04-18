@@ -123,12 +123,11 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
       // Simulate blockchain upload with a delay
       await new Promise(resolve => setTimeout(resolve, 3000));
       
-      // Upload to blockchain
+      // Upload to blockchain with the correct parameters
       const result = await uploadDocumentToBlockchain({
+        file: file,
         fileName: documentName,
         description: documentDesc,
-        fileType: file.type,
-        fileSize: file.size,
         ownerAddress: account || '',
       });
       
