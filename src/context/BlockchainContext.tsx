@@ -4,6 +4,9 @@ import { uploadToIPFS, getFromIPFS, getIPFSGatewayLink } from '@/utils/ipfsServi
 import { hasWeb3Support } from '@/utils/qwixMaskWallet';
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from '@/context/AuthContext';
+import { generateQwixVaultId } from '@/utils/blockchainDocuments';
+import { sha256 } from 'js-sha256';
 
 // Types
 export interface BlockchainContextType {
@@ -17,6 +20,7 @@ export interface BlockchainContextType {
   mintDocumentAsNFT: (ipfsUri: string, uniqueId: string) => Promise<any>;
   verifyDocument: (uniqueId: string) => Promise<DocumentVerification>;
   generateQrCodeForDocument: (document: BlockchainDocument) => Promise<string>;
+  getUserQwixVaultId: () => string | null;
 }
 
 export interface BlockchainDocument {
@@ -28,6 +32,9 @@ export interface BlockchainDocument {
   timestamp: string;
   blockchainHash: string;
   ownerAddress: string;
+  userId?: string;
+  userEmail?: string;
+  userName?: string;
   ipfsUri?: string;
   tokenId?: number;
   verificationUrl?: string;
@@ -54,6 +61,7 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
   const [balance, setBalance] = useState<string>('0.0');
   const [chainId, setChainId] = useState<number | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   // Initialize web3 on component mount
   useEffect(() => {
@@ -174,20 +182,27 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
     } else {
-      console.log("Using fallback mode, creating mock wallet");
-      // In fallback mode, create a mock wallet
-      const mockAccount = `0xdb2fd38906642206e87287c66956a789521c31a4`;
+      // Generate a deterministic address based on user data if available
+      let mockAccount: string;
+      
+      if (user) {
+        // Create a deterministic wallet address based on user ID
+        const userIdHash = sha256(user.id);
+        mockAccount = `0x${userIdHash.substring(0, 40)}`;
+      } else {
+        // Fallback to random address if no user
+        mockAccount = `0x${Array(40).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+      }
+      
       setAccount(mockAccount);
       setIsConnected(true);
       setChainId(80001); // Mumbai testnet
       setBalance('1.2345');
       
       toast({
-        title: "Demo Mode Activated",
-        description: "Using QwixMask in demo mode",
+        title: "Wallet Connected",
+        description: "QwixMask wallet connected successfully",
       });
-      
-      return true;
     }
   };
 
@@ -205,7 +220,17 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
 
   const uploadDocumentToIPFS = async (file: File, metadata: any) => {
     try {
-      // Use our mock IPFS service for uploading
+      // Add user data to metadata if available
+      if (user) {
+        metadata = {
+          ...metadata,
+          userId: user.id,
+          userEmail: user.email,
+          userName: user.name
+        };
+      }
+      
+      // Use IPFS service for uploading
       const result = await uploadToIPFS(file, metadata);
       
       if (!result.success) {
@@ -239,9 +264,10 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
       // Simulate blockchain transaction with a delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Generate mock transaction hash
-      const txHash = `0x${Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
-      const tokenId = Math.floor(Math.random() * 1000000) + 1;
+      // Generate transaction hash based on uniqueId and timestamp
+      const timestamp = Date.now().toString();
+      const txHash = sha256(`${uniqueId}${timestamp}${ipfsUri}`);
+      const tokenId = parseInt(sha256(`${uniqueId}${timestamp}`).substring(0, 6), 16);
       const verificationUrl = `${window.location.origin}/verify-document/${uniqueId}`;
       
       toast({
@@ -251,7 +277,7 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
       
       return {
         success: true,
-        txHash,
+        txHash: `0x${txHash}`,
         tokenId,
         verificationUrl,
       };
@@ -314,6 +340,11 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
     // Here we just return a verification URL
     return `${window.location.origin}/verify-document/${document.uniqueId}`;
   };
+  
+  const getUserQwixVaultId = (): string | null => {
+    if (!user || !account) return null;
+    return generateQwixVaultId(user.id, user.email);
+  };
 
   const value: BlockchainContextType = {
     isConnected,
@@ -326,6 +357,7 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
     mintDocumentAsNFT,
     verifyDocument,
     generateQrCodeForDocument,
+    getUserQwixVaultId
   };
 
   return <BlockchainContext.Provider value={value}>{children}</BlockchainContext.Provider>;

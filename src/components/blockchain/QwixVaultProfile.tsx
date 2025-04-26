@@ -7,17 +7,18 @@ import { useBlockchain } from '@/context/BlockchainContext';
 import { useToast } from "@/components/ui/use-toast";
 import QRCode from 'qrcode.react';
 import { Link } from 'react-router-dom';
-import { createSampleDocuments, getUserDocumentsByOwner } from '@/utils/blockchainDocuments';
+import { getUserDocumentsByOwner } from '@/utils/blockchainDocuments';
+import { useAuth } from '@/context/AuthContext';
 
 const QwixVaultProfile = () => {
-  const { account, isConnected, connectWallet } = useBlockchain();
+  const { account, isConnected, connectWallet, getUserQwixVaultId } = useBlockchain();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [documentCount, setDocumentCount] = useState(0);
-  const [isCreatingSamples, setIsCreatingSamples] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
-  // Generate a unique QwixVault ID from the account address
-  const qwixVaultId = account ? 
-    `QV-${account.substring(2, 6)}-${account.substring(account.length - 4)}` : null;
+  // Generate the QwixVault ID based on authenticated user
+  const qwixVaultId = getUserQwixVaultId();
   
   // Generate verification URL
   const verificationUrl = account ? 
@@ -49,36 +50,7 @@ const QwixVaultProfile = () => {
     );
   };
   
-  const handleCreateSampleDocuments = async () => {
-    if (!account) return;
-    
-    setIsCreatingSamples(true);
-    
-    try {
-      // Create sample documents for the user
-      createSampleDocuments(account);
-      
-      // Update document count
-      const userDocs = getUserDocumentsByOwner(account);
-      setDocumentCount(userDocs.length);
-      
-      toast({
-        title: "Sample Documents Created",
-        description: "Sample documents have been added to your vault",
-      });
-    } catch (error) {
-      console.error("Error creating sample documents:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create sample documents",
-        variant: "destructive",
-      });
-    } finally {
-      setIsCreatingSamples(false);
-    }
-  };
-  
-  if (!isConnected) {
+  if (!isConnected || !user) {
     return (
       <Card>
         <CardHeader>
@@ -133,6 +105,13 @@ const QwixVaultProfile = () => {
           </div>
           
           <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">User:</span>
+            <div className="flex items-center">
+              <span className="text-sm">{user.name || user.email}</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Wallet Address:</span>
             <div className="flex items-center">
               <span className="font-mono text-sm">
@@ -159,25 +138,14 @@ const QwixVaultProfile = () => {
             </Link>
           </Button>
           
-          {documentCount === 0 ? (
-            <Button 
-              variant="outline" 
-              onClick={handleCreateSampleDocuments}
-              disabled={isCreatingSamples}
-            >
-              {isCreatingSamples ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <QrCode className="mr-2 h-4 w-4" />
-              )}
-              Add Sample Documents
-            </Button>
-          ) : (
-            <Button variant="outline" onClick={() => window.location.reload()}>
+          <Button variant="outline" onClick={() => window.location.reload()} disabled={isLoading}>
+            {isLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
               <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
-            </Button>
-          )}
+            )}
+            Refresh
+          </Button>
         </div>
       </CardContent>
     </Card>

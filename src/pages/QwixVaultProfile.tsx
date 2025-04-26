@@ -17,19 +17,35 @@ const QwixVaultProfile = () => {
   const { account } = useBlockchain();
   const [documents, setDocuments] = useState<BlockchainDocument[]>([]);
   const [isOwner, setIsOwner] = useState(false);
+  const [profileDetails, setProfileDetails] = useState<{
+    name: string | null;
+    email: string | null;
+    qwixVaultId: string | null;
+  }>({
+    name: null,
+    email: null,
+    qwixVaultId: null
+  });
   
-  // Generate a unique QwixVault ID from the account address
-  const qwixVaultId = address ? 
-    `QV-${address.substring(2, 6)}-${address.substring(address.length - 4)}` : null;
-  
-  // Load user documents
+  // Load user documents and profile details
   useEffect(() => {
     if (address) {
+      // Get documents for this wallet address
       const userDocs = getUserDocumentsByOwner(address);
       setDocuments(userDocs);
       
       // Check if current user is the profile owner
       setIsOwner(account?.toLowerCase() === address.toLowerCase());
+      
+      // Extract profile details from documents if available
+      const profileDoc = userDocs.find(doc => doc.userName || doc.userEmail);
+      if (profileDoc) {
+        setProfileDetails({
+          name: profileDoc.userName || null,
+          email: profileDoc.userEmail || null,
+          qwixVaultId: profileDoc.userId ? `QV-${profileDoc.userId.substring(0, 4)}-${btoa(profileDoc.userEmail || '').replace(/[/+=]/g, '').substring(0, 8)}` : null
+        });
+      }
     }
   }, [address, account]);
   
@@ -81,10 +97,16 @@ const QwixVaultProfile = () => {
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-semibold mb-2">
-                      {qwixVaultId}
+                      {profileDetails.qwixVaultId || `QV-${address?.substring(2, 6) || ''}`}
                     </h3>
-                    <div className="flex items-center">
-                      <Badge variant="outline" className="font-mono text-xs">
+                    <div className="flex flex-col gap-1">
+                      {profileDetails.name && (
+                        <p className="text-sm">{profileDetails.name}</p>
+                      )}
+                      {profileDetails.email && (
+                        <p className="text-sm text-muted-foreground">{profileDetails.email}</p>
+                      )}
+                      <Badge variant="outline" className="font-mono text-xs w-fit mt-1">
                         {address}
                       </Badge>
                     </div>
@@ -183,8 +205,10 @@ const QwixVaultProfile = () => {
                                 <Button variant="outline" size="icon" title="Share">
                                   <Share2 className="h-4 w-4" />
                                 </Button>
-                                <Button variant="outline" size="icon" title="Verify">
-                                  <ExternalLink className="h-4 w-4" />
+                                <Button variant="outline" size="icon" title="Verify" asChild>
+                                  <a href={`/verify-document/${doc.uniqueId}`} target="_blank" rel="noopener noreferrer">
+                                    <ExternalLink className="h-4 w-4" />
+                                  </a>
                                 </Button>
                               </div>
                             </div>
