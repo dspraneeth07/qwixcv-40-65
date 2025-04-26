@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { uploadToIPFS, getFromIPFS, getIPFSGatewayLink } from '@/utils/ipfsService';
 import { hasWeb3Support } from '@/utils/qwixMaskWallet';
@@ -10,8 +9,8 @@ import { sha256 } from 'js-sha256';
 import { BlockchainDocument, DocumentVerification, DocumentUploadParams } from '@/types/blockchain';
 import { addUserDocument, getUserDocuments as getLocalUserDocuments, getUserDocumentsByOwner } from '@/utils/blockchainDocuments';
 
-// Re-export the types for use in other components
-export { BlockchainDocument, DocumentVerification } from '@/types/blockchain';
+// Correct type re-export using export type
+export type { BlockchainDocument, DocumentVerification } from '@/types/blockchain';
 
 // Types
 export interface BlockchainContextType {
