@@ -2,9 +2,9 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useBlockchain } from '@/context/BlockchainContext';
-import { Shield, Wallet, LockKeyhole, Download } from "lucide-react";
+import { Shield, Wallet, LockKeyhole } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { hasMetaMask } from '@/utils/metaMaskDetector';
+import { hasWeb3Support } from '@/utils/qwixMaskWallet';
 import { useToast } from "@/components/ui/use-toast";
 
 export const ConnectWalletPrompt: React.FC = () => {
@@ -12,15 +12,12 @@ export const ConnectWalletPrompt: React.FC = () => {
   const { toast } = useToast();
   
   const handleConnect = async () => {
-    if (!hasMetaMask()) {
+    if (!hasWeb3Support()) {
       toast({
-        title: "MetaMask not detected",
-        description: "Please install MetaMask to use blockchain features",
+        title: "Web3 not supported",
+        description: "Your browser doesn't support Web3 functionality. Please use a compatible browser.",
         variant: "destructive"
       });
-      
-      // Open MetaMask download page in a new tab
-      window.open("https://metamask.io/download/", "_blank");
       return;
     }
     
@@ -36,9 +33,9 @@ export const ConnectWalletPrompt: React.FC = () => {
               <Wallet className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <CardTitle>Connect Your Wallet</CardTitle>
+          <CardTitle>Connect QwixMask Wallet</CardTitle>
           <CardDescription>
-            To access your blockchain vault and securely store documents, please connect your wallet
+            To access your blockchain vault and securely store documents, connect your QwixMask wallet
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -66,17 +63,10 @@ export const ConnectWalletPrompt: React.FC = () => {
             </div>
           </div>
           
-          {hasMetaMask() ? (
-            <Button onClick={handleConnect} className="w-full">
-              <Wallet className="mr-2 h-4 w-4" />
-              Connect MetaMask
-            </Button>
-          ) : (
-            <Button onClick={handleConnect} className="w-full">
-              <Download className="mr-2 h-4 w-4" />
-              Install MetaMask
-            </Button>
-          )}
+          <Button onClick={handleConnect} className="w-full">
+            <Wallet className="mr-2 h-4 w-4" />
+            Connect QwixMask
+          </Button>
         </CardContent>
       </Card>
     </div>

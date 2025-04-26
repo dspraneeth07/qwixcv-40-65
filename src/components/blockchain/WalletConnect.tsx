@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useBlockchain } from '@/context/BlockchainContext';
 import { Button } from "@/components/ui/button";
-import { Wallet, ExternalLink, LogOut, Download, AlertTriangle } from "lucide-react";
+import { Wallet, ExternalLink, LogOut, AlertTriangle } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,22 +11,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { 
-  hasMetaMask, 
-  requestMetaMaskAccounts, 
-  getMetaMaskChainId,
-  switchToPolygonMumbai 
-} from '@/utils/metaMaskDetector';
+import { hasWeb3Support } from '@/utils/qwixMaskWallet';
 import { useToast } from '@/components/ui/use-toast';
 
 export const WalletConnect: React.FC = () => {
   const { isConnected, account, balance, chainId, connectWallet, disconnectWallet } = useBlockchain();
   const { toast } = useToast();
-  const [isMetaMaskInstalled, setIsMetaMaskInstalled] = useState(false);
+  const [isWeb3Supported, setIsWeb3Supported] = useState(false);
 
-  // Check if MetaMask is installed
+  // Check if Web3 is supported
   useEffect(() => {
-    setIsMetaMaskInstalled(hasMetaMask());
+    setIsWeb3Supported(hasWeb3Support());
   }, []);
 
   const truncateAddress = (address: string | null): string => {
@@ -77,15 +72,12 @@ export const WalletConnect: React.FC = () => {
   };
 
   const handleConnectWallet = async () => {
-    if (!isMetaMaskInstalled) {
+    if (!isWeb3Supported) {
       toast({
-        title: "MetaMask not detected",
-        description: "Please install MetaMask to use blockchain features",
+        title: "Web3 Support Required",
+        description: "Your browser doesn't support Web3 functionality. Please use a compatible browser.",
         variant: "destructive"
       });
-      
-      // Open MetaMask installation page
-      window.open('https://metamask.io/download/', '_blank');
       return;
     }
 
@@ -93,10 +85,10 @@ export const WalletConnect: React.FC = () => {
       // Connect wallet using BlockchainContext
       await connectWallet();
     } catch (error) {
-      console.error("Error connecting to MetaMask:", error);
+      console.error("Error connecting to QwixMask:", error);
       toast({
         title: "Connection failed",
-        description: "Could not connect to MetaMask. Please try again.",
+        description: "Could not connect to QwixMask. Please try again.",
         variant: "destructive"
       });
     }
@@ -112,7 +104,7 @@ export const WalletConnect: React.FC = () => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel>Wallet</DropdownMenuLabel>
+          <DropdownMenuLabel>QwixMask Wallet</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <div className="px-2 py-1.5">
             <p className="text-sm font-medium mb-1">Account:</p>
@@ -140,21 +132,21 @@ export const WalletConnect: React.FC = () => {
     );
   }
 
-  // MetaMask not installed
-  if (!isMetaMaskInstalled) {
+  // Web3 not supported
+  if (!isWeb3Supported) {
     return (
-      <Button variant="outline" onClick={handleConnectWallet} className="flex items-center gap-2">
-        <Download className="h-4 w-4" />
-        <span>Install MetaMask</span>
+      <Button variant="outline" disabled className="flex items-center gap-2">
+        <AlertTriangle className="h-4 w-4" />
+        <span>Web3 Not Supported</span>
       </Button>
     );
   }
 
-  // MetaMask installed but not connected
+  // Web3 supported but not connected
   return (
     <Button onClick={handleConnectWallet} className="flex items-center gap-2">
       <Wallet className="h-4 w-4" />
-      <span>Connect Wallet</span>
+      <span>Connect QwixMask</span>
     </Button>
   );
 };

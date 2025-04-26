@@ -3,6 +3,14 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { useToast } from "@/components/ui/use-toast";
 import { NFTStorage } from 'nft.storage';
+import { 
+  hasWeb3Support, 
+  connectQwixWallet, 
+  getChainId, 
+  switchToPolygonMumbai,
+  getCurrentAccount, 
+  setupWalletEvents 
+} from '@/utils/qwixMaskWallet';
 
 // Define the type for Ethereum window object
 interface WindowWithEthereum extends Window {
@@ -28,16 +36,6 @@ const SOULBOUND_NFT_ABI = [
 // Deployment address on Polygon Mumbai testnet
 const SOULBOUND_NFT_ADDRESS = "0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8";
 
-// Helper function to check if MetaMask is installed
-export const hasMetaMask = (): boolean => {
-  const windowWithEthereum = window as WindowWithEthereum;
-  return (
-    typeof windowWithEthereum !== 'undefined' &&
-    typeof windowWithEthereum.ethereum !== 'undefined' &&
-    !!windowWithEthereum.ethereum.isMetaMask
-  );
-};
-
 // Helper function to get provider
 const getProvider = async () => {
   const windowWithEthereum = window as WindowWithEthereum;
@@ -47,7 +45,7 @@ const getProvider = async () => {
     return { provider, signer: await provider.getSigner() };
   }
   
-  // Fallback to a public provider if MetaMask is not available
+  // Fallback to a public provider if Web3 is not available
   return { 
     provider: new ethers.JsonRpcProvider('https://polygon-mumbai.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'),
     signer: null
@@ -149,7 +147,7 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
   // Check for existing connection on load
   useEffect(() => {
     const checkConnection = async () => {
-      if (hasMetaMask()) {
+      if (hasWeb3Support()) {
         try {
           // Check if already connected
           const accounts = await windowWithEthereum.ethereum?.request({ method: 'eth_accounts' });
@@ -167,7 +165,7 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
 
   // Set up event listeners for wallet changes
   useEffect(() => {
-    if (hasMetaMask()) {
+    if (hasWeb3Support()) {
       // Handle account changes
       const handleAccountsChanged = async (accounts: string[]) => {
         if (accounts.length === 0) {
@@ -189,19 +187,13 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
         disconnectWallet();
       };
 
-      if (windowWithEthereum.ethereum) {
-        windowWithEthereum.ethereum.on('accountsChanged', handleAccountsChanged);
-        windowWithEthereum.ethereum.on('chainChanged', handleChainChanged);
-        windowWithEthereum.ethereum.on('disconnect', handleDisconnect);
-  
-        return () => {
-          if (windowWithEthereum.ethereum) {
-            windowWithEthereum.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-            windowWithEthereum.ethereum.removeListener('chainChanged', handleChainChanged);
-            windowWithEthereum.ethereum.removeListener('disconnect', handleDisconnect);
-          }
-        };
-      }
+      const cleanup = setupWalletEvents(
+        handleAccountsChanged,
+        handleChainChanged,
+        handleDisconnect
+      );
+      
+      return cleanup;
     }
     
     return undefined;
@@ -236,57 +228,33 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
 
   // Connect wallet
   const connectWallet = async () => {
-    if (!hasMetaMask()) {
+    if (!hasWeb3Support()) {
       toast({
-        title: "MetaMask not detected",
-        description: "Please install MetaMask to use blockchain features",
+        title: "Web3 Support Required",
+        description: "Your browser doesn't support Web3 functionality. Please use a compatible browser.",
         variant: "destructive"
       });
       return;
     }
 
     try {
-      // Check if we're on Polygon Mumbai testnet (chainId 80001)
-      const accounts = await windowWithEthereum.ethereum?.request({ method: 'eth_requestAccounts' });
+      // Connect to wallet
+      const accounts = await connectQwixWallet();
+      
       if (accounts && accounts.length > 0) {
-        const chainIdHex = await windowWithEthereum.ethereum?.request({ method: 'eth_chainId' });
-        const currentChainId = parseInt(chainIdHex, 16);
+        const chainIdHex = await getChainId();
+        const currentChainId = chainIdHex ? parseInt(chainIdHex, 16) : null;
         
         // If not on Polygon Mumbai, prompt to switch
         if (currentChainId !== 80001) {
-          try {
-            await windowWithEthereum.ethereum?.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: '0x13881' }], // 0x13881 is 80001 in hex
-            });
-          } catch (switchError: any) {
-            // This error code means the chain is not added to MetaMask
-            if (switchError.code === 4902) {
-              await windowWithEthereum.ethereum?.request({
-                method: 'wallet_addEthereumChain',
-                params: [{
-                  chainId: '0x13881',
-                  chainName: 'Polygon Mumbai Testnet',
-                  nativeCurrency: {
-                    name: 'MATIC',
-                    symbol: 'MATIC',
-                    decimals: 18
-                  },
-                  rpcUrls: ['https://rpc-mumbai.maticvigil.com'],
-                  blockExplorerUrls: ['https://mumbai.polygonscan.com']
-                }],
-              });
-            } else {
-              throw switchError;
-            }
-          }
+          await switchToPolygonMumbai();
         }
         
         const success = await updateWalletInfo(accounts[0]);
         
         if (success) {
           toast({
-            title: "Wallet Connected",
+            title: "QwixMask Connected",
             description: `Connected to ${accounts[0].substring(0, 6)}...${accounts[0].substring(accounts[0].length - 4)}`,
           });
         }

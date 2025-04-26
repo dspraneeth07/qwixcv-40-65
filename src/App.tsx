@@ -23,7 +23,6 @@ import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import ForgotPassword from "./pages/Auth/ForgotPassword";
 import Unauthorized from "./pages/Auth/Unauthorized";
-import InterviewCoach from "./pages/InterviewCoach";
 import BlockchainVault from "./pages/BlockchainVault";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useEffect } from "react";
@@ -73,7 +72,6 @@ function App() {
               <Route path="/ats-scanner" element={<ProtectedRoute allowedRoles={['student']}><ATSScanner /></ProtectedRoute>} />
               <Route path="/resume-compare" element={<ProtectedRoute allowedRoles={['student']}><ResumeCompare /></ProtectedRoute>} />
               <Route path="/career-path-simulator" element={<ProtectedRoute allowedRoles={['student']}><CareerPathSimulator /></ProtectedRoute>} />
-              <Route path="/interview-coach" element={<ProtectedRoute allowedRoles={['student']}><InterviewCoach /></ProtectedRoute>} />
               <Route path="/blockchain-vault" element={<ProtectedRoute allowedRoles={['student']}><BlockchainVault /></ProtectedRoute>} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/certification-center" element={<ProtectedRoute><CertificationCenter /></ProtectedRoute>} />
