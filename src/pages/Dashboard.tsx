@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +8,8 @@ import { FileText, Award, BarChart3, BookOpen, Users, Building2, Shield } from "
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import InterviewCoachCard from '@/components/dashboard/InterviewCoachCard';
+import QwixVaultProfile from '@/components/blockchain/QwixVaultProfile';
+import BlockchainVaultCard from '@/components/dashboard/BlockchainVaultCard';
 
 interface UserStats {
   interviews_attempted: number;
@@ -91,26 +92,7 @@ const StudentDashboard = ({ stats }: { stats: UserStats }) => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <InterviewCoachCard />
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              Blockchain Document Vault
-            </CardTitle>
-            <CardDescription>
-              Securely store and verify your professional documents on the blockchain
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <Link to="/blockchain-vault">
-                <Shield className="mr-2 h-4 w-4" />
-                Access Digital Vault
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
+        <QwixVaultProfile />
       </div>
     </div>
   );
@@ -294,6 +276,10 @@ const Dashboard = () => {
                 <FileText className="h-4 w-4 mr-2" />
                 Resumes
               </TabsTrigger>
+              <TabsTrigger value="blockchain" className="flex items-center">
+                <Shield className="h-4 w-4 mr-2" />
+                QwixVault
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview">
@@ -314,6 +300,13 @@ const Dashboard = () => {
                   {/* Resume list content */}
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="blockchain">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <QwixVaultProfile />
+                <BlockchainVaultCard />
+              </div>
             </TabsContent>
           </Tabs>
         )}

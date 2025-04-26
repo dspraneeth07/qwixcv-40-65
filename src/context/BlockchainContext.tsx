@@ -23,7 +23,7 @@ interface WindowWithEthereum extends Window {
 }
 
 // NFT.Storage API key for IPFS storage - Updated with new valid API key
-const NFT_STORAGE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDlGOTVBNzM2NThFQzU4NjEwZkVBRGRGRjYwODgwNTcwOGMyMzNhQjIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTcwNjY0NTkyNzk2MCwibmFtZSI6IlF3aXhCbG9ja2NoYWluVmF1bHQifQ.EHztMJIjp3U2XBkZnbc3DrJMF_UAZs-L7JFJ7gUcCd0';
+const NFT_STORAGE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweEZENDIyOTRCRjA0RDAzMkVCMzI4MzBGMzRBRmFBOThEQTVCMjU3RTUiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTcxMzI2ODY0MzgxMCwibmFtZSI6IlF3aXhWYXVsdCI6fQ.SR4269YUtO02sNtOhJd2lx9v-Lo4xsXgxf0hufcPy_Y';
 
 // ABI for our Soulbound NFT smart contract
 const SOULBOUND_NFT_ABI = [
