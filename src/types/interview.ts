@@ -68,11 +68,68 @@ export interface InterviewFeedback {
 
 export interface InterviewSettings {
   jobTitle: string;
-  jobLevel: string;
+  jobLevel: string; 
   resumeText: string;
   resumeFileName: string;
   duration: number;
+  targetCompany?: string;
   useCamera?: boolean;
   difficulty?: 'easy' | 'medium' | 'hard';
   interviewType?: 'technical' | 'behavioral' | 'mixed';
+  preferredLanguage?: string;
+  enableRealTimeFeedback?: boolean;
+  yearsOfExperience?: '0-1' | '1-3' | '3-5' | '5+';
+}
+
+// For the Resume Parser API response
+export interface ResumeParserResponse {
+  skills: string[];
+  education: {
+    institution: string;
+    degree: string;
+    field: string;
+    date: string;
+  }[];
+  workExperience: {
+    company: string;
+    position: string;
+    duration: string;
+    description: string;
+  }[];
+  certifications: string[];
+  name: string;
+  email: string;
+  phone?: string;
+}
+
+export interface InterviewReport {
+  id: string;
+  date: Date;
+  candidateName: string;
+  candidateEmail: string;
+  jobTitle: string;
+  targetCompany: string;
+  yearsOfExperience: string;
+  overallScore: number;
+  questions: {
+    question: string;
+    answer: string;
+    feedback: string;
+    confidenceScore: number;
+    contentScore: number;
+    keyPointsCovered: string[];
+  }[];
+  skillsAnalysis: {
+    matched: string[];
+    missing: string[];
+  };
+  performanceMetrics: {
+    communication: number;
+    technicalKnowledge: number;
+    problemSolving: number;
+    cultureFit: number;
+    confidence: number;
+  };
+  suggestedImprovements: string[];
+  interviewTranscript: string;
 }

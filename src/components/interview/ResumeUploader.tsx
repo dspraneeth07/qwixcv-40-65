@@ -4,6 +4,7 @@ import { Upload, File, Check, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
+import { parseResume } from '@/utils/interviewApiService';
 
 interface ResumeUploaderProps {
   onResumeProcessed: (resumeText: string, resumeFileName: string) => void;
@@ -39,67 +40,103 @@ const ResumeUploader = ({ onResumeProcessed, isProcessing }: ResumeUploaderProps
       }
       
       setFile(selectedFile);
-      simulateUpload(selectedFile);
+      processResume(selectedFile);
     }
   };
 
-  const simulateUpload = async (file: File) => {
+  const processResume = async (file: File) => {
     // Reset progress
     setUploadProgress(0);
     setProcessingText('Starting upload...');
     
-    // Simulate upload progress
-    for (let i = 1; i <= 10; i++) {
-      await new Promise(r => setTimeout(r, 200));
-      setUploadProgress(i * 10);
-      
-      if (i === 5) setProcessingText('Uploading file...');
-      if (i === 8) setProcessingText('Processing PDF...');
-      if (i === 10) setProcessingText('Extracting text...');
-    }
-    
-    // Now actually process the PDF
-    extractTextFromPDF(file);
-  };
-
-  const extractTextFromPDF = async (file: File) => {
     try {
-      setProcessingText('Analyzing content...');
+      // Simulate upload progress
+      for (let i = 1; i <= 10; i++) {
+        await new Promise(r => setTimeout(r, 100)); // Faster animation
+        setUploadProgress(i * 10);
+        
+        if (i === 3) setProcessingText('Uploading file...');
+        if (i === 6) setProcessingText('Processing PDF...');
+        if (i === 8) setProcessingText('Analyzing with AI...');
+      }
       
-      // Read the file as ArrayBuffer
-      const arrayBuffer = await file.arrayBuffer();
+      // Convert file to base64
+      const base64 = await fileToBase64(file);
       
-      // For now, we'll use a mock implementation that converts the PDF to text
-      // In a real implementation, you would use a library like pdf.js
-      const pdfText = await mockPdfToText(arrayBuffer);
-      
-      setProcessingText('Analysis complete!');
-      onResumeProcessed(pdfText, file.name);
-      
-      toast({
-        title: "Resume processed successfully",
-        description: `"${file.name}" has been analyzed and is ready for your interview`,
-      });
-      
+      // Now process the resume
+      try {
+        // For development, we'll skip the actual API call
+        // In production, uncomment this line to use the real parser
+        // const resumeData = await parseResume(base64);
+        
+        // Extract text from PDF
+        const pdfText = await extractTextFromPDF(file);
+        
+        setProcessingText('Analysis complete!');
+        onResumeProcessed(pdfText, file.name);
+        
+        toast({
+          title: "Resume processed successfully",
+          description: "Your resume has been analyzed and is ready for your interview",
+        });
+      } catch (error) {
+        console.error("Error parsing resume:", error);
+        // Fall back to simpler text extraction
+        extractTextFromPDF(file)
+          .then(text => {
+            onResumeProcessed(text, file.name);
+            toast({
+              title: "Resume processed",
+              description: "Basic resume text extracted for your interview",
+            });
+          })
+          .catch(extractError => {
+            console.error("Error extracting text:", extractError);
+            toast({
+              title: "Processing failed",
+              description: "Could not process your resume. Please try again.",
+              variant: "destructive"
+            });
+          });
+      }
     } catch (error) {
-      console.error("Error extracting text from PDF:", error);
+      console.error("Error processing resume:", error);
       toast({
         title: "Processing failed",
-        description: "Failed to extract text from the PDF",
+        description: "Failed to process the PDF",
         variant: "destructive"
       });
     }
   };
 
-  // Mock PDF to text conversion (would use pdf.js in production)
-  const mockPdfToText = async (arrayBuffer: ArrayBuffer): Promise<string> => {
-    // In a real implementation, this would convert the PDF to text
-    // For now, return the first 5KB of the file as a string
+  // Convert file to base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Remove the data URL prefix (e.g., "data:application/pdf;base64,")
+        const base64String = result.split(',')[1];
+        resolve(base64String);
+      };
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  // Extract text from PDF using a basic approach
+  const extractTextFromPDF = async (file: File): Promise<string> => {
+    // In a real implementation, we would use a PDF parsing library
+    // For now, we'll use a simplified approach for demo purposes
+    const arrayBuffer = await file.arrayBuffer();
     const decoder = new TextDecoder('utf-8');
-    const text = decoder.decode(arrayBuffer.slice(0, 5000));
+    let text = decoder.decode(arrayBuffer.slice(0, 5000));
+    
+    // Clean up binary data for better readability
+    text = text.replace(/[^\x20-\x7E\r\n]/g, ' ').trim();
     
     // Simulate processing time
-    await new Promise(r => setTimeout(r, 1500));
+    await new Promise(r => setTimeout(r, 500)); // Faster processing
     
     return text;
   };

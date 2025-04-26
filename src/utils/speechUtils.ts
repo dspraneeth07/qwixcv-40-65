@@ -1,19 +1,39 @@
 
 // Speech synthesis utility functions
 
+// Initialize speech synthesis with caching
+let _speechSynthesis: SpeechSynthesis | null = null;
+let _voices: SpeechSynthesisVoice[] = [];
+
 // Initialize speech synthesis
-export const initSpeechSynthesis = () => {
+export const initSpeechSynthesis = (): SpeechSynthesis | null => {
+  if (_speechSynthesis) return _speechSynthesis;
+  
   if (!window.speechSynthesis) {
     console.error("Speech synthesis not supported in this browser");
     return null;
   }
-  return window.speechSynthesis;
+  
+  _speechSynthesis = window.speechSynthesis;
+  return _speechSynthesis;
 };
 
-// Get available voices
+// Get available voices with caching
 export const getVoices = (): SpeechSynthesisVoice[] => {
+  if (_voices.length > 0) return _voices;
+  
   if (!window.speechSynthesis) return [];
-  return window.speechSynthesis.getVoices();
+  
+  _voices = window.speechSynthesis.getVoices();
+  
+  // If voices are not available yet, set up an event listener
+  if (_voices.length === 0) {
+    window.speechSynthesis.onvoiceschanged = () => {
+      _voices = window.speechSynthesis.getVoices();
+    };
+  }
+  
+  return _voices;
 };
 
 // Get the best voice for interviews (prefer natural-sounding, professional voices)
@@ -53,50 +73,100 @@ export const getBestInterviewVoice = (): SpeechSynthesisVoice | null => {
   return voices[0];
 };
 
-// Speak text with specified parameters
+// Speak text with specified parameters and better error handling
 export const speakText = (
   text: string, 
   onStart?: () => void, 
   onEnd?: () => void, 
-  voice?: SpeechSynthesisVoice | null
+  voice?: SpeechSynthesisVoice | null,
+  rate: number = 1.0
 ): void => {
   if (!window.speechSynthesis) {
     console.error("Speech synthesis not supported");
+    if (onEnd) onEnd();
     return;
   }
+  
+  // Split long text into chunks if needed for better browser compatibility
+  const maxChunkLength = 150; // Maximum chunk length for reliable speech
+  const chunks = splitTextIntoChunks(text, maxChunkLength);
   
   // Stop any current speech
   window.speechSynthesis.cancel();
   
-  // Create utterance
-  const utterance = new SpeechSynthesisUtterance(text);
+  // Process all chunks sequentially
+  let chunkIndex = 0;
   
-  // Set voice
-  if (voice) {
-    utterance.voice = voice;
-  } else {
-    const bestVoice = getBestInterviewVoice();
-    if (bestVoice) utterance.voice = bestVoice;
-  }
-  
-  // Configure properties for natural speech
-  utterance.rate = 1.0;  // Normal speed
-  utterance.pitch = 1.0; // Normal pitch
-  utterance.volume = 1.0; // Full volume
-  
-  // Set callbacks
-  if (onStart) utterance.onstart = onStart;
-  if (onEnd) utterance.onend = onEnd;
-  
-  // Handle errors
-  utterance.onerror = (event) => {
-    console.error("Speech synthesis error:", event.error);
-    if (onEnd) onEnd();
+  const speakNextChunk = () => {
+    if (chunkIndex >= chunks.length) {
+      if (onEnd) onEnd();
+      return;
+    }
+    
+    // Create utterance for current chunk
+    const utterance = new SpeechSynthesisUtterance(chunks[chunkIndex]);
+    
+    // Set voice
+    if (voice) {
+      utterance.voice = voice;
+    } else {
+      const bestVoice = getBestInterviewVoice();
+      if (bestVoice) utterance.voice = bestVoice;
+    }
+    
+    // Configure properties for natural speech
+    utterance.rate = rate;  // Speed
+    utterance.pitch = 1.0;  // Normal pitch
+    utterance.volume = 1.0; // Full volume
+    
+    // Set callbacks
+    if (chunkIndex === 0 && onStart) utterance.onstart = onStart;
+    
+    // Move to next chunk when done
+    utterance.onend = () => {
+      chunkIndex++;
+      speakNextChunk();
+    };
+    
+    // Handle errors
+    utterance.onerror = (event) => {
+      console.error("Speech synthesis error:", event.error);
+      chunkIndex++;
+      speakNextChunk();
+    };
+    
+    // Start speaking the chunk
+    window.speechSynthesis.speak(utterance);
   };
   
-  // Start speaking
-  window.speechSynthesis.speak(utterance);
+  // Start the first chunk
+  speakNextChunk();
 };
+
+// Split text into chunks at sentence boundaries for better speech synthesis
+function splitTextIntoChunks(text: string, maxChunkLength: number): string[] {
+  // First, split by natural sentence boundaries
+  const sentenceBreaks = text.split(/(?<=[.!?])\s+/);
+  const chunks: string[] = [];
+  let currentChunk = '';
+  
+  for (const sentence of sentenceBreaks) {
+    // If adding this sentence would exceed the max length, start a new chunk
+    if (currentChunk.length + sentence.length > maxChunkLength && currentChunk.length > 0) {
+      chunks.push(currentChunk);
+      currentChunk = sentence;
+    } else {
+      currentChunk += (currentChunk.length > 0 ? ' ' : '') + sentence;
+    }
+  }
+  
+  // Add the last chunk if it has content
+  if (currentChunk.length > 0) {
+    chunks.push(currentChunk);
+  }
+  
+  return chunks;
+}
 
 // Stop any ongoing speech
 export const stopSpeaking = (): void => {
@@ -105,10 +175,13 @@ export const stopSpeaking = (): void => {
   }
 };
 
-// Speech recognition utility functions
+// Initialize speech recognition with caching
+let _speechRecognition: SpeechRecognition | null = null;
 
 // Initialize speech recognition
 export const initSpeechRecognition = () => {
+  if (_speechRecognition) return _speechRecognition;
+  
   if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
     console.error("Speech recognition not supported in this browser");
     return null;
@@ -123,10 +196,11 @@ export const initSpeechRecognition = () => {
   recognition.interimResults = true;
   recognition.lang = 'en-US';
   
+  _speechRecognition = recognition;
   return recognition;
 };
 
-// Analyze speech for tone, pace, and filler words
+// Analyze speech for tone, pace, and filler words with enhanced algorithms
 export const analyzeSpeech = (text: string): {
   paceScore: number;
   toneScore: number;
@@ -134,8 +208,17 @@ export const analyzeSpeech = (text: string): {
   fillerWords: string[];
   suggestions: string[];
 } => {
-  const fillerWords = ['um', 'uh', 'like', 'you know', 'actually', 'basically', 'literally', 'sort of', 'kind of'];
-  const lowConfidenceWords = ['maybe', 'perhaps', 'i think', 'i guess', 'not sure', 'if possible'];
+  // Extended filler words list
+  const fillerWords = [
+    'um', 'uh', 'like', 'you know', 'actually', 'basically', 'literally', 
+    'sort of', 'kind of', 'so', 'well', 'i mean', 'right', 'okay', 'uhm'
+  ];
+  
+  const lowConfidenceWords = [
+    'maybe', 'perhaps', 'i think', 'i guess', 'not sure', 'if possible',
+    'might be', 'could be', 'probably', 'i feel like', 'i\'m not an expert',
+    'i don\'t know'
+  ];
   
   // Count filler words
   const fillerWordMatches: string[] = [];
@@ -156,7 +239,8 @@ export const analyzeSpeech = (text: string): {
     const regex = new RegExp('\\b' + word + '\\b', 'gi');
     const matches = text.match(regex);
     if (matches) {
-      confidenceScore -= matches.length * 5; // Reduce 5 points per low confidence phrase
+      // More severe penalty for more occurrences
+      confidenceScore -= Math.min(40, matches.length * 5); // Cap the maximum deduction
     }
   });
   
@@ -171,6 +255,23 @@ export const analyzeSpeech = (text: string): {
     paceScore = Math.max(50, 100 - (wordsPerSentence - 25) * 5);
   } else if (wordsPerSentence < 5) {
     paceScore = Math.max(50, 100 - (5 - wordsPerSentence) * 10);
+  }
+  
+  // Check for repeated words (could indicate nervousness)
+  const wordFrequency: Record<string, number> = {};
+  const words = text.toLowerCase().match(/\b[a-z']+\b/g) || [];
+  words.forEach(word => {
+    if (word.length > 3) { // Only count meaningful words
+      wordFrequency[word] = (wordFrequency[word] || 0) + 1;
+    }
+  });
+  
+  const repeatedWords = Object.entries(wordFrequency)
+    .filter(([word, count]) => count > 3 && !fillerWords.includes(word))
+    .map(([word, count]) => `"${word}" (${count}x)`);
+  
+  if (repeatedWords.length > 2) {
+    confidenceScore -= Math.min(15, repeatedWords.length * 3);
   }
   
   // Generate suggestions
@@ -190,6 +291,10 @@ export const analyzeSpeech = (text: string): {
     suggestions.push("Consider providing more detailed answers with fuller sentences.");
   }
   
+  if (repeatedWords.length > 2) {
+    suggestions.push(`Watch for repetition of words like ${repeatedWords.slice(0, 2).join(', ')}.`);
+  }
+  
   return {
     paceScore: Math.min(100, Math.max(0, paceScore)),
     toneScore: Math.min(100, Math.max(0, confidenceScore)),
@@ -198,5 +303,3 @@ export const analyzeSpeech = (text: string): {
     suggestions
   };
 };
-
-// Types for TypeScript - moved to global.d.ts
