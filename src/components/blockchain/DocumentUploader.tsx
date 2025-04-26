@@ -127,21 +127,23 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
       
       const progressInterval = simulateUploadProgress();
       
-      const ipfsResult = await uploadDocumentToIPFS({
-        file: file,
-        fileName: documentName,
-        description: documentDesc,
-        ownerAddress: account,
-        uniqueId: uniqueId
-      });
+      const ipfsResult = await uploadDocumentToIPFS(
+        {
+          file: file,
+          fileName: documentName,
+          description: documentDesc,
+          ownerAddress: account
+        }, 
+        uniqueId
+      );
       
-      const mintResult = await mintDocumentAsNFT(ipfsResult.ipfsUri, ipfsResult.uniqueId);
+      const mintResult = await mintDocumentAsNFT(ipfsResult.ipfsUri, uniqueId);
       
       const documentsString = localStorage.getItem('qwix_blockchain_documents');
       const documents = documentsString ? JSON.parse(documentsString) : [];
       
       const newDocument = {
-        uniqueId: ipfsResult.uniqueId,
+        uniqueId: uniqueId,
         fileName: documentName,
         description: documentDesc,
         fileType: file.type,
@@ -162,7 +164,7 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
       
       toast({
         title: "Document secured with unique identity",
-        description: `Your document "${documentName}" has been secured on the blockchain with ID: ${ipfsResult.uniqueId}`,
+        description: `Your document "${documentName}" has been secured on the blockchain with ID: ${uniqueId}`,
       });
       
       setTimeout(() => {
