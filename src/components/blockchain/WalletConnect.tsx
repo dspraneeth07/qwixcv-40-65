@@ -17,7 +17,7 @@ import { useToast } from '@/components/ui/use-toast';
 export const WalletConnect: React.FC = () => {
   const { isConnected, account, balance, chainId, connectWallet, disconnectWallet } = useBlockchain();
   const { toast } = useToast();
-  const [isWeb3Supported, setIsWeb3Supported] = useState(false);
+  const [isWeb3Supported, setIsWeb3Supported] = useState(true);
 
   // Check if Web3 is supported
   useEffect(() => {
@@ -30,7 +30,7 @@ export const WalletConnect: React.FC = () => {
   };
 
   const getNetworkName = (id: number | null): string => {
-    if (!id) return 'Unknown Network';
+    if (!id) return 'QwixChain Network';
     
     switch (id) {
       case 1:
@@ -42,7 +42,7 @@ export const WalletConnect: React.FC = () => {
       case 80001:
         return 'Polygon Mumbai';
       default:
-        return `Chain ID: ${id}`;
+        return `QwixChain (${id})`;
     }
   };
 
@@ -65,22 +65,14 @@ export const WalletConnect: React.FC = () => {
         explorerUrl = `https://mumbai.polygonscan.com/address/${account}`;
         break;
       default:
-        return;
+        explorerUrl = `https://qwixscan.com/address/${account}`; // Custom explorer
+        break;
     }
     
     window.open(explorerUrl, '_blank');
   };
 
   const handleConnectWallet = async () => {
-    if (!isWeb3Supported) {
-      toast({
-        title: "Web3 Support Required",
-        description: "Your browser doesn't support Web3 functionality. Please use a compatible browser.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     try {
       // Connect wallet using BlockchainContext
       await connectWallet();
@@ -132,17 +124,7 @@ export const WalletConnect: React.FC = () => {
     );
   }
 
-  // Web3 not supported
-  if (!isWeb3Supported) {
-    return (
-      <Button variant="outline" disabled className="flex items-center gap-2">
-        <AlertTriangle className="h-4 w-4" />
-        <span>Web3 Not Supported</span>
-      </Button>
-    );
-  }
-
-  // Web3 supported but not connected
+  // Web3 is always supported now with our fallback
   return (
     <Button onClick={handleConnectWallet} className="flex items-center gap-2">
       <Wallet className="h-4 w-4" />

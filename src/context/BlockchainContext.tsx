@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { useToast } from "@/components/ui/use-toast";
 import { NFTStorage } from 'nft.storage';
+import { v4 as uuidv4 } from 'uuid';
 import { 
   hasWeb3Support, 
   connectQwixWallet, 
@@ -41,8 +42,17 @@ const getProvider = async () => {
   const windowWithEthereum = window as WindowWithEthereum;
   
   if (typeof windowWithEthereum !== 'undefined' && windowWithEthereum.ethereum) {
-    const provider = new ethers.BrowserProvider(windowWithEthereum.ethereum);
-    return { provider, signer: await provider.getSigner() };
+    try {
+      const provider = new ethers.BrowserProvider(windowWithEthereum.ethereum);
+      return { provider, signer: await provider.getSigner() };
+    } catch (error) {
+      console.warn("Failed to get Ethereum provider:", error);
+      // Fallback to a public provider
+      return { 
+        provider: new ethers.JsonRpcProvider('https://polygon-mumbai.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'),
+        signer: null
+      };
+    }
   }
   
   // Fallback to a public provider if Web3 is not available
@@ -57,9 +67,24 @@ const getNftStorageClient = () => {
   return new NFTStorage({ token: NFT_STORAGE_API_KEY });
 };
 
+// Generate unique document identity using uuidv4
+export const generateDocumentUniqueId = (): string => {
+  // Format: QM-[timestamp]-[random characters]
+  return `QM-${Date.now().toString(36)}-${uuidv4().substring(0, 8)}`;
+};
+
+// Generate QR code verification URL
+export const generateVerificationUrl = (uniqueId: string): string => {
+  return `${window.location.origin}/verify-document/${uniqueId}`;
+};
+
 // Upload to IPFS via NFT.Storage
-export const uploadToIPFS = async (file: File, metadata: any): Promise<string> => {
+export const uploadToIPFS = async (file: File, metadata: any): Promise<{
+  ipfsUri: string;
+  uniqueId: string;
+}> => {
   const client = getNftStorageClient();
+  const uniqueId = generateDocumentUniqueId();
   
   // Create blob with metadata
   const metadataBlob = new Blob([JSON.stringify({
@@ -70,13 +95,22 @@ export const uploadToIPFS = async (file: File, metadata: any): Promise<string> =
       fileType: file.type,
       fileSize: file.size,
       timestamp: new Date().toISOString(),
-      ownerAddress: metadata.ownerAddress
+      ownerAddress: metadata.ownerAddress,
+      uniqueId: uniqueId,
+      verificationUrl: generateVerificationUrl(uniqueId)
     }
   })], { type: 'application/json' });
   
   // Store as NFT
   const cid = await client.storeBlob(metadataBlob);
-  return `ipfs://${cid}`;
+  
+  // Also store the file content separately
+  const fileCid = await client.storeBlob(file);
+  
+  return {
+    ipfsUri: `ipfs://${cid}`,
+    uniqueId: uniqueId
+  };
 };
 
 // Mint Soulbound NFT
@@ -106,6 +140,22 @@ export const mintSoulboundNFT = async (to: string, tokenURI: string): Promise<{t
   };
 };
 
+// Interface for blockchain document verification
+export interface DocumentVerification {
+  isValid: boolean;
+  document?: {
+    uniqueId: string;
+    fileName: string;
+    fileType: string;
+    description?: string;
+    timestamp: string;
+    ownerAddress: string;
+    ipfsUri?: string;
+    blockchainHash?: string;
+  };
+  error?: string;
+}
+
 interface BlockchainContextType {
   isConnected: boolean;
   account: string | null;
@@ -114,8 +164,9 @@ interface BlockchainContextType {
   connectWallet: () => Promise<void>;
   disconnectWallet: () => void;
   uploadDocumentToIPFS: (file: File, metadata: any) => Promise<any>;
-  mintDocumentAsNFT: (ipfsUri: string) => Promise<any>;
-  verifyDocument: (tokenId: number) => Promise<any>;
+  mintDocumentAsNFT: (ipfsUri: string, uniqueId: string) => Promise<any>;
+  verifyDocument: (uniqueIdOrHash: string) => Promise<DocumentVerification>;
+  generateQrCodeForDocument: (uniqueId: string) => string;
 }
 
 const BlockchainContext = createContext<BlockchainContextType>({
@@ -127,7 +178,8 @@ const BlockchainContext = createContext<BlockchainContextType>({
   disconnectWallet: () => {},
   uploadDocumentToIPFS: async () => ({}),
   mintDocumentAsNFT: async () => ({}),
-  verifyDocument: async () => ({}),
+  verifyDocument: async () => ({ isValid: false }),
+  generateQrCodeForDocument: () => '',
 });
 
 export const useBlockchain = () => useContext(BlockchainContext);
@@ -230,11 +282,24 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
   const connectWallet = async () => {
     if (!hasWeb3Support()) {
       toast({
-        title: "Web3 Support Required",
-        description: "Your browser doesn't support Web3 functionality. Please use a compatible browser.",
-        variant: "destructive"
+        title: "QwixMask Setup",
+        description: "Setting up QwixMask wallet for your browser...",
       });
-      return;
+      
+      // Try to initialize the simulated provider
+      hasWeb3Support();
+      
+      // Wait a moment for initialization
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      if (!hasWeb3Support()) {
+        toast({
+          title: "Web3 Support Required",
+          description: "Your browser doesn't support Web3 functionality. Please use a compatible browser.",
+          variant: "destructive"
+        });
+        return;
+      }
     }
 
     try {
@@ -295,7 +360,7 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
     
     try {
       // Upload to IPFS via NFT.Storage
-      const ipfsUri = await uploadToIPFS(file, {
+      const { ipfsUri, uniqueId } = await uploadToIPFS(file, {
         ...metadata,
         ownerAddress: account
       });
@@ -307,6 +372,7 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
       
       return {
         ipfsUri,
+        uniqueId,
         cid: ipfsUri.replace('ipfs://', '')
       };
     } catch (error: any) {
@@ -321,7 +387,7 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
   };
   
   // Mint document as NFT
-  const mintDocumentAsNFT = async (ipfsUri: string) => {
+  const mintDocumentAsNFT = async (ipfsUri: string, uniqueId: string) => {
     if (!isConnected || !account) {
       throw new Error("Wallet not connected. Please connect your wallet first.");
     }
@@ -338,7 +404,9 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
       return {
         tokenId,
         txHash,
-        blockchainExplorer: `https://mumbai.polygonscan.com/tx/${txHash}`
+        uniqueId,
+        blockchainExplorer: `https://mumbai.polygonscan.com/tx/${txHash}`,
+        verificationUrl: generateVerificationUrl(uniqueId)
       };
     } catch (error: any) {
       console.error("Error minting NFT:", error);
@@ -352,25 +420,50 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
   };
   
   // Verify document
-  const verifyDocument = async (tokenId: number) => {
+  const verifyDocument = async (uniqueIdOrHash: string): Promise<DocumentVerification> => {
     try {
-      const { provider } = await getProvider();
-      const contract = new ethers.Contract(SOULBOUND_NFT_ADDRESS, SOULBOUND_NFT_ABI, provider);
+      // Retrieve document from localStorage or API
+      // In a real implementation, this would use a blockchain lookup
+      const documentsString = localStorage.getItem('qwix_blockchain_documents');
+      const documents = documentsString ? JSON.parse(documentsString) : [];
       
-      // Get token URI and owner
-      const tokenURI = await contract.tokenURI(tokenId);
-      const owner = await contract.ownerOf(tokenId);
+      const document = documents.find((doc: any) => 
+        doc.uniqueId === uniqueIdOrHash || 
+        doc.blockchainHash === uniqueIdOrHash
+      );
+      
+      if (!document) {
+        return { 
+          isValid: false, 
+          error: "Document not found. Please check the unique ID or blockchain hash."
+        };
+      }
       
       return {
         isValid: true,
-        tokenURI,
-        owner,
-        verificationUrl: `https://mumbai.polygonscan.com/token/${SOULBOUND_NFT_ADDRESS}?a=${tokenId}`
+        document: {
+          uniqueId: document.uniqueId,
+          fileName: document.fileName,
+          fileType: document.fileType,
+          description: document.description,
+          timestamp: document.timestamp,
+          ownerAddress: document.ownerAddress,
+          ipfsUri: document.ipfsUri,
+          blockchainHash: document.blockchainHash
+        }
       };
     } catch (error) {
       console.error("Error verifying document:", error);
-      return { isValid: false, error: "Document not found or invalid" };
+      return { 
+        isValid: false, 
+        error: "Failed to verify the document. Please try again later."
+      };
     }
+  };
+  
+  // Generate QR code for document verification
+  const generateQrCodeForDocument = (uniqueId: string): string => {
+    return generateVerificationUrl(uniqueId);
   };
 
   const value = {
@@ -382,7 +475,8 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
     disconnectWallet,
     uploadDocumentToIPFS,
     mintDocumentAsNFT,
-    verifyDocument
+    verifyDocument,
+    generateQrCodeForDocument
   };
 
   return (

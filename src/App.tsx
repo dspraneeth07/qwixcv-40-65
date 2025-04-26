@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
 import { BlockchainProvider } from "./context/BlockchainContext";
@@ -26,17 +25,15 @@ import Unauthorized from "./pages/Auth/Unauthorized";
 import BlockchainVault from "./pages/BlockchainVault";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useEffect } from "react";
+import VerifyDocument from "./pages/VerifyDocument";
 
 function App() {
-  // Load fonts
   useEffect(() => {
-    // Add Google Fonts to the document head
     const fontLink = document.createElement('link');
     fontLink.rel = 'stylesheet';
     fontLink.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap';
     document.head.appendChild(fontLink);
 
-    // Add SF Pro Display (or a similar font that mimics it)
     const sfProLink = document.createElement('link');
     sfProLink.rel = 'stylesheet';
     sfProLink.href = 'https://fonts.cdnfonts.com/css/sf-pro-display';
@@ -54,7 +51,6 @@ function App() {
         <BrowserRouter>
           <AuthProvider>
             <Routes>
-              {/* Public Routes */}
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
@@ -63,8 +59,8 @@ function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/verify-cert/:certHash?" element={<CertificateVerification />} />
               <Route path="/unauthorized" element={<Unauthorized />} />
+              <Route path="/verify-document/:uniqueId" element={<VerifyDocument />} />
 
-              {/* Protected Routes - Student/Freelancer/Job Seeker */}
               <Route path="/builder" element={<ProtectedRoute allowedRoles={['student']}><ResumeBuilder /></ProtectedRoute>} />
               <Route path="/resume-preview" element={<ProtectedRoute allowedRoles={['student']}><ResumePreview /></ProtectedRoute>} />
               <Route path="/share-to-company" element={<ProtectedRoute allowedRoles={['student']}><ShareToCompany /></ProtectedRoute>} />
@@ -77,7 +73,6 @@ function App() {
               <Route path="/certification-center" element={<ProtectedRoute><CertificationCenter /></ProtectedRoute>} />
               <Route path="/certification/:testId" element={<ProtectedRoute><CertificationTest /></ProtectedRoute>} />
               
-              {/* Not Found */}
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />

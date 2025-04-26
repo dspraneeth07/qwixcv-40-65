@@ -12,15 +12,7 @@ export const ConnectWalletPrompt: React.FC = () => {
   const { toast } = useToast();
   
   const handleConnect = async () => {
-    if (!hasWeb3Support()) {
-      toast({
-        title: "Web3 not supported",
-        description: "Your browser doesn't support Web3 functionality. Please use a compatible browser.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
+    // The Web3 support check is now handled in the connectWallet function
     connectWallet();
   };
   

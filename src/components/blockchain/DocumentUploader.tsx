@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Upload, FileText, FileImage, X, Loader2 } from 'lucide-react';
+import { Upload, FileText, QrCode, Loader2, Fingerprint } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Progress } from '@/components/ui/progress';
-import { uploadDocumentToBlockchain } from '@/utils/blockchainDocuments';
 import { useBlockchain } from '@/context/BlockchainContext';
 import DocumentUploadPreview from './DocumentUploadPreview';
+import { v4 as uuidv4 } from 'uuid';
 
 interface DocumentUploaderProps {
   onUploadComplete: () => void;
@@ -22,9 +22,10 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uniqueId, setUniqueId] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const { account } = useBlockchain();
+  const { account, uploadDocumentToIPFS, mintDocumentAsNFT } = useBlockchain();
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -70,12 +71,17 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
         const filename = selectedFile.name.split('.').slice(0, -1).join('.');
         setDocumentName(filename);
       }
+      
+      // Generate a unique ID for the document
+      const newUniqueId = `QM-${Date.now().toString(36)}-${uuidv4().substring(0, 8)}`;
+      setUniqueId(newUniqueId);
     }
   };
   
   const clearFile = () => {
     setFile(null);
     setFilePreview(null);
+    setUniqueId('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -114,30 +120,62 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
       return;
     }
     
+    if (!account) {
+      toast({
+        title: "Wallet not connected",
+        description: "Please connect your QwixMask wallet first",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     try {
       setIsUploading(true);
       
       // Simulate upload progress
       const progressInterval = simulateUploadProgress();
       
-      // Simulate blockchain upload with a delay
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Upload to blockchain with the correct parameters
-      const result = await uploadDocumentToBlockchain({
+      // First step: Upload to IPFS
+      const { ipfsUri, uniqueId: docUniqueId } = await uploadDocumentToIPFS({
         file: file,
         fileName: documentName,
         description: documentDesc,
-        ownerAddress: account || '',
+        ownerAddress: account,
+        uniqueId: uniqueId
       });
+      
+      // Second step: Mint as NFT on blockchain
+      const mintResult = await mintDocumentAsNFT(ipfsUri, docUniqueId);
+      
+      // Store the document in localStorage for demo purposes
+      // In a real application, this would be stored on the blockchain
+      const documentsString = localStorage.getItem('qwix_blockchain_documents');
+      const documents = documentsString ? JSON.parse(documentsString) : [];
+      
+      const newDocument = {
+        uniqueId: docUniqueId,
+        fileName: documentName,
+        description: documentDesc,
+        fileType: file.type,
+        fileSize: file.size,
+        timestamp: new Date().toISOString(),
+        ownerAddress: account,
+        blockchainHash: mintResult.txHash,
+        ipfsUri: ipfsUri,
+        tokenId: mintResult.tokenId,
+        verificationUrl: mintResult.verificationUrl
+      };
+      
+      documents.push(newDocument);
+      localStorage.setItem('qwix_blockchain_documents', JSON.stringify(documents));
       
       clearInterval(progressInterval);
       setUploadProgress(100);
       
       // Show success toast
       toast({
-        title: "Document secured on-chain successfully 🚀",
-        description: `Document "${documentName}" has been uploaded and secured on the blockchain`,
+        title: "Document secured with unique identity",
+        description: `Your document "${documentName}" has been secured on the blockchain with ID: ${docUniqueId}`,
       });
       
       // Reset form
@@ -171,6 +209,19 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
         isUploading={isUploading}
         uploadProgress={uploadProgress}
       />
+      
+      {uniqueId && (
+        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+          <div className="flex items-center mb-2">
+            <Fingerprint className="h-5 w-5 text-blue-600 mr-2" />
+            <h3 className="font-medium">Unique Document Identity</h3>
+          </div>
+          <p className="text-sm text-blue-700 dark:text-blue-300 font-mono mb-2">{uniqueId}</p>
+          <p className="text-xs text-blue-600 dark:text-blue-400">
+            This unique ID will be permanently linked to your document on the blockchain and can be used for verification.
+          </p>
+        </div>
+      )}
       
       <div className="space-y-4">
         <div>
@@ -234,12 +285,12 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
           {isUploading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Securing on blockchain...
+              Securing with blockchain identity...
             </>
           ) : (
             <>
-              <Upload className="mr-2 h-4 w-4" />
-              Upload to Blockchain
+              <QrCode className="mr-2 h-4 w-4" />
+              Secure with Blockchain Identity
             </>
           )}
         </Button>
@@ -247,3 +298,5 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
     </div>
   );
 };
+
+export default DocumentUploader;
