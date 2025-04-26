@@ -1,5 +1,5 @@
 
-import { BlockchainDocument } from "@/context/BlockchainContext";
+import { BlockchainDocument } from "@/types/blockchain";
 
 // Helper function to get user documents from local storage with userId filter
 export const getUserDocuments = (userId?: string): BlockchainDocument[] => {

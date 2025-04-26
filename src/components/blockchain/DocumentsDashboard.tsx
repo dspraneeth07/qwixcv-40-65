@@ -6,20 +6,7 @@ import { QrCode, FileText, Download, Share2, Fingerprint, Shield, RefreshCw, Ext
 import { Badge } from '@/components/ui/badge';
 import QRCode from 'qrcode.react';
 import DocumentVerifier from './DocumentVerifier';
-
-interface BlockchainDocument {
-  uniqueId: string;
-  fileName: string;
-  description?: string;
-  fileType: string;
-  fileSize: number;
-  timestamp: string;
-  blockchainHash: string;
-  ownerAddress: string;
-  ipfsUri?: string;
-  tokenId?: number;
-  verificationUrl?: string;
-}
+import { BlockchainDocument } from '@/types/blockchain';
 
 const DocumentsDashboard: React.FC = () => {
   const [documents, setDocuments] = useState<BlockchainDocument[]>([]);
@@ -49,7 +36,6 @@ const DocumentsDashboard: React.FC = () => {
   const handleDocumentClick = (doc: BlockchainDocument) => {
     setSelectedDocument(doc);
     
-    // Generate QR code URL for the document
     const verificationUrl = doc.verificationUrl || `${window.location.origin}/verify-document/${doc.uniqueId}`;
     setQrCodeUrl(verificationUrl);
     
@@ -84,7 +70,6 @@ const DocumentsDashboard: React.FC = () => {
   };
   
   const handleDownload = (doc: BlockchainDocument) => {
-    // In a real implementation, this would download from IPFS
     alert(`Downloading ${doc.fileName} from IPFS: ${doc.ipfsUri}`);
   };
   
@@ -98,7 +83,6 @@ const DocumentsDashboard: React.FC = () => {
         url: verificationUrl,
       });
     } else {
-      // Fallback to copying to clipboard
       navigator.clipboard.writeText(verificationUrl);
       alert('Verification link copied to clipboard');
     }
