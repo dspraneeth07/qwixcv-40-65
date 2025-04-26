@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { uploadToIPFS, getFromIPFS, getIPFSGatewayLink } from '@/utils/ipfsService';
 import { hasWeb3Support } from '@/utils/qwixMaskWallet';
@@ -63,22 +62,18 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Initialize web3 on component mount
   useEffect(() => {
     const checkConnection = async () => {
       if (hasWeb3Support()) {
         try {
-          // Check if already connected
           const accounts = await window.ethereum.request({ method: 'eth_accounts' });
           if (accounts.length > 0) {
             setAccount(accounts[0]);
             setIsConnected(true);
             
-            // Get chain ID
             const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
             setChainId(parseInt(chainIdHex, 16));
             
-            // Get balance
             await updateBalance(accounts[0]);
           }
         } catch (error) {
@@ -91,7 +86,6 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
     
     checkConnection();
     
-    // Set up event listeners for account changes if web3 is available
     if (window.ethereum) {
       const handleAccountsChanged = (accounts: string[]) => {
         if (accounts.length === 0) {
@@ -106,7 +100,6 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
       
       const handleChainChanged = (chainIdHex: string) => {
         setChainId(parseInt(chainIdHex, 16));
-        // Refresh page on chain change as recommended by MetaMask
         window.location.reload();
       };
       
@@ -119,7 +112,6 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
       window.ethereum.on('chainChanged', handleChainChanged);
       window.ethereum.on('disconnect', handleDisconnect);
       
-      // Cleanup
       return () => {
         window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
         window.ethereum.removeListener('chainChanged', handleChainChanged);
@@ -136,7 +128,6 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
           params: [address, 'latest']
         });
         
-        // Convert wei to ETH
         const balanceInWei = parseInt(balanceHex, 16);
         const balanceInEth = balanceInWei / 1e18;
         setBalance(balanceInEth.toFixed(4));
@@ -147,7 +138,7 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const connectWallet = async () => {
+  const connectWallet = async (): Promise<void> => {
     if (hasWeb3Support()) {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -156,11 +147,9 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
           setAccount(accounts[0]);
           setIsConnected(true);
           
-          // Get chain ID
           const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
           setChainId(parseInt(chainIdHex, 16));
           
-          // Get balance
           await updateBalance(accounts[0]);
           
           toast({
@@ -168,7 +157,7 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
             description: "QwixMask wallet connected successfully",
           });
           
-          return true;
+          return;
         }
       } catch (error: any) {
         console.error("Error connecting wallet:", error);
@@ -182,27 +171,26 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
     } else {
-      // Generate a deterministic address based on user data if available
       let mockAccount: string;
       
       if (user) {
-        // Create a deterministic wallet address based on user ID
         const userIdHash = sha256(user.id);
         mockAccount = `0x${userIdHash.substring(0, 40)}`;
       } else {
-        // Fallback to random address if no user
         mockAccount = `0x${Array(40).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
       }
       
       setAccount(mockAccount);
       setIsConnected(true);
-      setChainId(80001); // Mumbai testnet
+      setChainId(80001);
       setBalance('1.2345');
       
       toast({
         title: "Wallet Connected",
         description: "QwixMask wallet connected successfully",
       });
+      
+      return;
     }
   };
 
@@ -220,7 +208,6 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
 
   const uploadDocumentToIPFS = async (file: File, metadata: any) => {
     try {
-      // Add user data to metadata if available
       if (user) {
         metadata = {
           ...metadata,
@@ -230,7 +217,6 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
         };
       }
       
-      // Use IPFS service for uploading
       const result = await uploadToIPFS(file, metadata);
       
       if (!result.success) {
@@ -261,10 +247,8 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
 
   const mintDocumentAsNFT = async (ipfsUri: string, uniqueId: string) => {
     try {
-      // Simulate blockchain transaction with a delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Generate transaction hash based on uniqueId and timestamp
       const timestamp = Date.now().toString();
       const txHash = sha256(`${uniqueId}${timestamp}${ipfsUri}`);
       const tokenId = parseInt(sha256(`${uniqueId}${timestamp}`).substring(0, 6), 16);
@@ -296,10 +280,8 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
 
   const verifyDocument = async (uniqueId: string): Promise<DocumentVerification> => {
     try {
-      // Simulate verification delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Get stored documents from local storage
       const documentsString = localStorage.getItem('qwix_blockchain_documents');
       if (!documentsString) {
         return {
@@ -336,8 +318,6 @@ export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const generateQrCodeForDocument = async (document: BlockchainDocument): Promise<string> => {
-    // For a real implementation, this might involve IPFS or other storage
-    // Here we just return a verification URL
     return `${window.location.origin}/verify-document/${document.uniqueId}`;
   };
   
