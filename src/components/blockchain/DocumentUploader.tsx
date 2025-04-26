@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -128,14 +129,15 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
       
       const progressInterval = simulateUploadProgress();
       
-      const uploadParams: DocumentUploadParams = {
-        file,
+      // Create metadata object instead of DocumentUploadParams
+      const metadata = {
         fileName: documentName,
         description: documentDesc,
         ownerAddress: account
       };
       
-      const ipfsResult = await uploadDocumentToIPFS(uploadParams, uniqueId);
+      // Pass file and metadata separately as expected by the function
+      const ipfsResult = await uploadDocumentToIPFS(file, metadata);
       
       const mintResult = await mintDocumentAsNFT(ipfsResult.ipfsUri, uniqueId);
       
