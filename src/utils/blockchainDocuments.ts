@@ -1,239 +1,121 @@
 
-import { v4 as uuidv4 } from 'uuid';
-import { NFTStorage } from 'nft.storage';
-import { BlockchainDocument, DocumentUploadParams } from '@/types/blockchain';
-import { useBlockchain } from '@/context/BlockchainContext';
+import { BlockchainDocument } from "@/context/BlockchainContext";
 
-// NFT.Storage API key for IPFS storage - Updated with new valid API key
-const NFT_STORAGE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweEZENDIyOTRCRjA0RDAzMkVCMzI4MzBGMzRBRmFBOThEQTVCMjU3RTUiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTcxMzI2ODY0MzgxMCwibmFtZSI6IlF3aXhWYXVsdCI6fQ.SR4269YUtO02sNtOhJd2lx9v-Lo4xsXgxf0hufcPy_Y';
-
-// Local storage key for documents
-const DOCUMENTS_STORAGE_KEY = 'qwix_blockchain_documents';
-
-// Get NFT.Storage client with improved error handling
-const getNftStorageClient = () => {
-  try {
-    return new NFTStorage({ token: NFT_STORAGE_API_KEY });
-  } catch (error) {
-    console.error("Error initializing NFT.Storage client:", error);
-    throw new Error("Failed to initialize storage client. Please check API key.");
-  }
-};
-
-// Helper to get documents from localStorage
+// Helper function to get user documents from local storage
 export const getUserDocuments = (): BlockchainDocument[] => {
-  if (typeof window === 'undefined') return [];
-  
   try {
-    const storedDocs = localStorage.getItem(DOCUMENTS_STORAGE_KEY);
-    const docs = storedDocs ? JSON.parse(storedDocs) : [];
-    console.log("Retrieved documents from storage:", docs);
-    return docs;
+    const documentsString = localStorage.getItem('qwix_blockchain_documents');
+    if (!documentsString) {
+      return [];
+    }
+    
+    return JSON.parse(documentsString);
   } catch (error) {
-    console.error("Error retrieving documents:", error);
+    console.error("Error loading documents:", error);
     return [];
   }
 };
 
-// Save documents to localStorage
-const saveDocuments = (documents: BlockchainDocument[]): void => {
-  if (typeof window === 'undefined') return;
-  
+// Helper function to save user documents to local storage
+export const saveUserDocuments = (documents: BlockchainDocument[]): void => {
   try {
-    localStorage.setItem(DOCUMENTS_STORAGE_KEY, JSON.stringify(documents));
-    console.log("Saved documents to storage:", documents);
+    localStorage.setItem('qwix_blockchain_documents', JSON.stringify(documents));
   } catch (error) {
     console.error("Error saving documents:", error);
   }
 };
 
-// Upload document to IPFS with improved error handling
-const uploadToIPFS = async (file: File, metadata: any): Promise<string> => {
-  try {
-    const client = getNftStorageClient();
-    
-    // Create a Blob with metadata
-    const metadataBlob = new Blob([JSON.stringify({
-      name: metadata.fileName,
-      description: metadata.description || '',
-      properties: {
-        fileType: file.type,
-        fileSize: file.size,
+// Helper function to add a new document
+export const addUserDocument = (document: BlockchainDocument): void => {
+  const documents = getUserDocuments();
+  documents.push(document);
+  saveUserDocuments(documents);
+};
+
+// Helper to get documents for a specific owner
+export const getUserDocumentsByOwner = (ownerAddress: string): BlockchainDocument[] => {
+  const documents = getUserDocuments();
+  return documents.filter(doc => doc.ownerAddress === ownerAddress);
+};
+
+// Mock function to generate sample documents if none exist
+export const createSampleDocuments = (ownerAddress: string): void => {
+  const documents = getUserDocuments();
+  
+  // Only create samples if there are no documents
+  if (documents.length === 0) {
+    const sampleDocs: BlockchainDocument[] = [
+      {
+        uniqueId: `QM-${Date.now().toString(36)}-sample1`,
+        fileName: "Resume_2025.pdf",
+        description: "Professional Resume with Blockchain Verification",
+        fileType: "application/pdf",
+        fileSize: 245000,
         timestamp: new Date().toISOString(),
-        ownerAddress: metadata.ownerAddress
+        blockchainHash: "0x7a69c8a47b584e1d78c97e9a773f7e94d09d85e0d1233a82f19d28c954610bb3",
+        ownerAddress,
+        ipfsUri: "ipfs://QmWZabcdef1234567890",
+        tokenId: 12345,
+        verificationUrl: `${window.location.origin}/verify-document/sample1`
+      },
+      {
+        uniqueId: `QM-${Date.now().toString(36)}-sample2`,
+        fileName: "Degree_Certificate.pdf",
+        description: "Bachelor's Degree in Computer Science",
+        fileType: "application/pdf",
+        fileSize: 567000,
+        timestamp: new Date(Date.now() - 86400000 * 30).toISOString(), // 30 days ago
+        blockchainHash: "0x9b75c8a47b584e1d78c97e9a773f7e94d09d85e0d1233a82f19d28c954610cc4",
+        ownerAddress,
+        ipfsUri: "ipfs://QmWZ123456789abcdef",
+        tokenId: 12346,
+        verificationUrl: `${window.location.origin}/verify-document/sample2`
       }
-    })], { type: 'application/json' });
+    ];
     
-    // Store as NFT
-    const cid = await client.storeBlob(metadataBlob);
-    
-    // Also store the file content
-    const fileCid = await client.storeBlob(file);
-    
-    // Return both CIDs
-    return JSON.stringify({
-      metadata: `ipfs://${cid}`,
-      content: `ipfs://${fileCid}`
-    });
-  } catch (error: any) {
-    console.error("Error uploading to IPFS:", error);
-    throw new Error(`IPFS upload failed: ${error.message}`);
+    saveUserDocuments(sampleDocs);
   }
 };
 
-// Upload document to blockchain
-export const uploadDocumentToBlockchain = async (
-  params: DocumentUploadParams
-): Promise<BlockchainDocument> => {
-  // Upload to IPFS
-  const ipfsData = await uploadToIPFS(params.file, {
-    fileName: params.fileName,
-    description: params.description,
-    ownerAddress: params.ownerAddress
-  });
-  
-  const ipfsJson = JSON.parse(ipfsData);
-  const blockchainHash = `0x${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
-  const blockId = Math.floor(Math.random() * 10000000) + 1000000;
-  
-  const now = new Date().toISOString();
-  const newDocument: BlockchainDocument = {
-    id: uuidv4(),
-    fileName: params.fileName,
-    description: params.description || '',
-    fileType: params.file.type,
-    fileSize: params.file.size,
-    timestamp: now,
-    blockchainHash,
-    blockId,
-    blockchainStatus: 'pending',
-    ownerAddress: params.ownerAddress,
-    ipfsUri: ipfsJson.metadata,
-    ipfsContentUri: ipfsJson.content
-  };
-  
-  // In a full implementation, we would mint an NFT here
-  // For now, we just set up the data and save to localStorage
-  
-  const documents = getUserDocuments();
-  documents.push(newDocument);
-  saveDocuments(documents);
-  
-  // Simulate verification after a delay
-  setTimeout(() => {
-    const docs = getUserDocuments();
-    const docIndex = docs.findIndex(d => d.id === newDocument.id);
-    if (docIndex >= 0) {
-      docs[docIndex].blockchainStatus = 'verified';
-      saveDocuments(docs);
+// Helper function for blockchain document verification
+export const generateCertificatePDF = async (elementId: string, fileName: string): Promise<void> => {
+  try {
+    // In a real implementation, this would use html2pdf or jsPDF
+    // For demo purposes, we'll just simulate a download
+    console.log(`Generating PDF for element: ${elementId}, filename: ${fileName}`);
+    
+    // Create a simple "download" that just alerts the user
+    const link = document.createElement('a');
+    link.download = fileName;
+    link.href = 'data:text/plain;charset=utf-8,This is a simulated certificate download';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    return Promise.resolve();
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    return Promise.reject(error);
+  }
+};
+
+// Helper function to share certificates
+export const shareCertificate = async (verificationUrl: string): Promise<boolean> => {
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: 'Blockchain Verified Certificate',
+        text: 'Check out my blockchain verified certificate!',
+        url: verificationUrl
+      });
+      return true;
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      await navigator.clipboard.writeText(verificationUrl);
+      return true;
     }
-  }, 5000);
-  
-  return newDocument;
-};
-
-// Update document metadata
-export const updateDocumentMetadata = async (
-  documentId: string,
-  updates: {
-    fileName?: string;
-    description?: string;
+  } catch (error) {
+    console.error("Error sharing certificate:", error);
+    return false;
   }
-): Promise<BlockchainDocument> => {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  const documents = getUserDocuments();
-  const documentIndex = documents.findIndex(doc => doc.id === documentId);
-  
-  if (documentIndex === -1) {
-    throw new Error(`Document with ID ${documentId} not found`);
-  }
-  
-  // Update document
-  const updatedDocument = {
-    ...documents[documentIndex],
-    ...updates,
-  };
-  
-  documents[documentIndex] = updatedDocument;
-  saveDocuments(documents);
-  
-  return updatedDocument;
-};
-
-// Delete document
-export const deleteDocument = async (documentId: string): Promise<void> => {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  const documents = getUserDocuments();
-  const filteredDocuments = documents.filter(doc => doc.id !== documentId);
-  
-  if (filteredDocuments.length === documents.length) {
-    throw new Error(`Document with ID ${documentId} not found`);
-  }
-  
-  saveDocuments(filteredDocuments);
-};
-
-// Refresh document blockchain status
-export const refreshDocumentStatus = async (documentId: string): Promise<BlockchainDocument> => {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  const documents = getUserDocuments();
-  const documentIndex = documents.findIndex(doc => doc.id === documentId);
-  
-  if (documentIndex === -1) {
-    throw new Error(`Document with ID ${documentId} not found`);
-  }
-  
-  // If document is already verified, keep it verified
-  // If it's pending, there's a high chance it will become verified
-  if (documents[documentIndex].blockchainStatus === 'pending' && Math.random() > 0.2) {
-    documents[documentIndex].blockchainStatus = 'verified';
-  }
-  
-  saveDocuments(documents);
-  
-  return documents[documentIndex];
-};
-
-// Share document
-export const shareDocument = async (documentId: string): Promise<string> => {
-  const documents = getUserDocuments();
-  const document = documents.find(doc => doc.id === documentId);
-  
-  if (!document) {
-    throw new Error(`Document with ID ${documentId} not found`);
-  }
-  
-  // Generate verification URL (in a real app, this would be a hosted verification page)
-  const verificationUrl = `${window.location.origin}/verify-cert/${document.blockchainHash}`;
-  
-  return verificationUrl;
-};
-
-// Verify document by hash
-export const verifyDocumentByHash = async (hash: string): Promise<{
-  isValid: boolean;
-  document?: BlockchainDocument;
-}> => {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  const documents = getUserDocuments();
-  const document = documents.find(doc => doc.blockchainHash === hash);
-  
-  if (!document) {
-    return { isValid: false };
-  }
-  
-  // If this were a full implementation, we would verify on the blockchain here
-  
-  return {
-    isValid: true,
-    document
-  };
 };
