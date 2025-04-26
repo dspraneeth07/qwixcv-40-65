@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -135,8 +134,8 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
       // Simulate upload progress
       const progressInterval = simulateUploadProgress();
       
-      // First step: Upload to IPFS
-      const { ipfsUri, uniqueId: docUniqueId } = await uploadDocumentToIPFS({
+      // Upload to IPFS
+      const { ipfsUri, uniqueId } = await uploadDocumentToIPFS({
         file: file,
         fileName: documentName,
         description: documentDesc,
@@ -145,7 +144,7 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
       });
       
       // Second step: Mint as NFT on blockchain
-      const mintResult = await mintDocumentAsNFT(ipfsUri, docUniqueId);
+      const mintResult = await mintDocumentAsNFT(ipfsUri, uniqueId);
       
       // Store the document in localStorage for demo purposes
       // In a real application, this would be stored on the blockchain
@@ -153,7 +152,7 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
       const documents = documentsString ? JSON.parse(documentsString) : [];
       
       const newDocument = {
-        uniqueId: docUniqueId,
+        uniqueId: uniqueId,
         fileName: documentName,
         description: documentDesc,
         fileType: file.type,
@@ -175,7 +174,7 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
       // Show success toast
       toast({
         title: "Document secured with unique identity",
-        description: `Your document "${documentName}" has been secured on the blockchain with ID: ${docUniqueId}`,
+        description: `Your document "${documentName}" has been secured on the blockchain with ID: ${uniqueId}`,
       });
       
       // Reset form

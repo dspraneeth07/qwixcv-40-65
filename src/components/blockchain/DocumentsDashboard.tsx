@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useBlockchain } from '@/context/BlockchainContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { QrCode, FileText, Download, Share2, Fingerprint, Shield, RefreshCw } from 'lucide-react';
+import { QrCode, FileText, Download, Share2, Fingerprint, Shield, RefreshCw, ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import QRCode from 'qrcode.react';
 import DocumentVerifier from './DocumentVerifier';

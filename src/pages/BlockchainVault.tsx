@@ -4,7 +4,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { useBlockchain } from '@/context/BlockchainContext';
 import { VaultRoom } from '@/components/blockchain/VaultRoom';
 import { DocumentUploader } from '@/components/blockchain/DocumentUploader';
-import { DocumentsDashboard } from '@/components/blockchain/DocumentsDashboard';
+import DocumentsDashboard from '@/components/blockchain/DocumentsDashboard';
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
