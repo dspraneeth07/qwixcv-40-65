@@ -30,7 +30,6 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       
-      // Check file type
       const validTypes = ['application/pdf', 'image/png', 'image/jpeg'];
       if (!validTypes.includes(selectedFile.type)) {
         toast({
@@ -41,7 +40,6 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
         return;
       }
       
-      // Check file size (max 5MB)
       if (selectedFile.size > 5 * 1024 * 1024) {
         toast({
           title: "File too large",
@@ -53,7 +51,6 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
       
       setFile(selectedFile);
       
-      // Create preview for images
       if (selectedFile.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -61,17 +58,14 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
         };
         reader.readAsDataURL(selectedFile);
       } else {
-        // PDF icon or preview
         setFilePreview(null);
       }
       
-      // Use filename as default document name (without extension)
       if (!documentName) {
         const filename = selectedFile.name.split('.').slice(0, -1).join('.');
         setDocumentName(filename);
       }
       
-      // Generate a unique ID for the document
       const newUniqueId = `QM-${Date.now().toString(36)}-${uuidv4().substring(0, 8)}`;
       setUniqueId(newUniqueId);
     }
@@ -131,11 +125,9 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
     try {
       setIsUploading(true);
       
-      // Simulate upload progress
       const progressInterval = simulateUploadProgress();
       
-      // Upload to IPFS
-      const { ipfsUri, uniqueId } = await uploadDocumentToIPFS({
+      const ipfsResult = await uploadDocumentToIPFS({
         file: file,
         fileName: documentName,
         description: documentDesc,
@@ -143,16 +135,13 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
         uniqueId: uniqueId
       });
       
-      // Second step: Mint as NFT on blockchain
-      const mintResult = await mintDocumentAsNFT(ipfsUri, uniqueId);
+      const mintResult = await mintDocumentAsNFT(ipfsResult.ipfsUri, ipfsResult.uniqueId);
       
-      // Store the document in localStorage for demo purposes
-      // In a real application, this would be stored on the blockchain
       const documentsString = localStorage.getItem('qwix_blockchain_documents');
       const documents = documentsString ? JSON.parse(documentsString) : [];
       
       const newDocument = {
-        uniqueId: uniqueId,
+        uniqueId: ipfsResult.uniqueId,
         fileName: documentName,
         description: documentDesc,
         fileType: file.type,
@@ -160,7 +149,7 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
         timestamp: new Date().toISOString(),
         ownerAddress: account,
         blockchainHash: mintResult.txHash,
-        ipfsUri: ipfsUri,
+        ipfsUri: ipfsResult.ipfsUri,
         tokenId: mintResult.tokenId,
         verificationUrl: mintResult.verificationUrl
       };
@@ -171,13 +160,11 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
       clearInterval(progressInterval);
       setUploadProgress(100);
       
-      // Show success toast
       toast({
         title: "Document secured with unique identity",
-        description: `Your document "${documentName}" has been secured on the blockchain with ID: ${uniqueId}`,
+        description: `Your document "${documentName}" has been secured on the blockchain with ID: ${ipfsResult.uniqueId}`,
       });
       
-      // Reset form
       setTimeout(() => {
         setDocumentName('');
         setDocumentDesc('');
