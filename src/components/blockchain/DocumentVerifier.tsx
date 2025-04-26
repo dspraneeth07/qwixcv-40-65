@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { useBlockchain, DocumentVerification } from '@/context/BlockchainContext';
+import { useBlockchain } from '@/context/BlockchainContext';
+import { DocumentVerification } from '@/types/blockchain';
 import { Search, CheckCircle, XCircle, Loader2, QrCode, ExternalLink, Fingerprint } from "lucide-react";
 import { useToast } from '@/components/ui/use-toast';
 import QRCode from 'qrcode.react';
