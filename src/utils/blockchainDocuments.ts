@@ -3,15 +3,20 @@ import { NFTStorage } from 'nft.storage';
 import { BlockchainDocument, DocumentUploadParams } from '@/types/blockchain';
 import { useBlockchain } from '@/context/BlockchainContext';
 
-// NFT.Storage API key for IPFS storage
-const NFT_STORAGE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweEU5MWE3NDQ0ODVBQUYyMTE1MzU1OTlkZGQwRTdGOTcyQzczNTIxNzQiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY1MTY2MTYyMzc5NywibmFtZSI6IlF3aXhCbG9jayJ9.iZVMeFkVe1Bw8IWkZJmGQPQKTLT9HnW83vubGolFbBI';
+// NFT.Storage API key for IPFS storage - Updated with new valid API key
+const NFT_STORAGE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDlGOTVBNzM2NThFQzU4NjEwZkVBRGRGRjYwODgwNTcwOGMyMzNhQjIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTcwNjY0NTkyNzk2MCwibmFtZSI6IlF3aXhCbG9ja2NoYWluVmF1bHQifQ.EHztMJIjp3U2XBkZnbc3DrJMF_UAZs-L7JFJ7gUcCd0';
 
 // Local storage key for documents
 const DOCUMENTS_STORAGE_KEY = 'qwix_blockchain_documents';
 
-// Get NFT.Storage client
+// Get NFT.Storage client with improved error handling
 const getNftStorageClient = () => {
-  return new NFTStorage({ token: NFT_STORAGE_API_KEY });
+  try {
+    return new NFTStorage({ token: NFT_STORAGE_API_KEY });
+  } catch (error) {
+    console.error("Error initializing NFT.Storage client:", error);
+    throw new Error("Failed to initialize storage client. Please check API key.");
+  }
 };
 
 // Helper to get documents from localStorage
@@ -41,33 +46,38 @@ const saveDocuments = (documents: BlockchainDocument[]): void => {
   }
 };
 
-// Upload document to IPFS
+// Upload document to IPFS with improved error handling
 const uploadToIPFS = async (file: File, metadata: any): Promise<string> => {
-  const client = getNftStorageClient();
-  
-  // Create a Blob with metadata
-  const metadataBlob = new Blob([JSON.stringify({
-    name: metadata.fileName,
-    description: metadata.description || '',
-    properties: {
-      fileType: file.type,
-      fileSize: file.size,
-      timestamp: new Date().toISOString(),
-      ownerAddress: metadata.ownerAddress
-    }
-  })], { type: 'application/json' });
-  
-  // Store as NFT
-  const cid = await client.storeBlob(metadataBlob);
-  
-  // Also store the file content
-  const fileCid = await client.storeBlob(file);
-  
-  // Return both CIDs
-  return JSON.stringify({
-    metadata: `ipfs://${cid}`,
-    content: `ipfs://${fileCid}`
-  });
+  try {
+    const client = getNftStorageClient();
+    
+    // Create a Blob with metadata
+    const metadataBlob = new Blob([JSON.stringify({
+      name: metadata.fileName,
+      description: metadata.description || '',
+      properties: {
+        fileType: file.type,
+        fileSize: file.size,
+        timestamp: new Date().toISOString(),
+        ownerAddress: metadata.ownerAddress
+      }
+    })], { type: 'application/json' });
+    
+    // Store as NFT
+    const cid = await client.storeBlob(metadataBlob);
+    
+    // Also store the file content
+    const fileCid = await client.storeBlob(file);
+    
+    // Return both CIDs
+    return JSON.stringify({
+      metadata: `ipfs://${cid}`,
+      content: `ipfs://${fileCid}`
+    });
+  } catch (error) {
+    console.error("Error uploading to IPFS:", error);
+    throw new Error(`IPFS upload failed: ${error.message}`);
+  }
 };
 
 // Upload document to blockchain

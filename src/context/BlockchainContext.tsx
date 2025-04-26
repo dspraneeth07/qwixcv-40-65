@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { useToast } from "@/components/ui/use-toast";
@@ -23,8 +22,8 @@ interface WindowWithEthereum extends Window {
   };
 }
 
-// NFT.Storage API key for IPFS storage
-const NFT_STORAGE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweEU5MWE3NDQ0ODVBQUYyMTE1MzU1OTlkZGQwRTdGOTcyQzczNTIxNzQiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY1MTY2MTYyMzc5NywibmFtZSI6IlF3aXhCbG9jayJ9.iZVMeFkVe1Bw8IWkZJmGQPQKTLT9HnW83vubGolFbBI';
+// NFT.Storage API key for IPFS storage - Updated with new valid API key
+const NFT_STORAGE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDlGOTVBNzM2NThFQzU4NjEwZkVBRGRGRjYwODgwNTcwOGMyMzNhQjIiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTcwNjY0NTkyNzk2MCwibmFtZSI6IlF3aXhCbG9ja2NoYWluVmF1bHQifQ.EHztMJIjp3U2XBkZnbc3DrJMF_UAZs-L7JFJ7gUcCd0';
 
 // ABI for our Soulbound NFT smart contract
 const SOULBOUND_NFT_ABI = [
@@ -64,7 +63,12 @@ const getProvider = async () => {
 
 // Create NFT.Storage client
 const getNftStorageClient = () => {
-  return new NFTStorage({ token: NFT_STORAGE_API_KEY });
+  try {
+    return new NFTStorage({ token: NFT_STORAGE_API_KEY });
+  } catch (error) {
+    console.error("Error initializing NFT.Storage client:", error);
+    throw new Error("Failed to initialize storage client. Please check API key.");
+  }
 };
 
 // Generate unique document identity using uuidv4
@@ -78,39 +82,44 @@ export const generateVerificationUrl = (uniqueId: string): string => {
   return `${window.location.origin}/verify-document/${uniqueId}`;
 };
 
-// Upload to IPFS via NFT.Storage
+// Upload to IPFS via NFT.Storage - Update with better error handling
 export const uploadToIPFS = async (file: File, metadata: any): Promise<{
   ipfsUri: string;
   uniqueId: string;
 }> => {
-  const client = getNftStorageClient();
-  const uniqueId = generateDocumentUniqueId();
-  
-  // Create blob with metadata
-  const metadataBlob = new Blob([JSON.stringify({
-    name: metadata.fileName,
-    description: metadata.description,
-    image: file,
-    properties: {
-      fileType: file.type,
-      fileSize: file.size,
-      timestamp: new Date().toISOString(),
-      ownerAddress: metadata.ownerAddress,
-      uniqueId: uniqueId,
-      verificationUrl: generateVerificationUrl(uniqueId)
-    }
-  })], { type: 'application/json' });
-  
-  // Store as NFT
-  const cid = await client.storeBlob(metadataBlob);
-  
-  // Also store the file content separately
-  const fileCid = await client.storeBlob(file);
-  
-  return {
-    ipfsUri: `ipfs://${cid}`,
-    uniqueId: uniqueId
-  };
+  try {
+    const client = getNftStorageClient();
+    const uniqueId = generateDocumentUniqueId();
+    
+    // Create blob with metadata
+    const metadataBlob = new Blob([JSON.stringify({
+      name: metadata.fileName,
+      description: metadata.description,
+      image: file,
+      properties: {
+        fileType: file.type,
+        fileSize: file.size,
+        timestamp: new Date().toISOString(),
+        ownerAddress: metadata.ownerAddress,
+        uniqueId: uniqueId,
+        verificationUrl: generateVerificationUrl(uniqueId)
+      }
+    })], { type: 'application/json' });
+    
+    // Store as NFT
+    const cid = await client.storeBlob(metadataBlob);
+    
+    // Also store the file content separately
+    const fileCid = await client.storeBlob(file);
+    
+    return {
+      ipfsUri: `ipfs://${cid}`,
+      uniqueId: uniqueId
+    };
+  } catch (error: any) {
+    console.error("Error uploading to IPFS:", error);
+    throw new Error(`IPFS upload failed: ${error.message}`);
+  }
 };
 
 // Mint Soulbound NFT
