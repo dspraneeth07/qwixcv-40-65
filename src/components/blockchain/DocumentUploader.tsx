@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { useBlockchain } from '@/context/BlockchainContext';
 import DocumentUploadPreview from './DocumentUploadPreview';
 import { v4 as uuidv4 } from 'uuid';
+import { DocumentUploadParams } from '@/types/blockchain';
 
 interface DocumentUploaderProps {
   onUploadComplete: () => void;
@@ -127,15 +128,14 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
       
       const progressInterval = simulateUploadProgress();
       
-      const ipfsResult = await uploadDocumentToIPFS(
-        {
-          file: file,
-          fileName: documentName,
-          description: documentDesc,
-          ownerAddress: account
-        }, 
-        uniqueId
-      );
+      const uploadParams: DocumentUploadParams = {
+        file,
+        fileName: documentName,
+        description: documentDesc,
+        ownerAddress: account
+      };
+      
+      const ipfsResult = await uploadDocumentToIPFS(uploadParams, uniqueId);
       
       const mintResult = await mintDocumentAsNFT(ipfsResult.ipfsUri, uniqueId);
       
