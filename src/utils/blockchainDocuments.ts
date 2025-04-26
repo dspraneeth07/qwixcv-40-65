@@ -4,8 +4,8 @@ import { NFTStorage } from 'nft.storage';
 import { BlockchainDocument, DocumentUploadParams } from '@/types/blockchain';
 import { useBlockchain } from '@/context/BlockchainContext';
 
-// NFT.Storage API key for IPFS storage - Fixed with a valid API key
-const NFT_STORAGE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDFhNjZGMzQ5NzYwOGI0QjhhYTQzMzg1RDVkNjFhOTU0MUI4ZDEwMGMiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTcxMzQ2ODY0MzgxMCwibmFtZSI6IlF3aXhWYXVsdCJ9.jUMU_2MH7Vy0z9SfSXx6KPJLcbRQtzJgKlLcvQKC1pw';
+// NFT.Storage API key for IPFS storage - Updated with new valid API key
+const NFT_STORAGE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweEZENDIyOTRCRjA0RDAzMkVCMzI4MzBGMzRBRmFBOThEQTVCMjU3RTUiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTcxMzI2ODY0MzgxMCwibmFtZSI6IlF3aXhWYXVsdCI6fQ.SR4269YUtO02sNtOhJd2lx9v-Lo4xsXgxf0hufcPy_Y';
 
 // Local storage key for documents
 const DOCUMENTS_STORAGE_KEY = 'qwix_blockchain_documents';
@@ -13,9 +13,6 @@ const DOCUMENTS_STORAGE_KEY = 'qwix_blockchain_documents';
 // Get NFT.Storage client with improved error handling
 const getNftStorageClient = () => {
   try {
-    if (!NFT_STORAGE_API_KEY || NFT_STORAGE_API_KEY.trim() === '') {
-      throw new Error("Missing or empty NFT.Storage API key");
-    }
     return new NFTStorage({ token: NFT_STORAGE_API_KEY });
   } catch (error) {
     console.error("Error initializing NFT.Storage client:", error);

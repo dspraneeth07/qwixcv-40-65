@@ -2,23 +2,23 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Fingerprint, QrCode, Shield, Copy, RefreshCw, FileText } from "lucide-react";
+import { Fingerprint, QrCode, Shield, Copy, RefreshCw } from "lucide-react";
 import { useBlockchain } from '@/context/BlockchainContext';
 import { useToast } from "@/components/ui/use-toast";
 import QRCode from 'qrcode.react';
 import { Link } from 'react-router-dom';
 
 const QwixVaultProfile = () => {
-  const { account, isConnected, connectWallet, generateQrCodeForProfile } = useBlockchain();
+  const { account, isConnected, connectWallet } = useBlockchain();
   const { toast } = useToast();
   
   // Generate a unique QwixVault ID from the account address
   const qwixVaultId = account ? 
     `QV-${account.substring(2, 6)}-${account.substring(account.length - 4)}` : null;
   
-  // Generate profile verification URL
-  const profileUrl = account ? 
-    generateQrCodeForProfile(account) : '';
+  // Generate verification URL
+  const verificationUrl = account ? 
+    `${window.location.origin}/verify-document/${account}` : '';
   
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text).then(
@@ -70,10 +70,10 @@ const QwixVaultProfile = () => {
       <CardContent className="space-y-4">
         <div className="flex flex-col items-center justify-center p-4 bg-muted/50 rounded-lg">
           <div className="bg-white p-2 rounded-lg mb-3">
-            <QRCode value={profileUrl} size={150} />
+            <QRCode value={verificationUrl} size={150} />
           </div>
           <p className="text-xs text-center text-muted-foreground">
-            Scan this QR code to view your QwixVault profile and documents
+            Scan this QR code to verify your QwixVault identity
           </p>
         </div>
         
@@ -110,11 +110,9 @@ const QwixVaultProfile = () => {
               Open Vault
             </Link>
           </Button>
-          <Button asChild variant="outline">
-            <Link to="/blockchain-vault/documents">
-              <FileText className="mr-2 h-4 w-4" />
-              My Documents
-            </Link>
+          <Button variant="outline">
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh
           </Button>
         </div>
       </CardContent>

@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { useBlockchain } from '@/context/BlockchainContext';
 import DocumentUploadPreview from './DocumentUploadPreview';
 import { v4 as uuidv4 } from 'uuid';
+import { DocumentUploadParams } from '@/types/blockchain';
 
 interface DocumentUploaderProps {
   onUploadComplete: () => void;
@@ -127,12 +129,14 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
       
       const progressInterval = simulateUploadProgress();
       
+      // Create metadata object instead of DocumentUploadParams
       const metadata = {
         fileName: documentName,
         description: documentDesc,
         ownerAddress: account
       };
       
+      // Pass file and metadata separately as expected by the function
       const ipfsResult = await uploadDocumentToIPFS(file, metadata);
       
       const mintResult = await mintDocumentAsNFT(ipfsResult.ipfsUri, uniqueId);
