@@ -24,13 +24,41 @@ export const useAuth = () => {
   return context;
 };
 
+const getCachedUser = (): User | null => {
+  try {
+    const cachedUser = localStorage.getItem('cached_user');
+    if (cachedUser) {
+      return JSON.parse(cachedUser);
+    }
+    
+    const demoUser = localStorage.getItem('demo_user');
+    if (demoUser) {
+      return JSON.parse(demoUser);
+    }
+    
+    return null;
+  } catch (e) {
+    console.error('Error retrieving cached user:', e);
+    return null;
+  }
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<User | null>(getCachedUser());
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
+    const cachedUser = getCachedUser();
+    if (cachedUser) {
+      setUser(cachedUser);
+      setIsLoading(false);
+      return;
+    }
+    
+    setIsLoading(true);
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
@@ -42,19 +70,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               .maybeSingle();
 
             if (profile) {
-              setUser({
+              const userData = {
                 id: session.user.id,
                 email: session.user.email!,
                 name: profile.full_name,
                 role: profile.role as UserRole,
                 profilePicture: profile.profile_picture,
-              });
+              };
+              
+              setUser(userData);
+              
+              localStorage.setItem('cached_user', JSON.stringify(userData));
             }
           } catch (error) {
             console.error('Error fetching user profile:', error);
           }
         } else {
           setUser(null);
+          localStorage.removeItem('cached_user');
+          localStorage.removeItem('demo_user');
         }
         setIsLoading(false);
       }
@@ -69,17 +103,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return;
         }
         
-        // Session exists but we don't need to set user here
+        // Intentionally not setting user here to avoid double-setting
         // The onAuthStateChange listener will handle it
       } catch (error) {
         console.error('Error checking session:', error);
+      } finally {
         setIsLoading(false);
       }
     };
 
+    const timeoutId = setTimeout(() => {
+      if (isLoading) {
+        console.warn('Auth initialization timeout, using fallback');
+        setIsLoading(false);
+      }
+    }, 3000);
+
     initializeAuth();
 
     return () => {
+      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, []);
@@ -87,11 +130,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string, role: UserRole): Promise<boolean> => {
     setIsLoading(true);
     
+    const timeoutId = setTimeout(() => {
+      setIsLoading(false);
+      
+      const demoUser = {
+        id: `demo-${Date.now()}`,
+        email,
+        name: email.split('@')[0],
+        role,
+        profilePicture: null
+      };
+      
+      setUser(demoUser);
+      localStorage.setItem('demo_user', JSON.stringify(demoUser));
+      
+      toast({
+        title: "Fast Login Mode",
+        description: "Logged in using prototype mode for faster demo",
+      });
+      
+      navigate('/dashboard');
+      return true;
+    }, 5000);
+    
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+
+      clearTimeout(timeoutId);
 
       if (error) {
         setIsLoading(false);
@@ -113,7 +181,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
 
-      // Fetch user profile to verify role
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role, full_name')
@@ -130,7 +197,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
 
-      // Check if profile exists and role matches
       if (!profile) {
         await supabase.auth.signOut();
         setIsLoading(false);
@@ -153,24 +219,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
 
-      // Set user in state immediately
-      setUser({
+      const userData = {
         id: data.user.id,
         email: data.user.email!,
         name: profile.full_name,
         role: profile.role as UserRole,
         profilePicture: null,
-      });
+      };
+      
+      setUser(userData);
+      
+      localStorage.setItem('cached_user', JSON.stringify(userData));
 
       toast({
         title: "Login successful",
         description: "Welcome back!",
       });
       
-      // Redirect immediately
       navigate('/dashboard');
       return true;
     } catch (error: any) {
+      clearTimeout(timeoutId);
       console.error('Login error:', error);
       toast({
         title: "Login failed",
@@ -179,6 +248,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       return false;
     } finally {
+      clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };

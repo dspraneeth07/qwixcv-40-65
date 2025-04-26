@@ -1,11 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { useBlockchain } from '@/context/BlockchainContext';
-import { DocumentVerification } from '@/types/blockchain';
+import type { DocumentVerification } from '@/types/blockchain';
 import { Search, CheckCircle, XCircle, Loader2, QrCode, ExternalLink, Fingerprint } from "lucide-react";
 import { useToast } from '@/components/ui/use-toast';
 import QRCode from 'qrcode.react';
@@ -23,6 +23,13 @@ const DocumentVerifier: React.FC<DocumentVerifierProps> = ({ uniqueId: initialUn
   const { verifyDocument, generateQrCodeForDocument } = useBlockchain();
   const { toast } = useToast();
   
+  // Auto-verify when component mounts with a uniqueId
+  useEffect(() => {
+    if (initialUniqueId && !verificationResult) {
+      handleVerify();
+    }
+  }, [initialUniqueId]);
+  
   const handleVerify = async () => {
     if (!uniqueIdInput.trim()) {
       toast({
@@ -37,29 +44,37 @@ const DocumentVerifier: React.FC<DocumentVerifierProps> = ({ uniqueId: initialUn
     setVerificationResult(null);
     
     try {
-      const result = await verifyDocument(uniqueIdInput.trim());
-      setVerificationResult(result);
-      
-      if (result.isValid) {
-        toast({
-          title: "Document Verified",
-          description: "The document is valid and was found on the blockchain",
-        });
-      } else {
-        toast({
-          title: "Verification Failed",
-          description: result.error || "Document could not be verified",
-          variant: "destructive"
-        });
-      }
+      // Add a small delay to prevent UI freezing
+      setTimeout(async () => {
+        try {
+          const result = await verifyDocument(uniqueIdInput.trim());
+          setVerificationResult(result);
+          
+          if (result.isValid) {
+            toast({
+              title: "Document Verified",
+              description: "The document is valid and was found on the blockchain",
+            });
+          } else {
+            toast({
+              title: "Verification Failed",
+              description: result.error || "Document could not be verified",
+              variant: "destructive"
+            });
+          }
+        } catch (error) {
+          console.error("Verification error:", error);
+          toast({
+            title: "Verification Error",
+            description: "An unexpected error occurred during verification",
+            variant: "destructive"
+          });
+        } finally {
+          setIsVerifying(false);
+        }
+      }, 100);
     } catch (error) {
-      console.error("Verification error:", error);
-      toast({
-        title: "Verification Error",
-        description: "An unexpected error occurred during verification",
-        variant: "destructive"
-      });
-    } finally {
+      console.error("Verification setup error:", error);
       setIsVerifying(false);
     }
   };
@@ -118,6 +133,8 @@ const DocumentVerifier: React.FC<DocumentVerifierProps> = ({ uniqueId: initialUn
               <QRCode 
                 value={`${window.location.origin}/verify-document/scan`} 
                 size={150}
+                renderAs="svg"
+                level="H"
               />
             </div>
           </div>
@@ -183,7 +200,9 @@ const DocumentVerifier: React.FC<DocumentVerifierProps> = ({ uniqueId: initialUn
                       <div className="bg-white inline-block p-3 border rounded">
                         <QRCode 
                           value={verificationUrl} 
-                          size={150} 
+                          size={150}
+                          renderAs="svg"
+                          level="H"
                         />
                       </div>
                       <p className="text-xs text-muted-foreground mt-2">Scan to verify this document</p>

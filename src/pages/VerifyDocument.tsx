@@ -10,13 +10,42 @@ import { useBlockchain } from '@/context/BlockchainContext';
 const VerifyDocument = () => {
   const { uniqueId } = useParams<{ uniqueId: string }>();
   const [isScanning, setIsScanning] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     // If this is a QR code scan request, we could initialize a QR scanner here
     if (uniqueId === 'scan') {
       setIsScanning(true);
     }
+    
+    // Simulate faster loading
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
+    
+    return () => clearTimeout(timer);
   }, [uniqueId]);
+  
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="container py-10 animate-pulse">
+          <div className="max-w-3xl mx-auto">
+            <div className="mb-8 text-center">
+              <div className="flex justify-center mb-4">
+                <div className="p-3 bg-primary/10 rounded-full">
+                  <div className="h-10 w-10 bg-primary/20 rounded-full" />
+                </div>
+              </div>
+              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mx-auto mb-2"></div>
+              <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-1/2 mx-auto"></div>
+            </div>
+            <div className="h-80 bg-gray-100 dark:bg-gray-800 rounded-lg"></div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
   
   return (
     <MainLayout>

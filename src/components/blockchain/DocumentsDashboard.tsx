@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useBlockchain } from '@/context/BlockchainContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -6,7 +7,8 @@ import { QrCode, FileText, Download, Share2, Fingerprint, Shield, RefreshCw, Ext
 import { Badge } from '@/components/ui/badge';
 import QRCode from 'qrcode.react';
 import DocumentVerifier from './DocumentVerifier';
-import { BlockchainDocument } from '@/types/blockchain';
+import type { BlockchainDocument } from '@/types/blockchain';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const DocumentsDashboard: React.FC = () => {
   const [documents, setDocuments] = useState<BlockchainDocument[]>([]);
@@ -17,7 +19,8 @@ const DocumentsDashboard: React.FC = () => {
   
   const { account, getUserDocuments } = useBlockchain();
   
-  const loadDocuments = async () => {
+  // Memoize document loading to prevent unnecessary rerenders
+  const loadDocuments = useCallback(async () => {
     try {
       setIsLoading(true);
       const userDocs = await getUserDocuments();
@@ -27,22 +30,27 @@ const DocumentsDashboard: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [getUserDocuments]);
 
   useEffect(() => {
-    loadDocuments();
-  }, [account]);
+    // Add a small timeout to avoid UI freeze
+    const timer = setTimeout(() => {
+      loadDocuments();
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [loadDocuments, account]);
 
-  const handleDocumentClick = (doc: BlockchainDocument) => {
+  const handleDocumentClick = useCallback((doc: BlockchainDocument) => {
     setSelectedDocument(doc);
     
     const verificationUrl = doc.verificationUrl || `${window.location.origin}/verify-document/${doc.uniqueId}`;
     setQrCodeUrl(verificationUrl);
     
     setActiveTab('details');
-  };
+  }, []);
   
-  const formatBytes = (bytes: number) => {
+  const formatBytes = useMemo(() => (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     
     const k = 1024;
@@ -50,30 +58,24 @@ const DocumentsDashboard: React.FC = () => {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
+  }, []);
   
-  const formatDate = (dateString: string) => {
+  const formatDate = useMemo(() => (dateString: string) => {
     return new Date(dateString).toLocaleString();
-  };
+  }, []);
   
-  const formatFileType = (fileType: string) => {
+  const formatFileType = useMemo(() => (fileType: string) => {
     if (fileType.includes('pdf')) return 'PDF Document';
     if (fileType.includes('png')) return 'PNG Image';
     if (fileType.includes('jpeg') || fileType.includes('jpg')) return 'JPEG Image';
     return fileType;
-  };
+  }, []);
   
-  const getFileIcon = (fileType: string) => {
-    if (fileType.includes('pdf')) return 'pdf.svg';
-    if (fileType.includes('image')) return 'image.svg';
-    return 'document.svg';
-  };
-  
-  const handleDownload = (doc: BlockchainDocument) => {
+  const handleDownload = useCallback((doc: BlockchainDocument) => {
     alert(`Downloading ${doc.fileName} from IPFS: ${doc.ipfsUri}`);
-  };
+  }, []);
   
-  const handleShare = (doc: BlockchainDocument) => {
+  const handleShare = useCallback((doc: BlockchainDocument) => {
     const verificationUrl = doc.verificationUrl || `${window.location.origin}/verify-document/${doc.uniqueId}`;
     
     if (navigator.share) {
@@ -86,16 +88,33 @@ const DocumentsDashboard: React.FC = () => {
       navigator.clipboard.writeText(verificationUrl);
       alert('Verification link copied to clipboard');
     }
-  };
+  }, []);
   
-  const getStatusColor = (status: string) => {
+  const getStatusColor = useMemo(() => (status: string) => {
     switch (status.toLowerCase()) {
       case 'verified': return 'bg-green-500';
       case 'pending': return 'bg-yellow-500';
       case 'revoked': return 'bg-red-500';
       default: return 'bg-blue-500';
     }
-  };
+  }, []);
+
+  // Loading state components
+  const DocumentSkeleton = () => (
+    <div className="border rounded-lg overflow-hidden animate-pulse">
+      <div className="h-28 bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
+        <div className="h-14 w-14 bg-slate-200 dark:bg-slate-700 rounded-lg"></div>
+      </div>
+      <div className="p-3">
+        <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-3/4 mb-2"></div>
+        <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-1/2 mb-2"></div>
+        <div className="flex justify-between items-center">
+          <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded w-1/4"></div>
+          <div className="h-4 w-16 bg-slate-100 dark:bg-slate-800 rounded-full"></div>
+        </div>
+      </div>
+    </div>
+  );
   
   return (
     <div className="space-y-4">
@@ -124,13 +143,21 @@ const DocumentsDashboard: React.FC = () => {
         <TabsContent value="documents" className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-medium">Your Blockchain Documents</h3>
-            <Button variant="outline" size="sm" onClick={loadDocuments}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh
+            <Button variant="outline" size="sm" onClick={loadDocuments} disabled={isLoading}>
+              {isLoading ? (
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4 mr-2" />
+              )}
+              {isLoading ? 'Loading...' : 'Refresh'}
             </Button>
           </div>
           
-          {documents.length === 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {[...Array(3)].map((_, i) => <DocumentSkeleton key={i} />)}
+            </div>
+          ) : documents.length === 0 ? (
             <div className="text-center py-12 border rounded-lg border-dashed">
               <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
               <p className="text-muted-foreground">You don't have any documents stored yet</p>
@@ -175,7 +202,12 @@ const DocumentsDashboard: React.FC = () => {
         </TabsContent>
         
         <TabsContent value="details">
-          {selectedDocument && (
+          {isLoading && !selectedDocument ? (
+            <div className="space-y-6 animate-pulse">
+              <div className="h-40 bg-slate-100 dark:bg-slate-800 rounded-lg"></div>
+              <div className="h-60 bg-slate-100 dark:bg-slate-800 rounded-lg"></div>
+            </div>
+          ) : selectedDocument && (
             <div className="space-y-6">
               <div className="flex flex-col md:flex-row md:items-start gap-6">
                 <div className="w-full md:w-1/3 flex flex-col items-center">
@@ -189,6 +221,7 @@ const DocumentsDashboard: React.FC = () => {
                       <QRCode 
                         value={qrCodeUrl}
                         size={150}
+                        renderAs="svg" 
                         className="mx-auto"
                       />
                       <p className="text-xs text-muted-foreground mt-2">
