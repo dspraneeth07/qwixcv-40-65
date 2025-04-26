@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useBlockchain } from '@/context/BlockchainContext';
 import { Button } from '@/components/ui/button';
@@ -27,31 +26,26 @@ const DocumentsDashboard: React.FC = () => {
   const [selectedDocument, setSelectedDocument] = useState<BlockchainDocument | null>(null);
   const [activeTab, setActiveTab] = useState('documents');
   const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
   
-  const { account } = useBlockchain();
+  const { account, getUserDocuments } = useBlockchain();
   
+  const loadDocuments = async () => {
+    try {
+      setIsLoading(true);
+      const userDocs = await getUserDocuments();
+      setDocuments(userDocs);
+    } catch (error) {
+      console.error("Error loading documents:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadDocuments();
   }, [account]);
-  
-  const loadDocuments = () => {
-    try {
-      const documentsString = localStorage.getItem('qwix_blockchain_documents');
-      if (documentsString) {
-        const allDocuments = JSON.parse(documentsString);
-        
-        // Filter for documents owned by the current account
-        const userDocuments = account 
-          ? allDocuments.filter((doc: BlockchainDocument) => doc.ownerAddress === account)
-          : allDocuments;
-          
-        setDocuments(userDocuments);
-      }
-    } catch (error) {
-      console.error("Error loading documents:", error);
-    }
-  };
-  
+
   const handleDocumentClick = (doc: BlockchainDocument) => {
     setSelectedDocument(doc);
     
