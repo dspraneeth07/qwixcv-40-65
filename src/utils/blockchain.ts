@@ -1,16 +1,13 @@
-
 import html2pdf from 'html2pdf.js';
-import { Certificate } from '@/types/blockchain';
+import { Certificate, BlockchainDocument, DocumentVerification } from '@/types/blockchain';
 import QRCode from 'qrcode';
 
 // Generate Certificate PDF
 export const generateCertificatePDF = async (elementId: string, fileName?: string): Promise<string> => {
   try {
-    // Get the element to convert
     const element = document.getElementById(elementId);
     if (!element) throw new Error('Element not found');
 
-    // Configure options for the PDF
     const pdfOptions = {
       margin: 0,
       filename: fileName || 'certificate.pdf',
@@ -19,7 +16,6 @@ export const generateCertificatePDF = async (elementId: string, fileName?: strin
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
     
-    // Generate PDF as a blob URL
     const pdfBlob = await html2pdf().from(element).set(pdfOptions).outputPdf('blob');
     const pdfUrl = URL.createObjectURL(pdfBlob);
     
@@ -45,11 +41,9 @@ export const shareCertificate = async (certificate: Certificate) => {
     } catch (error) {
       console.error('Error sharing:', error);
       
-      // Fall back to clipboard
       return copyToClipboard(verificationUrl);
     }
   } else {
-    // Fall back to clipboard
     return copyToClipboard(verificationUrl);
   }
 };
@@ -73,16 +67,12 @@ export const generateCertificate = async (
   recipientName: string,
   recipientEmail: string
 ): Promise<Certificate> => {
-  // Create a unique ID for the certificate
   const uniqueId = `cert-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
   
-  // Create a certificate hash
   const certHash = `qwix-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 10)}`;
   
-  // Create a transaction hash
   const txHash = `0x${Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
   
-  // Create a new certificate
   const certificate: Certificate = {
     id: uniqueId,
     testId,
@@ -114,13 +104,10 @@ export const verifyCertificate = async (
   identifier: string, 
   method: 'certHash' | 'txHash' | 'blockId' | 'uniqueId' = 'certHash'
 ): Promise<{ isValid: boolean; certificate?: Certificate; transaction?: any; error?: string }> => {
-  // Simulate verification delay
   await new Promise(resolve => setTimeout(resolve, 1000));
-
-  // Get all certificates
+  
   const certificates = getUserCertificates();
   
-  // Find the certificate based on the method
   let certificate;
   
   switch (method) {
@@ -141,7 +128,6 @@ export const verifyCertificate = async (
   }
   
   if (certificate) {
-    // Create a mock transaction
     const transaction = {
       hash: certificate.txHash,
       blockId: certificate.blockId,
@@ -158,13 +144,9 @@ export const verifyCertificate = async (
 
 // Verify certificate from file
 export const verifyCertificateFromFile = async (file: File): Promise<{ isValid: boolean; certificate?: Certificate; error?: string }> => {
-  // Simulate processing delay
   await new Promise(resolve => setTimeout(resolve, 1500));
   
-  // In a real implementation, we would extract the certificate data from the file
-  // For this demo, we'll just return a mock response
   if (file.type === 'application/pdf') {
-    // Mock success for PDFs
     const mockCertificate: Certificate = {
       id: `cert-${Date.now()}`,
       testId: 'mock-test-001',
@@ -197,8 +179,6 @@ export const verifyCertificateFromFile = async (file: File): Promise<{ isValid: 
 // Get user certificates
 export const getUserCertificates = (): Certificate[] => {
   try {
-    // In a real app, this would fetch from a database
-    // For now, we'll just use localStorage
     const certificatesStr = localStorage.getItem('user_certificates');
     if (certificatesStr) {
       return JSON.parse(certificatesStr);
@@ -241,4 +221,64 @@ export const getQwixVaultIdByEmail = (email: string): string | null => {
   }
   
   return null;
+};
+
+// Verify document by uniqueId - works without login
+export const verifyDocument = async (uniqueId: string): Promise<DocumentVerification> => {
+  try {
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    let foundDocument: BlockchainDocument | null = null;
+    
+    const vaultUsersStr = localStorage.getItem('qwixvault_users');
+    if (vaultUsersStr) {
+      const vaultUsers = JSON.parse(vaultUsersStr);
+      for (const email in vaultUsers) {
+        const userDocs = vaultUsers[email].documents || [];
+        const found = userDocs.find((doc: BlockchainDocument) => doc.uniqueId === uniqueId);
+        if (found) {
+          foundDocument = found;
+          break;
+        }
+      }
+    }
+    
+    if (!foundDocument) {
+      const documentsStr = localStorage.getItem('qwix_blockchain_documents');
+      if (documentsStr) {
+        const documents = JSON.parse(documentsStr);
+        foundDocument = documents.find((doc: BlockchainDocument) => doc.uniqueId === uniqueId) || null;
+      }
+    }
+    
+    if (foundDocument) {
+      return {
+        isValid: true,
+        document: foundDocument
+      };
+    } else {
+      return {
+        isValid: false,
+        error: "Document not found or has been revoked"
+      };
+    }
+  } catch (error) {
+    console.error("Error verifying document:", error);
+    return {
+      isValid: false,
+      error: "Verification process failed"
+    };
+  }
+};
+
+// Generate QR code for verification
+export const generateVerificationQrCode = async (uniqueId: string): Promise<string> => {
+  try {
+    const verificationUrl = `${window.location.origin}/verify-document/${uniqueId}`;
+    const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl);
+    return qrCodeDataUrl;
+  } catch (error) {
+    console.error("Error generating QR code:", error);
+    throw error;
+  }
 };

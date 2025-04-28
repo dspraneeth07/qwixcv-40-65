@@ -14,8 +14,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useBlockchain } from "@/context/BlockchainContext";
 import QwixVaultProfile from "@/components/blockchain/QwixVaultProfile";
 import type { Certificate } from '@/types/certification';
-import type { BlockchainDocument } from '@/types/blockchain';
+import type { BlockchainDocument, UserActivity } from '@/types/blockchain';
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
+import CertificateCard from "@/components/certification/CertificateCard";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -24,6 +25,7 @@ const Dashboard = () => {
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [vaultUser, setVaultUser] = useState<any>(null);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -36,9 +38,13 @@ const Dashboard = () => {
           
           const userCertificates = await getUserCertificates();
           setCertificates(userCertificates);
+          
+          const currentVaultUser = getVaultUser();
+          setVaultUser(currentVaultUser);
         } else {
           setDocuments([]);
           setCertificates([]);
+          setVaultUser(null);
         }
       } catch (error) {
         console.error("Error loading user data:", error);
@@ -48,7 +54,7 @@ const Dashboard = () => {
     };
     
     loadUserData();
-  }, [isConnected, getUserDocuments, getUserCertificates]);
+  }, [isConnected, getUserDocuments, getUserCertificates, getVaultUser]);
 
   const handleRefresh = async () => {
     try {
@@ -60,6 +66,9 @@ const Dashboard = () => {
         
         const userCertificates = await getUserCertificates();
         setCertificates(userCertificates);
+        
+        const currentVaultUser = getVaultUser();
+        setVaultUser(currentVaultUser);
       }
     } catch (error) {
       console.error("Error refreshing user data:", error);
@@ -76,9 +85,6 @@ const Dashboard = () => {
       year: 'numeric'
     });
   };
-
-  // Get the vault user
-  const vaultUser = getVaultUser();
 
   return (
     <Layout>
@@ -254,127 +260,97 @@ const Dashboard = () => {
                 </Card>
               </TabsContent>
               
-              <TabsContent value="documents" className="space-y-6">
+              <TabsContent value="documents">
                 <Card>
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle>Secured Documents</CardTitle>
-                      <CardDescription>
-                        Documents secured in your QwixVault
-                      </CardDescription>
-                    </div>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to="/blockchain-vault">
-                        <QrCode className="mr-2 h-4 w-4" />
-                        Open Vault
-                      </Link>
-                    </Button>
+                  <CardHeader>
+                    <CardTitle>
+                      <div className="flex items-center">
+                        <Shield className="h-5 w-5 mr-2 text-primary" />
+                        Blockchain Documents
+                      </div>
+                    </CardTitle>
+                    <CardDescription>
+                      Secure and verifiable documents stored on the blockchain
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {isLoading ? (
-                      <div className="flex items-center justify-center py-8">
-                        <RefreshCw className="h-8 w-8 text-primary animate-spin" />
-                      </div>
-                    ) : documents.length > 0 ? (
-                      <div className="space-y-4">
-                        {documents.map(document => (
-                          <div key={document.uniqueId} className="flex items-center gap-4 border-b pb-4">
-                            <div className="h-12 w-12 bg-gray-100 flex items-center justify-center rounded">
-                              <FileText className="h-6 w-6 text-gray-500" />
-                            </div>
-                            <div className="flex-1">
-                              <p className="font-medium truncate">{document.fileName}</p>
-                              <p className="text-xs text-muted-foreground">
-                                ID: {document.uniqueId.substring(0, 10)}... • 
-                                {" "}{formatDate(document.timestamp)}
-                              </p>
-                            </div>
-                            <Link to={`/verify-document/${document.uniqueId}`}>
-                              <Button size="sm" variant="ghost">
-                                <Shield className="h-4 w-4 mr-1" />
-                                Verify
-                              </Button>
-                            </Link>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-12">
-                        <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-medium">No Documents Yet</h3>
-                        <p className="text-muted-foreground mt-1 mb-6">
-                          Secure your important documents with blockchain verification
+                    {documents.length === 0 ? (
+                      <div className="text-center py-10">
+                        <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-medium mb-2">No blockchain documents found</h3>
+                        <p className="text-muted-foreground mb-6">
+                          Secure your important documents on the blockchain for tamper-proof verification.
                         </p>
                         <Button asChild>
-                          <Link to="/blockchain-vault">Add Documents to Vault</Link>
+                          <Link to="/document-vault">
+                            <FileText className="h-4 w-4 mr-2" />
+                            Go to Document Vault
+                          </Link>
                         </Button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {documents.map((doc) => (
+                          <div key={doc.uniqueId} className="border rounded-lg overflow-hidden">
+                            <div className="h-24 bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
+                              <FileText className="h-12 w-12 text-slate-400" />
+                            </div>
+                            <div className="p-3">
+                              <h4 className="font-medium truncate">{doc.fileName}</h4>
+                              <div className="text-xs text-muted-foreground mb-2">
+                                {formatDate(doc.timestamp)}
+                              </div>
+                              <div className="flex justify-between">
+                                <Badge variant="outline" className="truncate max-w-[100px]">
+                                  {doc.fileType}
+                                </Badge>
+                                <Link to={`/verify-document/${doc.uniqueId}`} className="text-xs text-primary flex items-center">
+                                  <QrCode className="h-3 w-3 mr-1" />
+                                  Verify
+                                </Link>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </CardContent>
                 </Card>
               </TabsContent>
               
-              <TabsContent value="certificates" className="space-y-6">
+              <TabsContent value="certificates">
                 <Card>
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle>Blockchain Certificates</CardTitle>
-                      <CardDescription>
-                        Your verified skills and achievements
-                      </CardDescription>
-                    </div>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to="/certification-center">
-                        <Award className="mr-2 h-4 w-4" />
-                        Get Certified
-                      </Link>
-                    </Button>
+                  <CardHeader>
+                    <CardTitle>
+                      <div className="flex items-center">
+                        <Award className="h-5 w-5 mr-2 text-primary" />
+                        Blockchain Certificates
+                      </div>
+                    </CardTitle>
+                    <CardDescription>
+                      Your verifiable certificates and achievements
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {isLoading ? (
-                      <div className="flex items-center justify-center py-8">
-                        <RefreshCw className="h-8 w-8 text-primary animate-spin" />
-                      </div>
-                    ) : certificates.length > 0 ? (
-                      <div className="space-y-4">
-                        {certificates.map(cert => (
-                          <div key={cert.id} className="flex items-start gap-4 border-b pb-4">
-                            <div className="h-16 w-16 bg-primary/10 flex items-center justify-center rounded-lg">
-                              <Award className="h-8 w-8 text-primary" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <p className="font-medium">{cert.title}</p>
-                                <Badge variant="secondary" className="ml-2">
-                                  Score: {cert.score}%
-                                </Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                Issued: {formatDate(cert.issuedDate)}
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Certificate ID: {cert.certHash.substring(0, 10)}...
-                              </p>
-                            </div>
-                            <Link to={`/verify-cert/${cert.certHash}`}>
-                              <Button size="sm" variant="ghost">
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Verify
-                              </Button>
-                            </Link>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-12">
-                        <Award className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-medium">No Certificates Yet</h3>
-                        <p className="text-muted-foreground mt-1 mb-6">
-                          Take certification tests to earn blockchain-verified credentials
+                    {certificates.length === 0 ? (
+                      <div className="text-center py-10">
+                        <Award className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-medium mb-2">No certificates yet</h3>
+                        <p className="text-muted-foreground mb-6">
+                          Complete certification tests to earn verifiable credentials.
                         </p>
                         <Button asChild>
-                          <Link to="/certification-center">Take a Certification</Link>
+                          <Link to="/certification-center">
+                            <Award className="h-4 w-4 mr-2" />
+                            Explore Certification Tests
+                          </Link>
                         </Button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {certificates.map((cert) => (
+                          <CertificateCard key={cert.id} certificate={cert} />
+                        ))}
                       </div>
                     )}
                   </CardContent>
@@ -383,62 +359,8 @@ const Dashboard = () => {
             </Tabs>
           </div>
           
-          <div className="space-y-6">
+          <div className="lg:col-span-1">
             <QwixVaultProfile />
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">Upcoming Deadlines</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-orange-100 text-orange-800 h-10 w-10 rounded-full flex items-center justify-center">
-                      <Clock className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm">Resume Review</p>
-                      <p className="text-xs text-muted-foreground">Due in 2 days</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3">
-                    <div className="bg-emerald-100 text-emerald-800 h-10 w-10 rounded-full flex items-center justify-center">
-                      <Briefcase className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm">TechCorp Application</p>
-                      <p className="text-xs text-muted-foreground">Due in 1 week</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">Recommended Skills</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm">React.js</span>
-                  <Badge variant="outline">Trending</Badge>
-                </div>
-                <Progress value={65} className="h-1.5" />
-                
-                <div className="flex justify-between items-center pt-2">
-                  <span className="text-sm">TypeScript</span>
-                  <Badge variant="outline">In Demand</Badge>
-                </div>
-                <Progress value={40} className="h-1.5" />
-                
-                <div className="flex justify-between items-center pt-2">
-                  <span className="text-sm">Blockchain</span>
-                  <Badge variant="outline">Emerging</Badge>
-                </div>
-                <Progress value={25} className="h-1.5" />
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>

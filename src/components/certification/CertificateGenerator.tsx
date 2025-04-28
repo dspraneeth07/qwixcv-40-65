@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Award, CheckCircle, FileCheck, User, Mail, FileText } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Progress } from "@/components/ui/progress";
-import { Certificate } from "@/types/certification";
+import { Certificate } from "@/types/blockchain";
 import { generateCertificate } from "@/utils/blockchain";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useBlockchain } from "@/context/BlockchainContext";
+import { useAuth } from "@/context/AuthContext";
 
 interface CertificateGeneratorProps {
   testId: string;
@@ -24,6 +26,8 @@ const CertificateGenerator = ({ testId, testTitle, score, onComplete }: Certific
   const [recipientName, setRecipientName] = useState("");
   const [recipientEmail, setRecipientEmail] = useState("");
   const { toast } = useToast();
+  const { saveCertificateToVault, generateCertificate: generateBlockchainCertificate } = useBlockchain();
+  const { user } = useAuth();
   
   const steps = [
     "Preparing certificate data",
@@ -76,13 +80,36 @@ const CertificateGenerator = ({ testId, testTitle, score, onComplete }: Certific
       await simulateStep(5);
       
       // Generate the certificate using blockchain
-      const certificate = await generateCertificate(
-        testId, 
-        testTitle, 
-        score, 
-        recipientName,
-        recipientEmail
-      );
+      let certificate;
+      
+      // Try to use the blockchain context first for proper activity tracking
+      if (generateBlockchainCertificate) {
+        certificate = await generateBlockchainCertificate(
+          testId,
+          score,
+          testTitle
+        );
+      } 
+      
+      // If blockchain generation failed or not available, use the utility function
+      if (!certificate) {
+        certificate = await generateCertificate(
+          testId, 
+          testTitle, 
+          score, 
+          recipientName,
+          recipientEmail
+        );
+        
+        // Save to vault manually if using utility function
+        if (certificate) {
+          await saveCertificateToVault(certificate);
+        }
+      }
+      
+      if (!certificate) {
+        throw new Error("Failed to generate certificate");
+      }
       
       toast({
         title: "Certificate Generated",
@@ -112,6 +139,14 @@ const CertificateGenerator = ({ testId, testTitle, score, onComplete }: Certific
       await new Promise(resolve => setTimeout(resolve, 300));
     }
   };
+
+  // Prefill with user data if available
+  React.useEffect(() => {
+    if (user) {
+      setRecipientName(user.name || "");
+      setRecipientEmail(user.email || "");
+    }
+  }, [user]);
 
   return (
     <Card className="w-full max-w-3xl mx-auto shadow-md">

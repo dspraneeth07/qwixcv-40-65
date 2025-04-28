@@ -1,39 +1,38 @@
+
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { useBlockchain } from '@/context/BlockchainContext';
-import type { DocumentVerification } from '@/types/blockchain';
-import { Search, CheckCircle, XCircle, Loader2, QrCode, ExternalLink, Fingerprint } from "lucide-react";
-import { useToast } from '@/components/ui/use-toast';
-import QRCode from 'qrcode.react';
+import { Input } from "@/components/ui/input";
+import { Loader2, Search, CheckCircle, XCircle, Calendar, FileText, Fingerprint, Shield } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { useBlockchain } from "@/context/BlockchainContext";
+import { verifyDocument } from "@/utils/blockchain";
+import { BlockchainDocument, DocumentVerification } from "@/types/blockchain";
 
 interface DocumentVerifierProps {
   uniqueId?: string;
 }
 
-const DocumentVerifier: React.FC<DocumentVerifierProps> = ({ uniqueId: initialUniqueId }) => {
-  const [uniqueIdInput, setUniqueIdInput] = useState(initialUniqueId || '');
+const DocumentVerifier = ({ uniqueId: initialUniqueId }: DocumentVerifierProps) => {
+  const [documentId, setDocumentId] = useState(initialUniqueId || '');
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState<DocumentVerification | null>(null);
-  const [showQrCode, setShowQrCode] = useState(false);
-  
-  const { verifyDocument } = useBlockchain();
+  const [document, setDocument] = useState<BlockchainDocument | null>(null);
   const { toast } = useToast();
+  const { verifyDocument: blockchainVerifyDocument } = useBlockchain();
   
-  // Auto-verify when component mounts with a uniqueId
   useEffect(() => {
-    if (initialUniqueId && !verificationResult) {
+    if (initialUniqueId) {
+      setDocumentId(initialUniqueId);
       handleVerify();
     }
   }, [initialUniqueId]);
   
   const handleVerify = async () => {
-    if (!uniqueIdInput.trim()) {
+    if (!documentId.trim()) {
       toast({
         title: "Input Required",
-        description: "Please enter a document unique ID",
+        description: "Please enter a document ID to verify.",
         variant: "destructive"
       });
       return;
@@ -41,195 +40,177 @@ const DocumentVerifier: React.FC<DocumentVerifierProps> = ({ uniqueId: initialUn
     
     setIsVerifying(true);
     setVerificationResult(null);
+    setDocument(null);
     
     try {
-      // Add a small delay to prevent UI freezing
-      setTimeout(async () => {
-        try {
-          const result = await verifyDocument(uniqueIdInput.trim());
-          setVerificationResult(result);
-          
-          if (result.isValid) {
-            toast({
-              title: "Document Verified",
-              description: "The document is valid and was found on the blockchain",
-            });
-          } else {
-            toast({
-              title: "Verification Failed",
-              description: result.error || "Document could not be verified",
-              variant: "destructive"
-            });
-          }
-        } catch (error) {
-          console.error("Verification error:", error);
-          toast({
-            title: "Verification Error",
-            description: "An unexpected error occurred during verification",
-            variant: "destructive"
-          });
-        } finally {
-          setIsVerifying(false);
-        }
-      }, 100);
+      // First try to use blockchain context if available
+      let result;
+      
+      if (blockchainVerifyDocument) {
+        result = await blockchainVerifyDocument(documentId.trim());
+      } else {
+        // Fall back to utility function for public verification without login
+        result = await verifyDocument(documentId.trim());
+      }
+      
+      setVerificationResult(result);
+      
+      if (result.isValid && result.document) {
+        setDocument(result.document);
+        
+        toast({
+          title: "Verification Successful",
+          description: "This document has been verified on the blockchain.",
+        });
+      } else {
+        toast({
+          title: "Verification Failed",
+          description: result.error || "Could not verify this document.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
-      console.error("Verification setup error:", error);
+      console.error("Verification error:", error);
+      setVerificationResult({
+        isValid: false,
+        error: "An error occurred during verification."
+      });
+      
+      toast({
+        title: "Error",
+        description: "An error occurred during document verification.",
+        variant: "destructive"
+      });
+    } finally {
       setIsVerifying(false);
     }
   };
   
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
   
-  const verificationUrl = verificationResult?.document 
-    ? `${window.location.origin}/verify-document/${verificationResult.document.uniqueId}`
-    : '';
-  
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <Fingerprint className="h-5 w-5 mr-2 text-primary" />
-          Document Verification
-        </CardTitle>
-        <CardDescription>
-          Verify the authenticity of a document using its unique blockchain identity
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <div className="flex space-x-2">
-          <div className="flex-grow">
-            <Input
-              placeholder="Enter document unique ID..."
-              value={uniqueIdInput}
-              onChange={(e) => setUniqueIdInput(e.target.value)}
-            />
-          </div>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Shield className="h-5 w-5 mr-2" />
+            Document Verification
+          </CardTitle>
+          <CardDescription>
+            Verify the authenticity of blockchain-secured documents
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           <div className="flex space-x-2">
+            <Input
+              placeholder="Enter document ID or hash..."
+              value={documentId}
+              onChange={(e) => setDocumentId(e.target.value)}
+              className="flex-1"
+              disabled={isVerifying}
+            />
             <Button onClick={handleVerify} disabled={isVerifying}>
               {isVerifying ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : (
-                <Search className="h-4 w-4" />
+                <Search className="h-4 w-4 mr-2" />
               )}
-              <span className="ml-2">Verify</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => setShowQrCode(!showQrCode)}
-            >
-              <QrCode className="h-4 w-4" />
+              Verify
             </Button>
           </div>
-        </div>
-        
-        {showQrCode && !verificationResult && (
-          <div className="flex flex-col items-center justify-center space-y-3 p-4 border rounded-md">
-            <p className="text-sm text-muted-foreground">Scan a document's QR code to verify</p>
-            <div className="bg-white p-4 rounded">
-              <QRCode 
-                value={`${window.location.origin}/verify-document/scan`} 
-                size={150}
-                renderAs="svg"
-                level="H"
-              />
+        </CardContent>
+      </Card>
+      
+      {verificationResult && (
+        <Card className={verificationResult.isValid ? "border-green-200" : "border-red-200"}>
+          <div className="absolute -top-5 left-1/2 transform -translate-x-1/2">
+            <div className={`rounded-full p-2 ${verificationResult.isValid ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+              {verificationResult.isValid ? (
+                <CheckCircle className="h-6 w-6" />
+              ) : (
+                <XCircle className="h-6 w-6" />
+              )}
             </div>
           </div>
-        )}
-        
-        {verificationResult && (
-          <div className="mt-4 space-y-4">
-            {verificationResult.isValid ? (
-              <>
-                <Alert variant="default" className="bg-green-50 border-green-200 text-green-800">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <AlertTitle>Document Verified</AlertTitle>
-                  <AlertDescription className="text-green-700">
-                    This document is authentic and has been verified on the blockchain.
-                  </AlertDescription>
-                </Alert>
-                
-                <div className="space-y-4 border p-4 rounded-md">
+          
+          <CardHeader className="pt-8">
+            <CardTitle className={verificationResult.isValid ? "text-green-700" : "text-red-700"}>
+              {verificationResult.isValid ? "Document Verified" : "Verification Failed"}
+            </CardTitle>
+            <CardDescription>
+              {verificationResult.isValid 
+                ? "This document is authentic and has been verified on the blockchain"
+                : verificationResult.error || "This document could not be verified"}
+            </CardDescription>
+          </CardHeader>
+          
+          {verificationResult.isValid && document && (
+            <CardContent className="space-y-4">
+              <div className="border rounded-lg p-4">
+                <div className="flex items-center mb-4">
+                  <div className="h-12 w-12 bg-slate-100 rounded-lg flex items-center justify-center mr-4">
+                    <FileText className="h-6 w-6 text-slate-600" />
+                  </div>
                   <div>
-                    <h3 className="font-medium text-lg">{verificationResult.document?.fileName}</h3>
-                    {verificationResult.document?.description && (
-                      <p className="text-sm text-muted-foreground">{verificationResult.document.description}</p>
-                    )}
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <div>
-                        <span className="text-sm font-medium">Document ID:</span>
-                        <p className="text-sm font-mono">{verificationResult.document?.uniqueId}</p>
-                      </div>
-                      <div>
-                        <span className="text-sm font-medium">File Type:</span>
-                        <p className="text-sm">{verificationResult.document?.fileType}</p>
-                      </div>
-                      <div>
-                        <span className="text-sm font-medium">Timestamp:</span>
-                        <p className="text-sm">{formatDate(verificationResult.document?.timestamp || '')}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div>
-                        <span className="text-sm font-medium">Blockchain Hash:</span>
-                        <p className="text-sm font-mono truncate">{verificationResult.document?.blockchainHash}</p>
-                      </div>
-                      <div>
-                        <span className="text-sm font-medium">Owner Address:</span>
-                        <p className="text-sm font-mono truncate">{verificationResult.document?.ownerAddress}</p>
-                      </div>
-                      {verificationResult.document?.ipfsUri && (
-                        <div>
-                          <span className="text-sm font-medium">IPFS Hash:</span>
-                          <p className="text-sm font-mono truncate">{verificationResult.document.ipfsUri.replace('ipfs://', '')}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-center">
-                    <div className="text-center">
-                      <h4 className="text-sm font-medium mb-2">Verification QR Code</h4>
-                      <div className="bg-white inline-block p-3 border rounded">
-                        <QRCode 
-                          value={verificationUrl} 
-                          size={150}
-                          renderAs="svg"
-                          level="H"
-                        />
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-2">Scan to verify this document</p>
-                    </div>
+                    <h3 className="font-medium">{document.fileName}</h3>
+                    <p className="text-sm text-muted-foreground">{document.fileType}</p>
                   </div>
                 </div>
-              </>
-            ) : (
-              <Alert variant="destructive">
-                <XCircle className="h-4 w-4" />
-                <AlertTitle>Verification Failed</AlertTitle>
-                <AlertDescription>
-                  {verificationResult.error || "This document could not be verified on the blockchain."}
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
-        )}
-      </CardContent>
-      
-      <CardFooter className="flex-col space-y-4 text-center text-sm text-muted-foreground">
-        <div className="w-full h-px bg-border"></div>
-        <p>
-          QwixMask blockchain verification ensures tamper-proof document authentication
-          using secure cryptographic proofs and unique identity verification.
-        </p>
-      </CardFooter>
-    </Card>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground mb-1">Document ID</p>
+                    <p className="font-mono">{document.uniqueId}</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-muted-foreground mb-1">Timestamp</p>
+                    <p className="flex items-center">
+                      <Calendar className="h-4 w-4 mr-1" />
+                      {formatDate(document.timestamp)}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-muted-foreground mb-1">Blockchain Hash</p>
+                    <p className="font-mono text-xs truncate">{document.blockchainHash}</p>
+                  </div>
+                  
+                  <div>
+                    <p className="text-muted-foreground mb-1">IPFS URI</p>
+                    <p className="font-mono text-xs truncate">{document.ipfsUri}</p>
+                  </div>
+                </div>
+                
+                {document.description && (
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-muted-foreground mb-1">Description</p>
+                    <p>{document.description}</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="bg-green-50 border border-green-100 rounded-lg p-4 flex items-start">
+                <Fingerprint className="h-5 w-5 text-green-600 mr-2 mt-0.5" />
+                <div>
+                  <p className="text-green-800 font-medium mb-1">Blockchain Verification Successful</p>
+                  <p className="text-green-700 text-sm">
+                    This document has been cryptographically verified on the blockchain. 
+                    Its contents are authentic and have not been tampered with since being registered.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+      )}
+    </div>
   );
 };
 

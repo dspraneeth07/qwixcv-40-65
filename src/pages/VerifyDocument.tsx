@@ -5,7 +5,6 @@ import MainLayout from '@/components/layout/MainLayout';
 import DocumentVerifier from '@/components/blockchain/DocumentVerifier';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Fingerprint, QrCode } from 'lucide-react';
-import { useBlockchain } from '@/context/BlockchainContext';
 
 const VerifyDocument = () => {
   const { uniqueId } = useParams<{ uniqueId: string }>();

@@ -13,7 +13,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, FileText, AlertTriangle } from 'lucide-react';
 import { TestInfo, Question } from "@/types/certification";
 import { Certificate, UserActivity } from "@/types/blockchain";
-import { generateCertificate } from '@/utils/blockchain';
 import { v4 as uuidv4 } from 'uuid';
 
 const TESTS: Record<string, TestInfo> = {
@@ -225,7 +224,7 @@ const CertificationTest = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  const { isConnected } = useBlockchain();
+  const { isConnected, saveCertificateToVault, getVaultUser } = useBlockchain();
   
   const [loading, setLoading] = useState(true);
   const [testInfo, setTestInfo] = useState<TestInfo | null>(null);
@@ -278,6 +277,7 @@ const CertificationTest = () => {
     setUserAnswers(answers);
     setTestCompleted(true);
 
+    // Record this activity in the user's QwixVault
     if (testInfo) {
       const vaultUsersStr = localStorage.getItem('qwixvault_users');
       const vaultUsers = vaultUsersStr ? JSON.parse(vaultUsersStr) : {};
@@ -314,9 +314,13 @@ const CertificationTest = () => {
   };
   
   const handleCertificateComplete = (certificate: Certificate) => {
+    // Save to local storage for immediate display
     const certificates = JSON.parse(localStorage.getItem('user_certificates') || '[]');
     certificates.push(certificate);
     localStorage.setItem('user_certificates', JSON.stringify(certificates));
+    
+    // Also ensure certificate is saved to the user's vault
+    saveCertificateToVault(certificate);
     
     toast({
       title: "Certificate Generated",
