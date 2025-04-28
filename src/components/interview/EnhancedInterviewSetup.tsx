@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import {
   Card,
@@ -45,7 +44,7 @@ interface InterviewFormData {
   includeTechnicalQuestions?: boolean;
 }
 
-interface InterviewSettings {
+export interface InterviewSettings {
   resumeText: string;
   resumeFileName: string;
   jobLevel: string;
@@ -110,14 +109,12 @@ const EnhancedInterviewSetup: React.FC<EnhancedInterviewSetupProps> = ({ onSubmi
   };
 
   const handleSubmit = (data: InterviewFormData) => {
-    // Removed the setIsLoading call since it's not defined
-    
     const settings: InterviewSettings = {
       resumeText: data.resumeText || '',
       resumeFileName: data.resumeFileName || 'Resume.txt',
       jobLevel: data.jobLevel || 'mid',
       duration: data.duration || 30,
-      jobTitle: data.jobTitle || 'Software Developer', // Provide a default value to satisfy the required field
+      jobTitle: data.jobTitle || 'Software Developer',
       targetCompany: data.targetCompany,
       difficulty: data.difficulty || 'medium',
       interviewType: data.interviewType || 'mixed',

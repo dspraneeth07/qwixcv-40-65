@@ -38,7 +38,7 @@ const QwixVaultProfile = () => {
             <CardContent>
               <p className="mb-2"><strong>Name:</strong> {user?.name || 'N/A'}</p>
               <p className="mb-2"><strong>Email:</strong> {user?.email || 'N/A'}</p>
-              <p><strong>Member since:</strong> {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</p>
+              <p><strong>Member since:</strong> {new Date().toLocaleDateString()}</p>
             </CardContent>
           </Card>
           

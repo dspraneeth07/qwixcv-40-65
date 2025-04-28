@@ -7,4 +7,5 @@ export interface User {
   name?: string;
   role: UserRole;
   profilePicture?: string;
+  createdAt?: string; // Adding this to fix type issues
 }
