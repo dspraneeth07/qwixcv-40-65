@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, FileText, AlertTriangle } from 'lucide-react';
 import { TestInfo, Question, Certificate } from "@/types/certification";
 import { generateCertificate } from '@/utils/blockchain';
+import { v4 as uuidv4 } from 'uuid';
 
 const TESTS: Record<string, TestInfo> = {
   "resume-01": {
@@ -274,6 +275,32 @@ const CertificationTest = () => {
     setTestPassed(passed);
     setUserAnswers(answers);
     setTestCompleted(true);
+
+    if (testInfo) {
+      const vaultUsersStr = localStorage.getItem('qwixvault_users');
+      const vaultUsers = vaultUsersStr ? JSON.parse(vaultUsersStr) : {};
+
+      if (user && vaultUsers[user.email]) {
+        const activity: UserActivity = {
+          id: uuidv4(),
+          type: 'exam_taken',
+          title: 'Certification Test Completed',
+          description: `Completed ${testInfo.title}`,
+          timestamp: new Date().toISOString(),
+          result: {
+            passed,
+            score
+          }
+        };
+
+        vaultUsers[user.email].activities = [
+          activity,
+          ...(vaultUsers[user.email].activities || [])
+        ];
+
+        localStorage.setItem('qwixvault_users', JSON.stringify(vaultUsers));
+      }
+    }
   };
   
   const handleRetryTest = () => {

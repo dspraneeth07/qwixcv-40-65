@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Layout } from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,6 +15,7 @@ import { useBlockchain } from "@/context/BlockchainContext";
 import QwixVaultProfile from "@/components/blockchain/QwixVaultProfile";
 import type { Certificate } from '@/types/certification';
 import type { BlockchainDocument } from '@/types/blockchain';
+import ActivityFeed from '@/components/dashboard/ActivityFeed';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -25,22 +25,18 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Load user data
   useEffect(() => {
     const loadUserData = async () => {
       try {
         setIsLoading(true);
         
         if (isConnected) {
-          // Get user documents from blockchain vault
           const userDocuments = await getUserDocuments();
           setDocuments(userDocuments);
           
-          // Get user certificates
           const userCertificates = await getUserCertificates();
           setCertificates(userCertificates);
         } else {
-          // If not connected, clear data
           setDocuments([]);
           setCertificates([]);
         }
@@ -54,17 +50,14 @@ const Dashboard = () => {
     loadUserData();
   }, [isConnected, getUserDocuments, getUserCertificates]);
 
-  // Refresh user data
   const handleRefresh = async () => {
     try {
       setRefreshing(true);
       
       if (isConnected) {
-        // Get user documents from blockchain vault
         const userDocuments = await getUserDocuments();
         setDocuments(userDocuments);
         
-        // Get user certificates
         const userCertificates = await getUserCertificates();
         setCertificates(userCertificates);
       }
@@ -75,7 +68,6 @@ const Dashboard = () => {
     }
   };
 
-  // Format date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -109,7 +101,6 @@ const Dashboard = () => {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Main Content */}
           <div className="lg:col-span-3 space-y-6">
             <Tabs defaultValue="overview">
               <TabsList className="mb-4">
@@ -127,9 +118,7 @@ const Dashboard = () => {
                 </TabsTrigger>
               </TabsList>
               
-              {/* Overview Tab */}
               <TabsContent value="overview" className="space-y-6">
-                {/* Stats Row */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <Card>
                     <CardHeader className="pb-2">
@@ -173,109 +162,16 @@ const Dashboard = () => {
                   </Card>
                 </div>
                 
-                {/* Recent Activity */}
                 <Card>
                   <CardHeader>
                     <CardTitle>Recent Activity</CardTitle>
                     <CardDescription>Your recent actions and updates</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {/* Show certificates as activity */}
-                      {certificates.slice(0, 3).map(certificate => (
-                        <div key={certificate.id} className="flex items-start gap-3 pb-3 border-b">
-                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                            <Award className="h-4 w-4 text-primary" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-medium">Certificate Earned</p>
-                            <p className="text-sm text-muted-foreground">
-                              {certificate.title} - Score: {certificate.score}%
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {formatDate(certificate.issuedDate)}
-                            </p>
-                          </div>
-                          <Badge variant="outline" className="ml-auto mt-2">
-                            Certificate
-                          </Badge>
-                        </div>
-                      ))}
-                      
-                      {/* Show documents as activity */}
-                      {documents.slice(0, 2).map(document => (
-                        <div key={document.uniqueId} className="flex items-start gap-3 pb-3 border-b">
-                          <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center">
-                            <Shield className="h-4 w-4 text-blue-600" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-medium">Document Secured</p>
-                            <p className="text-sm text-muted-foreground">
-                              {document.fileName}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {formatDate(document.timestamp)}
-                            </p>
-                          </div>
-                          <Badge variant="outline" className="ml-auto mt-2">
-                            Blockchain
-                          </Badge>
-                        </div>
-                      ))}
-                      
-                      {/* Placeholder activities */}
-                      <div className="flex items-start gap-3 pb-3 border-b">
-                        <div className="h-8 w-8 rounded-full bg-amber-50 flex items-center justify-center">
-                          <Scan className="h-4 w-4 text-amber-600" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium">Resume ATS Scan</p>
-                          <p className="text-sm text-muted-foreground">
-                            Your resume scored 78% ATS compatibility
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            3 days ago
-                          </p>
-                        </div>
-                        <Badge variant="outline" className="ml-auto mt-2">
-                          ATS
-                        </Badge>
-                      </div>
-                      
-                      <div className="flex items-start gap-3">
-                        <div className="h-8 w-8 rounded-full bg-green-50 flex items-center justify-center">
-                          <Send className="h-4 w-4 text-green-600" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium">Resume Shared</p>
-                          <p className="text-sm text-muted-foreground">
-                            You shared your resume with TechCorp Inc.
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            1 week ago
-                          </p>
-                        </div>
-                        <Badge variant="outline" className="ml-auto mt-2">
-                          Share
-                        </Badge>
-                      </div>
-                    </div>
-                    
-                    {certificates.length === 0 && documents.length === 0 && (
-                      <div className="flex flex-col items-center justify-center py-8">
-                        <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground">No recent activities found</p>
-                        <Button variant="link" asChild>
-                          <Link to="/builder">
-                            Start building your career profile
-                          </Link>
-                        </Button>
-                      </div>
-                    )}
+                    <ActivityFeed activities={vaultUser?.activities || []} />
                   </CardContent>
                 </Card>
                 
-                {/* Quick Actions */}
                 <Card>
                   <CardHeader>
                     <CardTitle>Quick Actions</CardTitle>
@@ -355,7 +251,6 @@ const Dashboard = () => {
                 </Card>
               </TabsContent>
               
-              {/* Documents Tab */}
               <TabsContent value="documents" className="space-y-6">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
@@ -416,7 +311,6 @@ const Dashboard = () => {
                 </Card>
               </TabsContent>
               
-              {/* Certificates Tab */}
               <TabsContent value="certificates" className="space-y-6">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
@@ -486,7 +380,6 @@ const Dashboard = () => {
             </Tabs>
           </div>
           
-          {/* Sidebar */}
           <div className="space-y-6">
             <QwixVaultProfile />
             

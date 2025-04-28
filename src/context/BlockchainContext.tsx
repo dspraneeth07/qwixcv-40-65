@@ -351,6 +351,35 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
         contractAddress: `0x${Array(40).fill(0).map(() => Math.random().toString(16)[2]).join('')}`,
         smartContractStandard: "ERC-721"
       };
+
+      const activity: UserActivity = {
+        id: uuidv4(),
+        type: 'certificate_generated',
+        title: 'Certificate Generated',
+        description: `Generated certificate for ${title}`,
+        timestamp: new Date().toISOString(),
+        result: {
+          certificateId: newCertificate.id,
+          score
+        }
+      };
+
+      const vaultUsersStr = localStorage.getItem('qwixvault_users');
+      const vaultUsers = vaultUsersStr ? JSON.parse(vaultUsersStr) : {};
+
+      if (user && vaultUsers[user.email]) {
+        vaultUsers[user.email].activities = [
+          activity,
+          ...(vaultUsers[user.email].activities || [])
+        ];
+        vaultUsers[user.email].certificates = [
+          newCertificate,
+          ...(vaultUsers[user.email].certificates || [])
+        ];
+
+        localStorage.setItem('qwixvault_users', JSON.stringify(vaultUsers));
+        setVaultUser(vaultUsers[user.email]);
+      }
       
       return newCertificate;
     } catch (error) {

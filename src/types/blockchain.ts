@@ -1,4 +1,3 @@
-
 export interface BlockchainDocument {
   uniqueId: string;
   fileName: string;
@@ -52,6 +51,19 @@ export interface DocumentVerification {
   error?: string;
 }
 
+export interface UserActivity {
+  id: string;
+  type: 'exam_taken' | 'certificate_generated' | 'document_added';
+  title: string;
+  description: string;
+  timestamp: string;
+  result?: {
+    passed?: boolean;
+    score?: number;
+    certificateId?: string;
+  };
+}
+
 export interface QwixVaultUser {
   email: string;
   walletAddress: string;
@@ -59,4 +71,5 @@ export interface QwixVaultUser {
   createdAt: string;
   documents: BlockchainDocument[];
   certificates: Certificate[];
+  activities: UserActivity[];  // Adding activities array
 }
