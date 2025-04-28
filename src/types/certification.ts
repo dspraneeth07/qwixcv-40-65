@@ -1,47 +1,16 @@
 
-export interface Certificate {
-  id: string;
-  testId: string;
-  title: string;
-  score: number;
-  recipientName: string;
-  recipientEmail: string;
-  issuer: string;
-  issuedDate: string;
-  validUntil?: string;
-  txHash: string;
-  blockId: number;
-  certHash: string;
-  uniqueId: string;
-  contractAddress?: string;
-  blockchainNetwork: string;
-  smartContractStandard?: string;
-  isPublic: boolean;
-}
+// Import the Certificate type from blockchain types
+export type { Certificate } from './blockchain';
 
-export interface BlockchainTransaction {
-  hash: string;
-  blockId: number;
-  timestamp: number;
-  confirmations: number;
-  status: 'pending' | 'confirmed' | 'failed';
-}
-
-export interface Question {
-  text: string;
-  options: string[];
-  correctAnswer: string;
-}
-
-export interface TestInfo {
+export interface CertificationTest {
   id: string;
   title: string;
   description: string;
-  topics: string[];
-  timeLimit: number;
-  questionCount: number;
+  category: string;
+  difficulty: string;
+  duration: number; // minutes
+  skillsGained: string[];
+  image: string;
+  questions: number;
   passingScore: number;
-  category?: string; // Adding the category property as optional
 }
-
-export type VerificationMethod = 'certHash' | 'txHash' | 'blockId' | 'uniqueId' | 'file';

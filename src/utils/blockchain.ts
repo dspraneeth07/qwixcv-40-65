@@ -1,328 +1,141 @@
 
 import html2pdf from 'html2pdf.js';
-import { Certificate, BlockchainTransaction, VerificationMethod } from "@/types/certification";
-import { ethers } from 'ethers';
-import { NFTStorage } from 'nft.storage';
+import { Certificate } from '@/types/certification';
+import { useToast } from '@/components/ui/use-toast';
+import { getQwixVaultIdByEmail } from './blockchainDocuments';
+import QRCode from 'qrcode';
 
-// NFT.Storage API key for IPFS storage
-const NFT_STORAGE_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweEU5MWE3NDQ0ODVBQUYyMTE1MzU1OTlkZGQwRTdGOTcyQzczNTIxNzQiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTY1MTY2MTYyMzc5NywibmFtZSI6IlF3aXhCbG9jayJ9.iZVMeFkVe1Bw8IWkZJmGQPQKTLT9HnW83vubGolFbBI';
-
-// Mock certificates storage - this would be replaced with actual blockchain calls
-const CERTIFICATES_STORAGE_KEY = 'qwik_cv_certificates';
-
-// Get Ethereum provider
-export const getProvider = async () => {
-  if (typeof window !== 'undefined' && window.ethereum) {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    return { provider, signer: await provider.getSigner() };
-  }
-  
-  // Fallback to a public provider if MetaMask is not available
-  return { 
-    provider: new ethers.JsonRpcProvider('https://polygon-mumbai.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'),
-    signer: null
-  };
-};
-
-// Generate a unique certificate hash
-export const generateCertificateHash = (): string => {
-  return `cert_${Math.random().toString(36).substring(2, 15)}_${Date.now().toString(36)}`;
-};
-
-// Get user certificates from localStorage
-export const getUserCertificates = (): Certificate[] => {
-  if (typeof window === 'undefined') return [];
-  
+// Generate Certificate PDF
+export const generateCertificatePDF = async (certificate: Certificate): Promise<string> => {
   try {
-    const storedCerts = localStorage.getItem(CERTIFICATES_STORAGE_KEY);
-    const certs = storedCerts ? JSON.parse(storedCerts) : [];
-    console.log("Retrieved certificates from storage:", certs);
-    return certs;
-  } catch (error) {
-    console.error("Error retrieving certificates:", error);
-    return [];
-  }
-};
-
-// Save certificates to localStorage
-const saveCertificates = (certificates: Certificate[]): void => {
-  if (typeof window === 'undefined') return;
-  
-  try {
-    localStorage.setItem(CERTIFICATES_STORAGE_KEY, JSON.stringify(certificates));
-    console.log("Saved certificates to storage:", certificates);
-  } catch (error) {
-    console.error("Error saving certificates:", error);
-  }
-};
-
-// Get NFT.Storage client
-const getNftStorageClient = () => {
-  return new NFTStorage({ token: NFT_STORAGE_API_KEY });
-};
-
-// Upload certificate to IPFS
-const uploadCertificateToIPFS = async (certificate: Certificate): Promise<string> => {
-  const client = getNftStorageClient();
-  
-  // Create certificate metadata
-  const metadata = {
-    name: certificate.title,
-    description: `Certificate for ${certificate.recipientName} - ${certificate.title}`,
-    image: "https://qwixzen.com/certificates/template.png", // Placeholder image URL
-    properties: {
-      testId: certificate.testId,
-      score: certificate.score,
-      recipientName: certificate.recipientName,
-      recipientEmail: certificate.recipientEmail,
-      issuer: certificate.issuer,
-      issuedDate: certificate.issuedDate,
-      uniqueId: certificate.uniqueId
-    }
-  };
-  
-  // Convert to blob
-  const metadataBlob = new Blob([JSON.stringify(metadata)], { type: 'application/json' });
-  
-  // Store as NFT
-  const cid = await client.storeBlob(metadataBlob);
-  return `ipfs://${cid}`;
-};
-
-// Generate a certificate
-export const generateCertificate = async (
-  testId: string, 
-  testTitle: string, 
-  score: number, 
-  recipientName: string,
-  recipientEmail: string
-): Promise<Certificate> => {
-  // Generate a unique transaction hash
-  const txHash = `0x${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
-  const blockId = Math.floor(Math.random() * 10000000);
-  const certHash = generateCertificateHash();
-  const uniqueId = `QX-${Date.now().toString().substring(4)}-${Math.floor(Math.random() * 1000)}`;
-  
-  const certificate: Certificate = {
-    id: `${testId}-${Date.now()}`,
-    testId,
-    title: testTitle,
-    score,
-    recipientName,
-    recipientEmail,
-    issuer: "QwiXCertChain by QwikZen Group",
-    issuedDate: new Date().toISOString(),
-    txHash,
-    blockId,
-    certHash,
-    uniqueId,
-    contractAddress: "0x8a3B4Dd2386323952E393FdE0Bae2F797Eb8d17c",
-    blockchainNetwork: "Polygon Mumbai",
-    smartContractStandard: "ERC-721",
-    isPublic: true
-  };
-  
-  try {
-    // Upload to IPFS
-    const ipfsUri = await uploadCertificateToIPFS(certificate);
+    // Create certificate template
+    const template = `
+      <div style="width: 210mm; height: 297mm; padding: 15mm; border: 10px double #3730a3; position: relative; background-color: white; color: #1f2937; font-family: 'Playfair Display', serif;">
+        <div style="text-align: center; margin-bottom: 10mm;">
+          <h1 style="font-size: 36px; color: #3730a3; margin-bottom: 5mm;">Certificate of Achievement</h1>
+          <h2 style="font-size: 24px; color: #4f46e5; margin-bottom: 5mm;">${certificate.title}</h2>
+        </div>
+        
+        <div style="text-align: center; margin: 15mm 0;">
+          <p style="font-size: 16px; margin-bottom: 5mm;">This certificate is presented to</p>
+          <h2 style="font-size: 32px; color: #3730a3; margin-bottom: 5mm; font-style: italic;">${certificate.holderName}</h2>
+          <p style="font-size: 16px; margin-bottom: 5mm;">for successfully completing the assessment with a score of</p>
+          <div style="font-size: 24px; color: #4f46e5; margin: 10mm 0; padding: 5mm; border: 2px solid #4f46e5; display: inline-block; border-radius: 5px;">
+            <strong>${certificate.score}%</strong>
+          </div>
+        </div>
+        
+        <div style="margin-top: 20mm;">
+          <div style="display: flex; justify-content: space-between; margin-top: 30mm;">
+            <div style="text-align: center; width: 40%;">
+              <div style="border-top: 1px solid #000; padding-top: 2mm;">
+                <p style="margin: 0; font-size: 16px;">${certificate.issuerName}</p>
+                <p style="margin: 0; font-size: 12px; color: #6b7280;">Issuing Authority</p>
+              </div>
+            </div>
+            
+            <div style="text-align: center; width: 40%;">
+              <div style="border-top: 1px solid #000; padding-top: 2mm;">
+                <p style="margin: 0; font-size: 16px;">${new Date(certificate.issuedDate).toLocaleDateString()}</p>
+                <p style="margin: 0; font-size: 12px; color: #6b7280;">Date of Issue</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div style="position: absolute; bottom: 15mm; left: 15mm; display: flex; align-items: center;">
+          <div id="qrcode" style="margin-right: 10mm;"></div>
+          <div>
+            <p style="margin: 0; font-size: 12px; color: #6b7280;">Certificate ID: ${certificate.certHash}</p>
+            <p style="margin: 0; font-size: 12px; color: #6b7280;">Block: ${certificate.blockId}</p>
+            <p style="margin: 0; font-size: 12px; color: #6b7280;">Verify at: ${window.location.origin}/verify-cert/${certificate.certHash}</p>
+          </div>
+        </div>
+        
+        <div style="position: absolute; top: 15mm; right: 15mm;">
+          <img src="/qwixcert-logo.png" style="height: 15mm;">
+        </div>
+        
+        <div style="position: absolute; bottom: 10mm; right: 15mm; text-align: right;">
+          <p style="margin: 0; font-size: 12px; color: #6b7280;">QwixVault ID: ${certificate.vaultId}</p>
+          <p style="margin: 0; font-size: 10px; color: #6b7280;">Secured with blockchain technology</p>
+        </div>
+      </div>
+    `;
     
-    // In a real implementation, we would mint an NFT here
-    // For now, we just store the IPFS URI in the certificate
-    const updatedCertificate = {
-      ...certificate,
-      ipfsUri: ipfsUri,
-      ipfsCid: ipfsUri.replace('ipfs://', '')
-    };
+    // Create a temporary div to render the certificate
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = template;
+    document.body.appendChild(tempDiv);
     
-    // Save to localStorage
-    const certificates = getUserCertificates();
-    certificates.push(updatedCertificate);
-    saveCertificates(certificates);
+    // Generate QR code
+    const verificationUrl = `${window.location.origin}/verify-cert/${certificate.certHash}`;
+    const qrCode = await QRCode.toDataURL(verificationUrl);
     
-    console.log("Generated new certificate:", updatedCertificate);
-    
-    return updatedCertificate;
-  } catch (error) {
-    console.error("Error generating certificate:", error);
-    
-    // Still save to localStorage in case of IPFS error
-    const certificates = getUserCertificates();
-    certificates.push(certificate);
-    saveCertificates(certificates);
-    
-    return certificate;
-  }
-};
-
-// Update certificate visibility
-export const updateCertificateVisibility = (certificateId: string, isPublic: boolean): boolean => {
-  const certificates = getUserCertificates();
-  const index = certificates.findIndex(cert => cert.id === certificateId);
-  
-  if (index === -1) return false;
-  
-  certificates[index].isPublic = isPublic;
-  saveCertificates(certificates);
-  
-  return true;
-};
-
-// Find a certificate by various identifiers
-export const findCertificate = (identifier: string, method: VerificationMethod = 'certHash'): Certificate | null => {
-  const certificates = getUserCertificates();
-  
-  // Clean up the identifier by trimming whitespace
-  const cleanIdentifier = identifier.trim();
-  
-  console.log(`Finding certificate with ${method}: "${cleanIdentifier}"`, certificates);
-  
-  let foundCert: Certificate | null = null;
-  
-  switch (method) {
-    case 'certHash':
-      foundCert = certificates.find(cert => cert.certHash === cleanIdentifier) || null;
-      break;
-    case 'txHash':
-      foundCert = certificates.find(cert => cert.txHash === cleanIdentifier) || null;
-      break;
-    case 'uniqueId':
-      foundCert = certificates.find(cert => cert.uniqueId === cleanIdentifier) || null;
-      break;
-    case 'blockId':
-      foundCert = certificates.find(cert => cert.blockId.toString() === cleanIdentifier) || null;
-      break;
-    default:
-      foundCert = null;
-  }
-  
-  console.log("Found certificate:", foundCert);
-  return foundCert;
-};
-
-// Verify a certificate
-export const verifyCertificate = async (
-  identifier: string, 
-  method: VerificationMethod = 'certHash'
-): Promise<{
-  isValid: boolean;
-  certificate?: Certificate;
-  transaction?: BlockchainTransaction;
-  error?: string;
-}> => {
-  // Add console logging for debugging
-  console.log("Verifying certificate with:", { identifier, method });
-  
-  // Get all certificates for debugging
-  const allCertificates = getUserCertificates();
-  console.log("All available certificates:", allCertificates);
-  
-  try {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    const certificate = findCertificate(identifier, method);
-    console.log("Found certificate:", certificate);
-    
-    if (!certificate) {
-      return {
-        isValid: false,
-        error: `Certificate not found using ${method}.`
-      };
+    // Add QR code to the template
+    const qrElement = document.createElement('img');
+    qrElement.src = qrCode;
+    qrElement.style.width = '20mm';
+    qrElement.style.height = '20mm';
+    const qrContainer = tempDiv.querySelector('#qrcode');
+    if (qrContainer) {
+      qrContainer.appendChild(qrElement);
     }
     
-    // Simulate transaction details
-    const transaction: BlockchainTransaction = {
-      hash: certificate.txHash,
-      blockId: certificate.blockId,
-      timestamp: new Date(certificate.issuedDate).getTime(),
-      confirmations: Math.floor(Math.random() * 100) + 50,
-      status: 'confirmed'
+    // Generate PDF
+    const pdfOptions = {
+      margin: 0,
+      filename: `${certificate.title.replace(/\s+/g, '-')}-${certificate.certHash}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
     
-    return {
-      isValid: true,
-      certificate,
-      transaction
-    };
+    // Generate PDF as a blob URL
+    const pdfBlob = await html2pdf().from(tempDiv).set(pdfOptions).outputPdf('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    
+    // Clean up
+    document.body.removeChild(tempDiv);
+    
+    return pdfUrl;
   } catch (error) {
-    console.error("Verification error:", error);
-    return {
-      isValid: false,
-      error: "An unexpected error occurred during verification."
-    };
+    console.error('Error generating PDF:', error);
+    throw error;
   }
 };
 
-// Verify a certificate from file
-export const verifyCertificateFromFile = async (file: File): Promise<{
-  isValid: boolean;
-  certificate?: Certificate;
-  transaction?: BlockchainTransaction;
-  error?: string;
-}> => {
-  // This would be replaced with actual file parsing and verification
-  await new Promise(resolve => setTimeout(resolve, 2000));
-  
-  // Simulate error for now (would be replaced with actual logic)
-  return {
-    isValid: false,
-    error: "File verification is not supported in this demo version."
-  };
-};
-
-// Generate a PDF certificate
-export const generateCertificatePDF = async (elementId: string, fileName: string): Promise<void> => {
-  const element = document.getElementById(elementId);
-  
-  if (!element) {
-    throw new Error('Element not found');
-  }
-  
-  // Configure pdf options for standard certificate size (8.5" x 11")
-  const options = {
-    margin: 0,
-    filename: fileName,
-    image: { type: 'jpeg', quality: 1 },
-    html2canvas: { scale: 2, useCORS: true, logging: true },
-    jsPDF: { 
-      unit: 'in', 
-      format: 'letter', // 8.5" x 11" 
-      orientation: 'landscape' 
-    }
-  };
-  
-  // Generate the PDF
-  await html2pdf().set(options).from(element).save();
-};
-
-// Helper for Web Share API
-export const shareCertificate = async (certificate: Certificate): Promise<boolean> => {
-  if (!certificate) return false;
-  
-  // Ensure the verification URL is consistent
-  const baseUrl = window.location.origin.replace(/\/+$/, '');
-  const verificationUrl = `${baseUrl}/verify-cert/${certificate.certHash}`;
+// Share certificate
+export const shareCertificate = async (certificate: Certificate) => {
+  const verificationUrl = `${window.location.origin}/verify-cert/${certificate.certHash}`;
   
   if (navigator.share) {
     try {
       await navigator.share({
-        title: `${certificate.title} Certificate`,
-        text: `Check out my blockchain-verified ${certificate.title} certificate!`,
+        title: `${certificate.title} - Certificate`,
+        text: `Check out my certificate: ${certificate.title}`,
         url: verificationUrl
       });
       return true;
     } catch (error) {
-      console.error("Sharing failed:", error);
-      return false;
+      console.error('Error sharing:', error);
+      
+      // Fall back to clipboard
+      return copyToClipboard(verificationUrl);
     }
+  } else {
+    // Fall back to clipboard
+    return copyToClipboard(verificationUrl);
   }
-  
-  return false;
 };
 
-// Check if MetaMask is installed
-export const hasMetaMask = (): boolean => {
-  return typeof window !== 'undefined' && 
-    typeof window.ethereum !== 'undefined' && 
-    window.ethereum.isMetaMask;
+// Copy to clipboard helper
+const copyToClipboard = async (text: string): Promise<boolean> => {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (error) {
+    console.error('Failed to copy:', error);
+    return false;
+  }
 };

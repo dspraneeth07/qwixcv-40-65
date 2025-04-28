@@ -1,19 +1,17 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { uploadToIPFS, getFromIPFS, getIPFSGatewayLink } from '@/utils/ipfsService';
-import { hasWeb3Support } from '@/utils/qwixMaskWallet';
+import { useAuth } from './AuthContext';
+import { useToast } from '@/components/ui/use-toast';
 import { v4 as uuidv4 } from 'uuid';
-import { useToast } from "@/components/ui/use-toast";
-import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { sha256 } from 'js-sha256';
-import { BlockchainDocument, DocumentVerification, DocumentUploadParams } from '@/types/blockchain';
-import { addUserDocument, getUserDocuments as getLocalUserDocuments, getUserDocumentsByOwner } from '@/utils/blockchainDocuments';
+import { 
+  BlockchainDocument, 
+  DocumentUploadParams,
+  DocumentVerification,
+  QwixVaultUser
+} from '@/types/blockchain';
+import { Certificate } from '@/types/certification';
+import { hasWeb3Support } from '@/utils/qwixMaskWallet';
 
-// Correct type re-export using export type
-export type { BlockchainDocument, DocumentVerification } from '@/types/blockchain';
-
-// Types
-export interface BlockchainContextType {
+interface BlockchainContextType {
   isConnected: boolean;
   account: string | null;
   balance: string;
@@ -23,321 +21,15 @@ export interface BlockchainContextType {
   uploadDocumentToIPFS: (file: File, metadata: any) => Promise<any>;
   mintDocumentAsNFT: (ipfsUri: string, uniqueId: string) => Promise<any>;
   verifyDocument: (uniqueId: string) => Promise<DocumentVerification>;
-  generateQrCodeForDocument: (document: BlockchainDocument) => Promise<string>;
-  getUserQwixVaultId: () => string | null;
   getUserDocuments: () => Promise<BlockchainDocument[]>;
+  getUserQwixVaultId: () => string;
+  getUserCertificates: () => Promise<Certificate[]>;
+  generateCertificate: (testId: string, score: number, title: string) => Promise<Certificate | null>;
+  saveCertificateToVault: (certificate: Certificate) => Promise<boolean>;
+  getVaultUser: () => QwixVaultUser | null;
 }
 
 const BlockchainContext = createContext<BlockchainContextType | undefined>(undefined);
-
-export const BlockchainProvider = ({ children }: { children: ReactNode }) => {
-  const [isConnected, setIsConnected] = useState(false);
-  const [account, setAccount] = useState<string | null>(null);
-  const [balance, setBalance] = useState<string>('0.0');
-  const [chainId, setChainId] = useState<number | null>(null);
-  const { toast } = useToast();
-  const { user } = useAuth();
-
-  useEffect(() => {
-    const checkConnection = async () => {
-      if (hasWeb3Support()) {
-        try {
-          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-          if (accounts.length > 0) {
-            setAccount(accounts[0]);
-            setIsConnected(true);
-            
-            const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
-            setChainId(parseInt(chainIdHex, 16));
-            
-            await updateBalance(accounts[0]);
-          }
-        } catch (error) {
-          console.error("Error checking initial connection:", error);
-        }
-      } else {
-        console.log("QwixMask not detected, using fallback mode");
-      }
-    };
-    
-    checkConnection();
-    
-    if (window.ethereum) {
-      const handleAccountsChanged = (accounts: string[]) => {
-        if (accounts.length === 0) {
-          setIsConnected(false);
-          setAccount(null);
-        } else {
-          setAccount(accounts[0]);
-          setIsConnected(true);
-          updateBalance(accounts[0]);
-        }
-      };
-      
-      const handleChainChanged = (chainIdHex: string) => {
-        setChainId(parseInt(chainIdHex, 16));
-        window.location.reload();
-      };
-      
-      const handleDisconnect = () => {
-        setIsConnected(false);
-        setAccount(null);
-      };
-      
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('chainChanged', handleChainChanged);
-      window.ethereum.on('disconnect', handleDisconnect);
-      
-      return () => {
-        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-        window.ethereum.removeListener('chainChanged', handleChainChanged);
-        window.ethereum.removeListener('disconnect', handleDisconnect);
-      };
-    }
-  }, []);
-
-  const updateBalance = async (address: string) => {
-    if (window.ethereum) {
-      try {
-        const balanceHex = await window.ethereum.request({
-          method: 'eth_getBalance',
-          params: [address, 'latest']
-        });
-        
-        const balanceInWei = parseInt(balanceHex, 16);
-        const balanceInEth = balanceInWei / 1e18;
-        setBalance(balanceInEth.toFixed(4));
-      } catch (error) {
-        console.error("Error getting balance:", error);
-        setBalance('0.0');
-      }
-    }
-  };
-
-  const connectWallet = async (): Promise<void> => {
-    if (hasWeb3Support()) {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        
-        if (accounts.length > 0) {
-          setAccount(accounts[0]);
-          setIsConnected(true);
-          
-          const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
-          setChainId(parseInt(chainIdHex, 16));
-          
-          await updateBalance(accounts[0]);
-          
-          toast({
-            title: "Wallet Connected",
-            description: "QwixMask wallet connected successfully",
-          });
-          
-          return;
-        }
-      } catch (error: any) {
-        console.error("Error connecting wallet:", error);
-        
-        toast({
-          title: "Connection Failed",
-          description: error.message || "Could not connect to QwixMask",
-          variant: "destructive",
-        });
-        
-        throw error;
-      }
-    } else {
-      let mockAccount: string;
-      
-      if (user) {
-        const userIdHash = sha256(user.id);
-        mockAccount = `0x${userIdHash.substring(0, 40)}`;
-      } else {
-        mockAccount = `0x${Array(40).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
-      }
-      
-      setAccount(mockAccount);
-      setIsConnected(true);
-      setChainId(80001);
-      setBalance('1.2345');
-      
-      toast({
-        title: "Wallet Connected",
-        description: "QwixMask wallet connected successfully",
-      });
-    }
-  };
-
-  const disconnectWallet = () => {
-    setIsConnected(false);
-    setAccount(null);
-    setBalance('0.0');
-    setChainId(null);
-    
-    toast({
-      title: "Wallet Disconnected",
-      description: "QwixMask wallet disconnected",
-    });
-  };
-
-  const uploadDocumentToIPFS = async (file: File, metadata: any) => {
-    try {
-      if (!user) {
-        throw new Error("User must be logged in to upload documents");
-      }
-
-      const fullMetadata = {
-        ...metadata,
-        userId: user.id,
-        userEmail: user.email,
-        userName: user.name
-      };
-      
-      const result = await uploadToIPFS(file, fullMetadata);
-      
-      if (!result.success) {
-        throw new Error(result.error || "IPFS upload failed");
-      }
-      
-      toast({
-        title: "Upload Successful",
-        description: "Document uploaded to IPFS successfully",
-      });
-      
-      return result;
-    } catch (error) {
-      console.error("Error uploading to IPFS:", error);
-      
-      toast({
-        title: "Upload Failed",
-        description: "Failed to upload document to IPFS",
-        variant: "destructive",
-      });
-      
-      throw error;
-    }
-  };
-
-  const mintDocumentAsNFT = async (ipfsUri: string, uniqueId: string) => {
-    try {
-      if (!user || !account) {
-        throw new Error("User must be logged in to mint documents");
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const timestamp = Date.now().toString();
-      const txHash = sha256(`${uniqueId}${timestamp}${ipfsUri}`);
-      const tokenId = parseInt(sha256(`${uniqueId}${timestamp}`).substring(0, 6), 16);
-      const verificationUrl = `${window.location.origin}/verify-document/${uniqueId}`;
-      
-      const newDocument: BlockchainDocument = {
-        uniqueId,
-        fileName: '',
-        description: '',
-        fileType: '',
-        fileSize: 0,
-        timestamp: new Date().toISOString(),
-        blockchainHash: txHash,
-        ownerAddress: account,
-        userId: user.id,
-        userEmail: user.email,
-        userName: user.name,
-        ipfsUri,
-        tokenId,
-        verificationUrl
-      };
-      
-      addUserDocument(newDocument);
-      
-      toast({
-        title: "Document Secured",
-        description: "Your document has been secured on the blockchain",
-      });
-      
-      return {
-        success: true,
-        txHash,
-        tokenId,
-        verificationUrl,
-      };
-    } catch (error) {
-      console.error("Error minting NFT:", error);
-      
-      toast({
-        title: "Minting Failed",
-        description: "Failed to secure document on blockchain",
-        variant: "destructive",
-      });
-      
-      throw error;
-    }
-  };
-
-  const verifyDocument = async (uniqueId: string): Promise<DocumentVerification> => {
-    try {
-      const documents = getLocalUserDocuments();
-      const document = documents.find(doc => doc.uniqueId === uniqueId);
-      
-      if (!document) {
-        return {
-          isValid: false,
-          document: null,
-          error: "Document not found in blockchain records"
-        };
-      }
-      
-      return {
-        isValid: true,
-        document
-      };
-    } catch (error) {
-      console.error("Error verifying document:", error);
-      return {
-        isValid: false,
-        document: null,
-        error: "Failed to verify document: Internal error"
-      };
-    }
-  };
-
-  const generateQrCodeForDocument = async (document: BlockchainDocument): Promise<string> => {
-    return `${window.location.origin}/verify-document/${document.uniqueId}`;
-  };
-  
-  const getUserQwixVaultId = (): string | null => {
-    if (!user) return null;
-    return `QV-${user.id.substring(0, 8)}-${sha256(user.email).substring(0, 8)}`;
-  };
-
-  const getUserDocuments = async (): Promise<BlockchainDocument[]> => {
-    if (!user || !account) return [];
-
-    try {
-      return getUserDocumentsByOwner(account);
-    } catch (error) {
-      console.error("Error fetching user documents:", error);
-      return [];
-    }
-  };
-
-  const value = {
-    isConnected,
-    account,
-    balance,
-    chainId,
-    connectWallet,
-    disconnectWallet,
-    uploadDocumentToIPFS,
-    mintDocumentAsNFT,
-    verifyDocument,
-    generateQrCodeForDocument,
-    getUserQwixVaultId,
-    getUserDocuments
-  };
-
-  return <BlockchainContext.Provider value={value}>{children}</BlockchainContext.Provider>;
-};
 
 export const useBlockchain = () => {
   const context = useContext(BlockchainContext);
@@ -345,4 +37,433 @@ export const useBlockchain = () => {
     throw new Error('useBlockchain must be used within a BlockchainProvider');
   }
   return context;
+};
+
+interface BlockchainProviderProps {
+  children: ReactNode;
+}
+
+export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children }) => {
+  const [isConnected, setIsConnected] = useState(false);
+  const [account, setAccount] = useState<string | null>(null);
+  const [balance, setBalance] = useState('0');
+  const [chainId, setChainId] = useState<number | null>(null);
+  const [vaultUser, setVaultUser] = useState<QwixVaultUser | null>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  // Initialize wallet from localStorage on page load
+  useEffect(() => {
+    const storedAccount = localStorage.getItem('qwixmask_account');
+    if (storedAccount) {
+      setAccount(storedAccount);
+      setIsConnected(true);
+      
+      // Also retrieve other stored wallet data
+      const storedBalance = localStorage.getItem('qwixmask_balance') || '0';
+      const storedChainId = localStorage.getItem('qwixmask_chainId');
+      
+      setBalance(storedBalance);
+      setChainId(storedChainId ? parseInt(storedChainId) : null);
+    }
+    
+    // Generate or retrieve QwixVault user data if account exists
+    if (storedAccount && user) {
+      initializeVaultUser(storedAccount);
+    }
+  }, [user]);
+
+  // Initialize or retrieve QwixVault user data
+  const initializeVaultUser = (walletAddress: string) => {
+    if (!user) return;
+    
+    // Try to get existing vault user data from localStorage
+    const vaultUsersStr = localStorage.getItem('qwixvault_users');
+    const vaultUsers = vaultUsersStr ? JSON.parse(vaultUsersStr) : {};
+    
+    // Check if this user already has vault data
+    if (vaultUsers[user.email]) {
+      setVaultUser(vaultUsers[user.email]);
+    } else {
+      // Create new vault user
+      const newVaultUser: QwixVaultUser = {
+        email: user.email,
+        walletAddress: walletAddress,
+        vaultId: `QVID-${Date.now().toString(36)}-${uuidv4().substring(0, 8)}`,
+        createdAt: new Date().toISOString(),
+        documents: [],
+        certificates: []
+      };
+      
+      // Save to localStorage
+      vaultUsers[user.email] = newVaultUser;
+      localStorage.setItem('qwixvault_users', JSON.stringify(vaultUsers));
+      
+      setVaultUser(newVaultUser);
+    }
+  };
+
+  // Connect to QwixMask wallet (with fallback for demo)
+  const connectWallet = async () => {
+    try {
+      // Check if real Web3 wallet is available
+      if (hasWeb3Support()) {
+        // Real Web3 wallet connection code would go here
+        console.log("Connecting to real Web3 wallet");
+        
+        // For now, simulate a successful connection
+        const mockAddress = `0x${Array(40).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+        const mockBalance = (Math.random() * 10).toFixed(4);
+        
+        setAccount(mockAddress);
+        setBalance(mockBalance);
+        setChainId(137); // Polygon network
+        setIsConnected(true);
+        
+        // Save to localStorage
+        localStorage.setItem('qwixmask_account', mockAddress);
+        localStorage.setItem('qwixmask_balance', mockBalance);
+        localStorage.setItem('qwixmask_chainId', '137');
+        
+        if (user) {
+          initializeVaultUser(mockAddress);
+        }
+        
+        toast({
+          title: "Wallet Connected",
+          description: "Successfully connected to QwixMask wallet",
+        });
+        
+        return mockAddress;
+      } else {
+        // Use fallback for demo
+        console.info("QwixMask not detected, using fallback mode");
+        
+        const mockAddress = `0x${Array(40).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+        const mockBalance = (Math.random() * 10).toFixed(4);
+        
+        setAccount(mockAddress);
+        setBalance(mockBalance);
+        setChainId(137); // Polygon network
+        setIsConnected(true);
+        
+        // Save to localStorage
+        localStorage.setItem('qwixmask_account', mockAddress);
+        localStorage.setItem('qwixmask_balance', mockBalance);
+        localStorage.setItem('qwixmask_chainId', '137');
+        
+        if (user) {
+          initializeVaultUser(mockAddress);
+        }
+        
+        toast({
+          title: "Demo Wallet Connected",
+          description: "Connected to QwixMask in demo mode",
+        });
+        
+        return mockAddress;
+      }
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+      toast({
+        title: "Connection Failed",
+        description: "Failed to connect to QwixMask wallet",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const disconnectWallet = () => {
+    setAccount(null);
+    setBalance('0');
+    setChainId(null);
+    setIsConnected(false);
+    setVaultUser(null);
+    
+    // Remove from localStorage
+    localStorage.removeItem('qwixmask_account');
+    localStorage.removeItem('qwixmask_balance');
+    localStorage.removeItem('qwixmask_chainId');
+    
+    toast({
+      title: "Wallet Disconnected",
+      description: "Successfully disconnected from QwixMask wallet",
+    });
+  };
+
+  // Upload document to IPFS (simulated)
+  const uploadDocumentToIPFS = async (file: File, metadata: any) => {
+    try {
+      // Simulate IPFS upload delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Generate mock IPFS hash
+      const ipfsHash = `Qm${Array(44).fill(0).map(() => Math.random().toString(36)[2]).join('')}`;
+      const ipfsUri = `ipfs://${ipfsHash}`;
+      
+      return {
+        success: true,
+        ipfsUri,
+        ipfsHash
+      };
+    } catch (error) {
+      console.error("Error uploading to IPFS:", error);
+      throw new Error("Failed to upload document to IPFS");
+    }
+  };
+
+  // Mint document as NFT (simulated)
+  const mintDocumentAsNFT = async (ipfsUri: string, uniqueId: string) => {
+    try {
+      // Simulate blockchain transaction delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Generate mock transaction hash
+      const txHash = `0x${Array(64).fill(0).map(() => Math.random().toString(16)[2]).join('')}`;
+      const tokenId = Math.floor(Math.random() * 10000000);
+      const verificationUrl = `${window.location.origin}/verify-document/${uniqueId}`;
+      
+      return {
+        success: true,
+        txHash,
+        tokenId,
+        verificationUrl
+      };
+    } catch (error) {
+      console.error("Error minting NFT:", error);
+      throw new Error("Failed to mint document as NFT");
+    }
+  };
+
+  // Verify document (retrieve from storage)
+  const verifyDocument = async (uniqueId: string): Promise<DocumentVerification> => {
+    try {
+      // Simulate verification delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Check all vault users for this document
+      let foundDocument: BlockchainDocument | null = null;
+      
+      // First check current user's documents if available
+      if (vaultUser) {
+        foundDocument = vaultUser.documents.find(doc => doc.uniqueId === uniqueId) || null;
+      }
+      
+      // If not found in current user, check all users
+      if (!foundDocument) {
+        const vaultUsersStr = localStorage.getItem('qwixvault_users');
+        if (vaultUsersStr) {
+          const vaultUsers = JSON.parse(vaultUsersStr);
+          for (const email in vaultUsers) {
+            const userDocs = vaultUsers[email].documents || [];
+            const found = userDocs.find((doc: BlockchainDocument) => doc.uniqueId === uniqueId);
+            if (found) {
+              foundDocument = found;
+              break;
+            }
+          }
+        }
+      }
+      
+      // If still not found, check legacy localStorage
+      if (!foundDocument) {
+        const documentsStr = localStorage.getItem('qwix_blockchain_documents');
+        if (documentsStr) {
+          const documents = JSON.parse(documentsStr);
+          foundDocument = documents.find((doc: BlockchainDocument) => doc.uniqueId === uniqueId) || null;
+        }
+      }
+      
+      if (foundDocument) {
+        return {
+          isValid: true,
+          document: foundDocument
+        };
+      } else {
+        return {
+          isValid: false,
+          error: "Document not found or has been revoked"
+        };
+      }
+    } catch (error) {
+      console.error("Error verifying document:", error);
+      return {
+        isValid: false,
+        error: "Verification process failed"
+      };
+    }
+  };
+
+  // Get user documents from their vault
+  const getUserDocuments = async (): Promise<BlockchainDocument[]> => {
+    try {
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // If user has a vault, return their documents
+      if (vaultUser) {
+        return [...vaultUser.documents];
+      }
+      
+      // Otherwise return empty array
+      return [];
+    } catch (error) {
+      console.error("Error fetching user documents:", error);
+      return [];
+    }
+  };
+
+  // Get user certificates
+  const getUserCertificates = async (): Promise<Certificate[]> => {
+    try {
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // If user has a vault, return their certificates
+      if (vaultUser) {
+        return [...vaultUser.certificates];
+      }
+      
+      // Otherwise return empty array
+      return [];
+    } catch (error) {
+      console.error("Error fetching user certificates:", error);
+      return [];
+    }
+  };
+
+  // Generate a new certificate
+  const generateCertificate = async (
+    testId: string, 
+    score: number, 
+    title: string
+  ): Promise<Certificate | null> => {
+    if (!vaultUser || !isConnected) {
+      toast({
+        title: "Vault not connected",
+        description: "Please connect your QwixVault first",
+        variant: "destructive"
+      });
+      return null;
+    }
+    
+    try {
+      // Simulate certificate generation delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Generate mock certificate data
+      const certHash = `QC${Date.now().toString(36)}-${uuidv4().substring(0, 8)}`;
+      const txHash = `0x${Array(64).fill(0).map(() => Math.random().toString(16)[2]).join('')}`;
+      const blockId = Math.floor(Math.random() * 10000000);
+      
+      const newCertificate: Certificate = {
+        id: uuidv4(),
+        testId,
+        title,
+        score,
+        issuedDate: new Date().toISOString(),
+        isPublic: true,
+        certHash,
+        txHash,
+        blockId,
+        issuerName: "QwixCert Authority",
+        holderName: user?.name || "Verified Holder",
+        holderEmail: user?.email || "",
+        vaultId: vaultUser.vaultId
+      };
+      
+      return newCertificate;
+    } catch (error) {
+      console.error("Error generating certificate:", error);
+      toast({
+        title: "Certificate Generation Failed",
+        description: "Failed to generate certificate",
+        variant: "destructive"
+      });
+      return null;
+    }
+  };
+
+  // Save certificate to user's vault
+  const saveCertificateToVault = async (certificate: Certificate): Promise<boolean> => {
+    if (!vaultUser || !user) {
+      toast({
+        title: "Vault not connected",
+        description: "Please connect your QwixVault first",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    try {
+      // Retrieve all vault users
+      const vaultUsersStr = localStorage.getItem('qwixvault_users');
+      const vaultUsers = vaultUsersStr ? JSON.parse(vaultUsersStr) : {};
+      
+      // Update current user's certificates
+      if (vaultUsers[user.email]) {
+        // Add certificate if it doesn't exist already
+        const existingIndex = vaultUsers[user.email].certificates.findIndex(
+          (cert: Certificate) => cert.id === certificate.id
+        );
+        
+        if (existingIndex >= 0) {
+          vaultUsers[user.email].certificates[existingIndex] = certificate;
+        } else {
+          vaultUsers[user.email].certificates.push(certificate);
+        }
+        
+        // Update localStorage
+        localStorage.setItem('qwixvault_users', JSON.stringify(vaultUsers));
+        
+        // Update state
+        setVaultUser(vaultUsers[user.email]);
+        
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error("Error saving certificate:", error);
+      return false;
+    }
+  };
+
+  // Get user's QwixVault ID
+  const getUserQwixVaultId = (): string => {
+    if (vaultUser) {
+      return vaultUser.vaultId;
+    }
+    return '';
+  };
+
+  // Get vault user
+  const getVaultUser = (): QwixVaultUser | null => {
+    return vaultUser;
+  };
+
+  return (
+    <BlockchainContext.Provider
+      value={{
+        isConnected,
+        account,
+        balance,
+        chainId,
+        connectWallet,
+        disconnectWallet,
+        uploadDocumentToIPFS,
+        mintDocumentAsNFT,
+        verifyDocument,
+        getUserDocuments,
+        getUserQwixVaultId,
+        getUserCertificates,
+        generateCertificate,
+        saveCertificateToVault,
+        getVaultUser
+      }}
+    >
+      {children}
+    </BlockchainContext.Provider>
+  );
 };

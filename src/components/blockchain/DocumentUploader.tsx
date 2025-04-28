@@ -11,6 +11,8 @@ import { useBlockchain } from '@/context/BlockchainContext';
 import DocumentUploadPreview from './DocumentUploadPreview';
 import { v4 as uuidv4 } from 'uuid';
 import { DocumentUploadParams } from '@/types/blockchain';
+import { useAuth } from '@/context/AuthContext';
+import { saveDocumentToUserVault } from '@/utils/blockchainDocuments';
 
 interface DocumentUploaderProps {
   onUploadComplete: () => void;
@@ -26,6 +28,7 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
   const [uniqueId, setUniqueId] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
   const { account, uploadDocumentToIPFS, mintDocumentAsNFT } = useBlockchain();
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,7 +121,16 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
     if (!account) {
       toast({
         title: "Wallet not connected",
-        description: "Please connect your QwixMask wallet first",
+        description: "Please connect your QwixVault first",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!user) {
+      toast({
+        title: "Not logged in",
+        description: "Please login to upload documents",
         variant: "destructive"
       });
       return;
@@ -129,21 +141,20 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
       
       const progressInterval = simulateUploadProgress();
       
-      // Create metadata object instead of DocumentUploadParams
+      // Create metadata object
       const metadata = {
         fileName: documentName,
         description: documentDesc,
         ownerAddress: account
       };
       
-      // Pass file and metadata separately as expected by the function
+      // Upload to IPFS
       const ipfsResult = await uploadDocumentToIPFS(file, metadata);
       
+      // Mint as NFT
       const mintResult = await mintDocumentAsNFT(ipfsResult.ipfsUri, uniqueId);
       
-      const documentsString = localStorage.getItem('qwix_blockchain_documents');
-      const documents = documentsString ? JSON.parse(documentsString) : [];
-      
+      // Create document object
       const newDocument = {
         uniqueId: uniqueId,
         fileName: documentName,
@@ -158,8 +169,12 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
         verificationUrl: mintResult.verificationUrl
       };
       
-      documents.push(newDocument);
-      localStorage.setItem('qwix_blockchain_documents', JSON.stringify(documents));
+      // Save to user's vault in storage
+      const saved = saveDocumentToUserVault(user.email, newDocument);
+      
+      if (!saved) {
+        throw new Error("Failed to save document to vault");
+      }
       
       clearInterval(progressInterval);
       setUploadProgress(100);
