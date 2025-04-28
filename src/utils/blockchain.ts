@@ -1,6 +1,6 @@
 
 import html2pdf from 'html2pdf.js';
-import { Certificate } from '@/types/certification';
+import { Certificate } from '@/types/blockchain';
 import QRCode from 'qrcode';
 
 // Generate Certificate PDF

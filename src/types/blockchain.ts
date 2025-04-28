@@ -11,6 +11,7 @@ export interface BlockchainDocument {
   timestamp: string;
   verificationUrl: string;
   isVerified: boolean;
+  tokenId?: number; // Adding tokenId as optional
 }
 
 export interface Certificate {
@@ -34,4 +35,28 @@ export interface Certificate {
   issuer: string;
   contractAddress: string;
   smartContractStandard: string;
+  validUntil?: string; // Adding validUntil as optional
+}
+
+// Adding missing interfaces
+export interface DocumentUploadParams {
+  file: File;
+  fileName: string;
+  description: string;
+  ownerAddress: string;
+}
+
+export interface DocumentVerification {
+  isValid: boolean;
+  document?: BlockchainDocument;
+  error?: string;
+}
+
+export interface QwixVaultUser {
+  email: string;
+  walletAddress: string;
+  vaultId: string;
+  createdAt: string;
+  documents: BlockchainDocument[];
+  certificates: Certificate[];
 }

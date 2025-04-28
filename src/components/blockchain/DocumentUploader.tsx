@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { useBlockchain } from '@/context/BlockchainContext';
 import DocumentUploadPreview from './DocumentUploadPreview';
 import { v4 as uuidv4 } from 'uuid';
-import { DocumentUploadParams } from '@/types/blockchain';
+import { BlockchainDocument, DocumentUploadParams } from '@/types/blockchain';
 import { useAuth } from '@/context/AuthContext';
 import { saveDocumentToUserVault } from '@/utils/blockchainDocuments';
 
@@ -155,7 +154,7 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
       const mintResult = await mintDocumentAsNFT(ipfsResult.ipfsUri, uniqueId);
       
       // Create document object
-      const newDocument = {
+      const newDocument: BlockchainDocument = {
         uniqueId: uniqueId,
         fileName: documentName,
         description: documentDesc,
@@ -165,8 +164,9 @@ export const DocumentUploader: React.FC<DocumentUploaderProps> = ({ onUploadComp
         ownerAddress: account,
         blockchainHash: mintResult.txHash,
         ipfsUri: ipfsResult.ipfsUri,
-        tokenId: mintResult.tokenId,
-        verificationUrl: mintResult.verificationUrl
+        verificationUrl: mintResult.verificationUrl,
+        isVerified: true,
+        tokenId: mintResult.tokenId
       };
       
       // Save to user's vault in storage

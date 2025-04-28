@@ -4,10 +4,10 @@ import { useToast } from '@/components/ui/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { 
   BlockchainDocument, 
+  Certificate,
   DocumentUploadParams,
   DocumentVerification,
-  QwixVaultUser,
-  Certificate
+  QwixVaultUser
 } from '@/types/blockchain';
 import { hasWeb3Support } from '@/utils/qwixMaskWallet';
 import QRCode from 'qrcode';
@@ -327,6 +327,7 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
       const certHash = `QC${Date.now().toString(36)}-${uuidv4().substring(0, 8)}`;
       const txHash = `0x${Array(64).fill(0).map(() => Math.random().toString(16)[2]).join('')}`;
       const blockId = Math.floor(Math.random() * 10000000);
+      const uniqueId = `cert-${Date.now().toString(36)}-${uuidv4().substring(0, 8)}`;
       
       const newCertificate: Certificate = {
         id: uuidv4(),
@@ -341,7 +342,14 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
         issuerName: "QwixCert Authority",
         holderName: user?.name || "Verified Holder",
         holderEmail: user?.email || "",
-        vaultId: vaultUser.vaultId
+        vaultId: vaultUser.vaultId,
+        recipientName: user?.name || "Verified Holder",
+        recipientEmail: user?.email || "",
+        uniqueId,
+        blockchainNetwork: "Polygon",
+        issuer: "QwixCert Authority",
+        contractAddress: `0x${Array(40).fill(0).map(() => Math.random().toString(16)[2]).join('')}`,
+        smartContractStandard: "ERC-721"
       };
       
       return newCertificate;
