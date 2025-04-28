@@ -32,6 +32,7 @@ export interface Question {
   options: string[];
   correctOptionIndex: number;
   explanation?: string;
+  correctAnswer?: string; // Adding this to fix compatibility issues with existing code
 }
 
 export interface BlockchainTransaction {

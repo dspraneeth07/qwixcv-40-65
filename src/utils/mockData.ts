@@ -1,4 +1,3 @@
-
 import { Question, TestInfo } from '@/types/certification';
 
 // Mock test data
@@ -147,10 +146,11 @@ export const getMockTests = (): TestInfo[] => {
   ];
 };
 
-// Generate Web3 test questions where all answers are A
+// Generate Web3 test questions
 const generateWeb3Questions = (): Question[] => {
   return [
     {
+      id: "web3-q1",
       text: "What is blockchain technology?",
       options: [
         "A distributed ledger technology that maintains a continuously growing list of records",
@@ -158,9 +158,11 @@ const generateWeb3Questions = (): Question[] => {
         "A programming language for creating websites",
         "A cloud storage solution"
       ],
+      correctOptionIndex: 0,
       correctAnswer: "A distributed ledger technology that maintains a continuously growing list of records"
     },
     {
+      id: "web3-q2",
       text: "Which of the following is NOT a characteristic of blockchain?",
       options: [
         "Centralized control",
@@ -168,9 +170,11 @@ const generateWeb3Questions = (): Question[] => {
         "Transparency",
         "Consensus mechanisms"
       ],
+      correctOptionIndex: 0,
       correctAnswer: "Centralized control"
     },
     {
+      id: "web3-q3",
       text: "What is a smart contract?",
       options: [
         "Self-executing contracts with the terms directly written into code",
@@ -178,9 +182,11 @@ const generateWeb3Questions = (): Question[] => {
         "A contract between smart devices",
         "An agreement between blockchain miners"
       ],
+      correctOptionIndex: 0,
       correctAnswer: "Self-executing contracts with the terms directly written into code"
     },
     {
+      id: "web3-q4",
       text: "What is the primary purpose of a consensus mechanism in blockchain?",
       options: [
         "To validate and agree on the state of the blockchain without central authority",
@@ -188,9 +194,11 @@ const generateWeb3Questions = (): Question[] => {
         "To reduce the size of the blockchain",
         "To encrypt user data"
       ],
+      correctOptionIndex: 0,
       correctAnswer: "To validate and agree on the state of the blockchain without central authority"
     },
     {
+      id: "web3-q5",
       text: "What is the concept of 'gas' in Ethereum?",
       options: [
         "A fee paid to process transactions and execute smart contracts",
@@ -198,9 +206,11 @@ const generateWeb3Questions = (): Question[] => {
         "The energy used by mining hardware",
         "A measure of blockchain size"
       ],
+      correctOptionIndex: 0,
       correctAnswer: "A fee paid to process transactions and execute smart contracts"
     },
     {
+      id: "web3-q6",
       text: "What is Web3?",
       options: [
         "A vision of a decentralized internet based on blockchain technology",
@@ -208,9 +218,11 @@ const generateWeb3Questions = (): Question[] => {
         "A programming framework for mobile applications",
         "The latest version of HTML"
       ],
+      correctOptionIndex: 0,
       correctAnswer: "A vision of a decentralized internet based on blockchain technology"
     },
     {
+      id: "web3-q7",
       text: "What is a non-fungible token (NFT)?",
       options: [
         "A unique digital asset that represents ownership of a specific item",
@@ -218,9 +230,11 @@ const generateWeb3Questions = (): Question[] => {
         "A token used for voting in DAOs",
         "A security measure for blockchain transactions"
       ],
+      correctOptionIndex: 0,
       correctAnswer: "A unique digital asset that represents ownership of a specific item"
     },
     {
+      id: "web3-q8",
       text: "What is a 'hash function' in blockchain technology?",
       options: [
         "A function that converts input data into a fixed-size string of bytes",
@@ -228,9 +242,11 @@ const generateWeb3Questions = (): Question[] => {
         "A method for storing user passwords",
         "A technique for compressing blockchain data"
       ],
+      correctOptionIndex: 0,
       correctAnswer: "A function that converts input data into a fixed-size string of bytes"
     },
     {
+      id: "web3-q9",
       text: "What is a 'fork' in blockchain terms?",
       options: [
         "A change to the protocol resulting in two separate blockchains",
@@ -238,9 +254,11 @@ const generateWeb3Questions = (): Question[] => {
         "A type of cryptocurrency wallet",
         "The process of validating transactions"
       ],
+      correctOptionIndex: 0,
       correctAnswer: "A change to the protocol resulting in two separate blockchains"
     },
     {
+      id: "web3-q10",
       text: "What does DeFi stand for?",
       options: [
         "Decentralized Finance",
@@ -248,15 +266,17 @@ const generateWeb3Questions = (): Question[] => {
         "Defined Finality",
         "Distributed File Integration"
       ],
+      correctOptionIndex: 0,
       correctAnswer: "Decentralized Finance"
     }
   ];
 };
 
-// Generate React Advanced questions where all answers are A
+// Generate React Advanced questions
 const generateReactQuestions = (): Question[] => {
   return [
     {
+      id: "react-q1",
       text: "What is React's Virtual DOM?",
       options: [
         "A lightweight copy of the actual DOM that React uses for performance optimization",
@@ -264,9 +284,11 @@ const generateReactQuestions = (): Question[] => {
         "A component that virtualizes large lists",
         "The actual DOM rendered by React applications"
       ],
+      correctOptionIndex: 0,
       correctAnswer: "A lightweight copy of the actual DOM that React uses for performance optimization"
     },
     {
+      id: "react-q2",
       text: "What is a pure component in React?",
       options: [
         "A component that renders the same output given the same props and state",
@@ -274,9 +296,11 @@ const generateReactQuestions = (): Question[] => {
         "A component written in pure JavaScript without JSX",
         "A component that doesn't use hooks"
       ],
+      correctOptionIndex: 0,
       correctAnswer: "A component that renders the same output given the same props and state"
     },
     {
+      id: "react-q3",
       text: "What is Redux middleware used for?",
       options: [
         "To handle asynchronous actions and side effects",
@@ -284,9 +308,11 @@ const generateReactQuestions = (): Question[] => {
         "To optimize Redux performance",
         "To connect Redux to React components"
       ],
+      correctOptionIndex: 0,
       correctAnswer: "To handle asynchronous actions and side effects"
     },
     {
+      id: "react-q4",
       text: "What is the purpose of React Suspense?",
       options: [
         "To handle asynchronous operations and show fallback UI while waiting",
@@ -294,9 +320,11 @@ const generateReactQuestions = (): Question[] => {
         "To optimize rendering in large lists",
         "To handle form submissions"
       ],
+      correctOptionIndex: 0,
       correctAnswer: "To handle asynchronous operations and show fallback UI while waiting"
     },
     {
+      id: "react-q5",
       text: "What is the useCallback hook used for?",
       options: [
         "To memoize callback functions to prevent unnecessary re-renders",
@@ -304,6 +332,7 @@ const generateReactQuestions = (): Question[] => {
         "To create callback URLs for routing",
         "To create event handlers"
       ],
+      correctOptionIndex: 0,
       correctAnswer: "To memoize callback functions to prevent unnecessary re-renders"
     }
   ];
@@ -338,8 +367,9 @@ export const getMockTestById = (testId: string): {
       questions = generateReactQuestions();
       break;
     default:
-      // Generate generic questions for other tests where answer A is always correct
+      // Generate generic questions for other tests
       questions = Array(testInfo.questionCount).fill(0).map((_, index) => ({
+        id: `generic-q-${index + 1}`,
         text: `Question ${index + 1} for ${testInfo.title}`,
         options: [
           `Correct answer for question ${index + 1}`,
@@ -347,7 +377,8 @@ export const getMockTestById = (testId: string): {
           `Wrong answer option C for question ${index + 1}`,
           `Wrong answer option D for question ${index + 1}`
         ],
-        correctAnswer: `Correct answer for question ${index + 1}`
+        correctOptionIndex: 0,
+        correctAnswer: `Correct answer for question ${index + 1}` // Keep for compatibility
       }));
   }
   

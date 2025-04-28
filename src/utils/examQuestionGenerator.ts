@@ -68,16 +68,27 @@ export const generateExamQuestions = async (
         const questions = JSON.parse(jsonMatch[0]);
         console.log(`Generated ${questions.length} questions successfully`);
         
-        // Validate the questions
-        const validatedQuestions = questions.map((q: any) => ({
-          text: q.text,
-          options: q.options && Array.isArray(q.options) && q.options.length === 4 
+        // Validate and convert to match our Question interface
+        const validatedQuestions = questions.map((q: any, index: number) => {
+          const options = q.options && Array.isArray(q.options) && q.options.length === 4 
             ? q.options 
-            : ["Option A", "Option B", "Option C", "Option D"],
-          correctAnswer: q.correctAnswer && q.options?.includes(q.correctAnswer) 
+            : ["Option A", "Option B", "Option C", "Option D"];
+            
+          const correctAnswer = q.correctAnswer && options.includes(q.correctAnswer) 
             ? q.correctAnswer 
-            : q.options?.[0] || "Option A"
-        }));
+            : options[0];
+          
+          // Find correctOptionIndex based on correctAnswer
+          const correctOptionIndex = options.findIndex(opt => opt === correctAnswer);
+          
+          return {
+            id: `q-${index + 1}`,
+            text: q.text,
+            options,
+            correctOptionIndex: correctOptionIndex >= 0 ? correctOptionIndex : 0,
+            correctAnswer // Keep for compatibility with existing code
+          };
+        });
         
         return validatedQuestions;
       }
@@ -103,15 +114,21 @@ const generateMockQuestions = (examTitle: string, count: number): Question[] => 
   // Create generic mock questions based on exam title
   for (let i = 1; i <= count; i++) {
     const questionNumber = i;
+    const options = [
+      `Strategic planning and implementation`,
+      `Technical knowledge and expertise`,
+      `Communication and stakeholder management`,
+      `Continuous learning and adaptation`
+    ];
+    const correctAnswer = `Continuous learning and adaptation`;
+    const correctOptionIndex = options.findIndex(opt => opt === correctAnswer);
+    
     questions.push({
+      id: `mock-q-${i}`,
       text: `Question ${questionNumber}: What is the most important aspect of ${examTitle}?`,
-      options: [
-        `Strategic planning and implementation`,
-        `Technical knowledge and expertise`,
-        `Communication and stakeholder management`,
-        `Continuous learning and adaptation`
-      ],
-      correctAnswer: `Continuous learning and adaptation`
+      options,
+      correctOptionIndex,
+      correctAnswer // Keep for compatibility
     });
   }
   

@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import {
   Card,
@@ -109,8 +110,8 @@ const EnhancedInterviewSetup: React.FC<EnhancedInterviewSetupProps> = ({ onSubmi
   };
 
   const handleSubmit = (data: InterviewFormData) => {
-    setIsLoading(true);
-
+    // Removed the setIsLoading call since it's not defined
+    
     const settings: InterviewSettings = {
       resumeText: data.resumeText || '',
       resumeFileName: data.resumeFileName || 'Resume.txt',
