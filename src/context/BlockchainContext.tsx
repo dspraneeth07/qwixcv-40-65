@@ -267,10 +267,22 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
 
   const getUserDocuments = async (): Promise<BlockchainDocument[]> => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       if (vaultUser) {
         return [...vaultUser.documents];
+      }
+      
+      const documentsStr = localStorage.getItem('qwix_blockchain_documents');
+      if (documentsStr) {
+        try {
+          const documents = JSON.parse(documentsStr);
+          if (Array.isArray(documents)) {
+            return documents;
+          }
+        } catch (error) {
+          console.error("Error parsing documents:", error);
+        }
       }
       
       return [];

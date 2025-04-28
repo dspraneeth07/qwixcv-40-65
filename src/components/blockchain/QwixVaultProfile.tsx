@@ -9,13 +9,14 @@ import QRCode from 'qrcode.react';
 import { Link } from 'react-router-dom';
 import { getUserDocumentsByOwner } from '@/utils/blockchainDocuments';
 import { useAuth } from '@/context/AuthContext';
+import type { BlockchainDocument } from '@/types/blockchain';
 
 const QwixVaultProfile = () => {
   const { account, isConnected, connectWallet, getUserQwixVaultId } = useBlockchain();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [documentCount, setDocumentCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [documents, setDocuments] = useState<BlockchainDocument[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Generate the QwixVault ID based on authenticated user
   const qwixVaultId = getUserQwixVaultId();
@@ -24,13 +25,39 @@ const QwixVaultProfile = () => {
   const verificationUrl = account ? 
     `${window.location.origin}/qwixvault/${account}` : '';
 
-  // Check for documents
+  // Load documents
   useEffect(() => {
-    if (account) {
-      const userDocs = getUserDocumentsByOwner(account);
-      setDocumentCount(userDocs.length);
-    }
+    const loadDocuments = async () => {
+      try {
+        if (account) {
+          setIsLoading(true);
+          const userDocs = getUserDocumentsByOwner(account);
+          setDocuments(userDocs);
+        }
+      } catch (error) {
+        console.error("Error loading documents:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadDocuments();
   }, [account]);
+  
+  // Handle refresh
+  const handleRefresh = async () => {
+    try {
+      setIsLoading(true);
+      if (account) {
+        const userDocs = getUserDocumentsByOwner(account);
+        setDocuments(userDocs);
+      }
+    } catch (error) {
+      console.error("Error refreshing documents:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text).then(
@@ -126,7 +153,7 @@ const QwixVaultProfile = () => {
           
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Documents:</span>
-            <span className="font-mono text-sm">{documentCount}</span>
+            <span className="font-mono text-sm">{documents.length}</span>
           </div>
         </div>
         
@@ -138,7 +165,7 @@ const QwixVaultProfile = () => {
             </Link>
           </Button>
           
-          <Button variant="outline" onClick={() => window.location.reload()} disabled={isLoading}>
+          <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
             {isLoading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (

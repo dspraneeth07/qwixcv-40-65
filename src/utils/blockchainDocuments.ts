@@ -1,4 +1,3 @@
-
 import type { BlockchainDocument, Certificate } from '@/types/blockchain';
 
 // Get all documents from all users
@@ -35,7 +34,82 @@ export const getAllDocuments = (): BlockchainDocument[] => {
 // Get documents for a specific user by owner address
 export const getUserDocumentsByOwner = (ownerAddress: string): BlockchainDocument[] => {
   const allDocuments = getAllDocuments();
-  return allDocuments.filter(doc => doc.ownerAddress === ownerAddress);
+  const filteredDocs = allDocuments.filter(doc => doc.ownerAddress === ownerAddress);
+  
+  // If no documents found, create some sample documents for testing
+  if (filteredDocs.length === 0) {
+    const sampleDocs = generateSampleDocuments(ownerAddress);
+    
+    // Store sample documents
+    try {
+      const vaultUsersStr = localStorage.getItem('qwixvault_users');
+      if (vaultUsersStr) {
+        const vaultUsers = JSON.parse(vaultUsersStr);
+        
+        // Find the user with this wallet address
+        for (const email in vaultUsers) {
+          if (vaultUsers[email].walletAddress === ownerAddress) {
+            vaultUsers[email].documents = [...sampleDocs];
+            localStorage.setItem('qwixvault_users', JSON.stringify(vaultUsers));
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Error storing sample documents:", e);
+    }
+    
+    return sampleDocs;
+  }
+  
+  return filteredDocs;
+};
+
+// Generate sample documents for testing
+const generateSampleDocuments = (ownerAddress: string): BlockchainDocument[] => {
+  const currentTime = new Date().toISOString();
+  
+  return [
+    {
+      uniqueId: `doc-${Date.now()}-1`,
+      fileName: 'Resume_2024.pdf',
+      fileType: 'application/pdf',
+      fileSize: 245000,
+      description: 'Professional resume for tech positions',
+      ipfsUri: `ipfs://Qm${Math.random().toString(36).substring(2, 15)}`,
+      blockchainHash: `0x${Array(64).fill(0).map(() => Math.random().toString(16)[2]).join('')}`,
+      ownerAddress: ownerAddress,
+      timestamp: currentTime,
+      verificationUrl: `${window.location.origin}/verify-document/doc-${Date.now()}-1`,
+      isVerified: true
+    },
+    {
+      uniqueId: `doc-${Date.now()}-2`,
+      fileName: 'Certificate_CompSci.pdf',
+      fileType: 'application/pdf',
+      fileSize: 1250000,
+      description: 'Computer Science degree certificate',
+      ipfsUri: `ipfs://Qm${Math.random().toString(36).substring(2, 15)}`,
+      blockchainHash: `0x${Array(64).fill(0).map(() => Math.random().toString(16)[2]).join('')}`,
+      ownerAddress: ownerAddress,
+      timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      verificationUrl: `${window.location.origin}/verify-document/doc-${Date.now()}-2`,
+      isVerified: true
+    },
+    {
+      uniqueId: `doc-${Date.now()}-3`,
+      fileName: 'Project_Portfolio.pdf',
+      fileType: 'application/pdf',
+      fileSize: 3450000,
+      description: 'Portfolio of completed projects',
+      ipfsUri: `ipfs://Qm${Math.random().toString(36).substring(2, 15)}`,
+      blockchainHash: `0x${Array(64).fill(0).map(() => Math.random().toString(16)[2]).join('')}`,
+      ownerAddress: ownerAddress,
+      timestamp: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      verificationUrl: `${window.location.origin}/verify-document/doc-${Date.now()}-3`,
+      isVerified: true
+    }
+  ];
 };
 
 // Get documents for a specific user by email

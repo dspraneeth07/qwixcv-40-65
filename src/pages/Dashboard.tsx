@@ -39,6 +39,10 @@ const Dashboard = () => {
           // Get user certificates
           const userCertificates = await getUserCertificates();
           setCertificates(userCertificates);
+        } else {
+          // If not connected, clear data
+          setDocuments([]);
+          setCertificates([]);
         }
       } catch (error) {
         console.error("Error loading user data:", error);
