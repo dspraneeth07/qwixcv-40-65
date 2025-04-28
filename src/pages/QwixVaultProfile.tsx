@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { useParams } from 'react-router-dom';
@@ -28,17 +27,31 @@ const QwixVaultProfile = () => {
     qwixVaultId: null
   });
   
-  // Load user documents and profile details
+  const renderUserInfo = (owner: BlockchainDocument) => {
+    return (
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold mb-2">
+          {owner?.userName || 'QwixVault User'}
+        </h2>
+        <p className="text-muted-foreground mb-4">
+          {owner?.userEmail || 'No email available'}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          <span>Vault ID:</span> <Badge variant="outline">{owner?.userId || vaultId}</Badge>
+          {' • '} 
+          <span>Owner:</span> <span className="font-mono text-xs">{owner?.ownerAddress?.substring(0, 6)}...{owner?.ownerAddress?.substring(owner.ownerAddress.length - 4)}</span>
+        </p>
+      </div>
+    );
+  };
+  
   useEffect(() => {
     if (address) {
-      // Get documents for this wallet address
       const userDocs = getUserDocumentsByOwner(address);
       setDocuments(userDocs);
       
-      // Check if current user is the profile owner
       setIsOwner(account?.toLowerCase() === address.toLowerCase());
       
-      // Extract profile details from documents if available
       const profileDoc = userDocs.find(doc => doc.userName || doc.userEmail);
       if (profileDoc) {
         setProfileDetails({
@@ -82,7 +95,6 @@ const QwixVaultProfile = () => {
         <h1 className="text-3xl font-bold mb-8">QwixVault Profile</h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Profile Info */}
           <div className="lg:col-span-1 space-y-6">
             <Card>
               <CardHeader className="bg-blue-50 dark:bg-blue-900/20">
@@ -148,7 +160,6 @@ const QwixVaultProfile = () => {
             </Card>
           </div>
           
-          {/* Documents */}
           <div className="lg:col-span-2">
             <Tabs defaultValue="documents">
               <TabsList className="mb-6">

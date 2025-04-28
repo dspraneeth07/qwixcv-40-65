@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,7 +19,7 @@ const DocumentVerifier: React.FC<DocumentVerifierProps> = ({ uniqueId: initialUn
   const [verificationResult, setVerificationResult] = useState<DocumentVerification | null>(null);
   const [showQrCode, setShowQrCode] = useState(false);
   
-  const { verifyDocument, generateQrCodeForDocument } = useBlockchain();
+  const { verifyDocument } = useBlockchain();
   const { toast } = useToast();
   
   // Auto-verify when component mounts with a uniqueId

@@ -6,97 +6,24 @@ import { getQwixVaultIdByEmail } from './blockchainDocuments';
 import QRCode from 'qrcode';
 
 // Generate Certificate PDF
-export const generateCertificatePDF = async (certificate: Certificate): Promise<string> => {
+export const generateCertificatePDF = async (elementId: string, fileName?: string): Promise<string> => {
   try {
-    // Create certificate template
-    const template = `
-      <div style="width: 210mm; height: 297mm; padding: 15mm; border: 10px double #3730a3; position: relative; background-color: white; color: #1f2937; font-family: 'Playfair Display', serif;">
-        <div style="text-align: center; margin-bottom: 10mm;">
-          <h1 style="font-size: 36px; color: #3730a3; margin-bottom: 5mm;">Certificate of Achievement</h1>
-          <h2 style="font-size: 24px; color: #4f46e5; margin-bottom: 5mm;">${certificate.title}</h2>
-        </div>
-        
-        <div style="text-align: center; margin: 15mm 0;">
-          <p style="font-size: 16px; margin-bottom: 5mm;">This certificate is presented to</p>
-          <h2 style="font-size: 32px; color: #3730a3; margin-bottom: 5mm; font-style: italic;">${certificate.holderName}</h2>
-          <p style="font-size: 16px; margin-bottom: 5mm;">for successfully completing the assessment with a score of</p>
-          <div style="font-size: 24px; color: #4f46e5; margin: 10mm 0; padding: 5mm; border: 2px solid #4f46e5; display: inline-block; border-radius: 5px;">
-            <strong>${certificate.score}%</strong>
-          </div>
-        </div>
-        
-        <div style="margin-top: 20mm;">
-          <div style="display: flex; justify-content: space-between; margin-top: 30mm;">
-            <div style="text-align: center; width: 40%;">
-              <div style="border-top: 1px solid #000; padding-top: 2mm;">
-                <p style="margin: 0; font-size: 16px;">${certificate.issuerName}</p>
-                <p style="margin: 0; font-size: 12px; color: #6b7280;">Issuing Authority</p>
-              </div>
-            </div>
-            
-            <div style="text-align: center; width: 40%;">
-              <div style="border-top: 1px solid #000; padding-top: 2mm;">
-                <p style="margin: 0; font-size: 16px;">${new Date(certificate.issuedDate).toLocaleDateString()}</p>
-                <p style="margin: 0; font-size: 12px; color: #6b7280;">Date of Issue</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div style="position: absolute; bottom: 15mm; left: 15mm; display: flex; align-items: center;">
-          <div id="qrcode" style="margin-right: 10mm;"></div>
-          <div>
-            <p style="margin: 0; font-size: 12px; color: #6b7280;">Certificate ID: ${certificate.certHash}</p>
-            <p style="margin: 0; font-size: 12px; color: #6b7280;">Block: ${certificate.blockId}</p>
-            <p style="margin: 0; font-size: 12px; color: #6b7280;">Verify at: ${window.location.origin}/verify-cert/${certificate.certHash}</p>
-          </div>
-        </div>
-        
-        <div style="position: absolute; top: 15mm; right: 15mm;">
-          <img src="/qwixcert-logo.png" style="height: 15mm;">
-        </div>
-        
-        <div style="position: absolute; bottom: 10mm; right: 15mm; text-align: right;">
-          <p style="margin: 0; font-size: 12px; color: #6b7280;">QwixVault ID: ${certificate.vaultId}</p>
-          <p style="margin: 0; font-size: 10px; color: #6b7280;">Secured with blockchain technology</p>
-        </div>
-      </div>
-    `;
-    
-    // Create a temporary div to render the certificate
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = template;
-    document.body.appendChild(tempDiv);
-    
-    // Generate QR code
-    const verificationUrl = `${window.location.origin}/verify-cert/${certificate.certHash}`;
-    const qrCode = await QRCode.toDataURL(verificationUrl);
-    
-    // Add QR code to the template
-    const qrElement = document.createElement('img');
-    qrElement.src = qrCode;
-    qrElement.style.width = '20mm';
-    qrElement.style.height = '20mm';
-    const qrContainer = tempDiv.querySelector('#qrcode');
-    if (qrContainer) {
-      qrContainer.appendChild(qrElement);
-    }
-    
-    // Generate PDF
+    // Get the element to convert
+    const element = document.getElementById(elementId);
+    if (!element) throw new Error('Element not found');
+
+    // Configure options for the PDF
     const pdfOptions = {
       margin: 0,
-      filename: `${certificate.title.replace(/\s+/g, '-')}-${certificate.certHash}.pdf`,
+      filename: fileName || 'certificate.pdf',
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
     
     // Generate PDF as a blob URL
-    const pdfBlob = await html2pdf().from(tempDiv).set(pdfOptions).outputPdf('blob');
+    const pdfBlob = await html2pdf().from(element).set(pdfOptions).outputPdf('blob');
     const pdfUrl = URL.createObjectURL(pdfBlob);
-    
-    // Clean up
-    document.body.removeChild(tempDiv);
     
     return pdfUrl;
   } catch (error) {
@@ -136,6 +63,167 @@ const copyToClipboard = async (text: string): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error('Failed to copy:', error);
+    return false;
+  }
+};
+
+// Generate a certificate
+export const generateCertificate = async (
+  testId: string, 
+  title: string,
+  score: number, 
+  recipientName: string,
+  recipientEmail: string
+): Promise<Certificate> => {
+  // Create a unique ID for the certificate
+  const uniqueId = `cert-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+  
+  // Create a certificate hash
+  const certHash = `qwix-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 10)}`;
+  
+  // Create a transaction hash
+  const txHash = `0x${Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+  
+  // Create a new certificate
+  const certificate: Certificate = {
+    id: uniqueId,
+    testId,
+    title,
+    score,
+    issuedDate: new Date().toISOString(),
+    isPublic: true,
+    certHash,
+    txHash,
+    blockId: Math.floor(Math.random() * 1000000),
+    issuerName: "QwiXCert Authority",
+    holderName: recipientName,
+    holderEmail: recipientEmail,
+    vaultId: getQwixVaultIdByEmail(recipientEmail) || "default-vault",
+    recipientName,
+    recipientEmail,
+    uniqueId,
+    blockchainNetwork: "Polygon",
+    issuer: "QwiXCert Authority",
+    contractAddress: `0x${Array(40).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`,
+    smartContractStandard: "ERC-721"
+  };
+
+  return certificate;
+};
+
+// Certificate verification functions
+export const verifyCertificate = async (
+  identifier: string, 
+  method: 'certHash' | 'txHash' | 'blockId' | 'uniqueId' = 'certHash'
+): Promise<{ isValid: boolean; certificate?: Certificate; transaction?: any; error?: string }> => {
+  // Simulate verification delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
+  // Get all certificates
+  const certificates = getUserCertificates();
+  
+  // Find the certificate based on the method
+  let certificate;
+  
+  switch (method) {
+    case 'certHash':
+      certificate = certificates.find(cert => cert.certHash === identifier);
+      break;
+    case 'txHash':
+      certificate = certificates.find(cert => cert.txHash === identifier);
+      break;
+    case 'blockId':
+      certificate = certificates.find(cert => cert.blockId.toString() === identifier);
+      break;
+    case 'uniqueId':
+      certificate = certificates.find(cert => cert.uniqueId === identifier);
+      break;
+    default:
+      return { isValid: false, error: 'Invalid verification method' };
+  }
+  
+  if (certificate) {
+    // Create a mock transaction
+    const transaction = {
+      hash: certificate.txHash,
+      blockId: certificate.blockId,
+      confirmations: Math.floor(Math.random() * 1000),
+      timestamp: certificate.issuedDate,
+      status: 'confirmed' as const
+    };
+    
+    return { isValid: true, certificate, transaction };
+  }
+  
+  return { isValid: false, error: 'Certificate not found' };
+};
+
+// Verify certificate from file
+export const verifyCertificateFromFile = async (file: File): Promise<{ isValid: boolean; certificate?: Certificate; error?: string }> => {
+  // Simulate processing delay
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  // In a real implementation, we would extract the certificate data from the file
+  // For this demo, we'll just return a mock response
+  if (file.type === 'application/pdf') {
+    // Mock success for PDFs
+    const mockCertificate: Certificate = {
+      id: `cert-${Date.now()}`,
+      testId: 'mock-test-001',
+      title: 'Mock Certificate from File',
+      score: 85,
+      issuedDate: new Date().toISOString(),
+      isPublic: true,
+      certHash: `qwix-${Date.now().toString(36)}`,
+      txHash: `0x${Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`,
+      blockId: Math.floor(Math.random() * 1000000),
+      issuerName: 'QwiXCert Authority',
+      holderName: 'File Holder',
+      holderEmail: 'file@example.com',
+      vaultId: 'mock-vault-id',
+      recipientName: 'File Holder',
+      recipientEmail: 'file@example.com',
+      uniqueId: `file-cert-${Date.now()}`,
+      blockchainNetwork: 'Polygon',
+      issuer: 'QwiXCert Authority',
+      contractAddress: `0x${Array(40).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`,
+      smartContractStandard: 'ERC-721'
+    };
+    
+    return { isValid: true, certificate: mockCertificate };
+  }
+  
+  return { isValid: false, error: 'Invalid certificate file format. Please upload a PDF.' };
+};
+
+// Get user certificates
+export const getUserCertificates = (): Certificate[] => {
+  try {
+    // In a real app, this would fetch from a database
+    // For now, we'll just use localStorage
+    const certificatesStr = localStorage.getItem('user_certificates');
+    if (certificatesStr) {
+      return JSON.parse(certificatesStr);
+    }
+  } catch (error) {
+    console.error('Error getting certificates:', error);
+  }
+  
+  return [];
+};
+
+// Update certificate visibility
+export const updateCertificateVisibility = (certificateId: string, isPublic: boolean): boolean => {
+  try {
+    const certificates = getUserCertificates();
+    const updatedCertificates = certificates.map(cert => 
+      cert.id === certificateId ? { ...cert, isPublic } : cert
+    );
+    
+    localStorage.setItem('user_certificates', JSON.stringify(updatedCertificates));
+    return true;
+  } catch (error) {
+    console.error('Error updating certificate visibility:', error);
     return false;
   }
 };

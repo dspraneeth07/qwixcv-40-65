@@ -14,3 +14,32 @@ export interface CertificationTest {
   questions: number;
   passingScore: number;
 }
+
+export interface TestInfo {
+  id: string;
+  title: string;
+  description: string;
+  timeLimit: number;
+  questionCount: number;
+  topics: string[];
+  passingScore: number;
+  category: string;
+}
+
+export interface Question {
+  id: string;
+  text: string;
+  options: string[];
+  correctOptionIndex: number;
+  explanation?: string;
+}
+
+export interface BlockchainTransaction {
+  hash: string;
+  blockId: number;
+  confirmations: number;
+  timestamp: string;
+  status: 'pending' | 'confirmed' | 'failed';
+}
+
+export type VerificationMethod = 'certHash' | 'txHash' | 'blockId' | 'uniqueId' | 'file';

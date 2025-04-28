@@ -11,6 +11,9 @@ export interface BlockchainDocument {
   ipfsUri: string;
   tokenId?: number;
   verificationUrl?: string;
+  userName?: string;
+  userEmail?: string;
+  userId?: string;
 }
 
 export interface DocumentUploadParams {
@@ -49,4 +52,12 @@ export interface Certificate {
   holderName: string;
   holderEmail: string;
   vaultId: string;
+  recipientName?: string;
+  recipientEmail?: string;
+  uniqueId?: string;
+  blockchainNetwork?: string;
+  issuer?: string;
+  contractAddress?: string;
+  smartContractStandard?: string;
+  validUntil?: string;
 }
