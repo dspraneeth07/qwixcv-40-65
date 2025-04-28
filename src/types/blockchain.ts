@@ -2,40 +2,15 @@
 export interface BlockchainDocument {
   uniqueId: string;
   fileName: string;
-  description: string;
   fileType: string;
   fileSize: number;
-  timestamp: string;
-  ownerAddress: string;
-  blockchainHash: string;
-  ipfsUri: string;
-  tokenId?: number;
-  verificationUrl?: string;
-  userName?: string;
-  userEmail?: string;
-  userId?: string;
-}
-
-export interface DocumentUploadParams {
-  file: File;
-  fileName: string;
   description: string;
+  ipfsUri: string;
+  blockchainHash: string;
   ownerAddress: string;
-}
-
-export interface DocumentVerification {
-  isValid: boolean;
-  document?: BlockchainDocument;
-  error?: string;
-}
-
-export interface QwixVaultUser {
-  email: string;
-  walletAddress: string;
-  vaultId: string;
-  createdAt: string;
-  documents: BlockchainDocument[];
-  certificates: Certificate[];
+  timestamp: string;
+  verificationUrl: string;
+  isVerified: boolean;
 }
 
 export interface Certificate {
@@ -52,12 +27,11 @@ export interface Certificate {
   holderName: string;
   holderEmail: string;
   vaultId: string;
-  recipientName?: string;
-  recipientEmail?: string;
-  uniqueId?: string;
-  blockchainNetwork?: string;
-  issuer?: string;
-  contractAddress?: string;
-  smartContractStandard?: string;
-  validUntil?: string;
+  recipientName: string;
+  recipientEmail: string;
+  uniqueId: string;
+  blockchainNetwork: string;
+  issuer: string;
+  contractAddress: string;
+  smartContractStandard: string;
 }

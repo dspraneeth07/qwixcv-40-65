@@ -1,3 +1,4 @@
+
 import type { BlockchainDocument, Certificate } from '@/types/blockchain';
 
 // Get all documents from all users
@@ -171,6 +172,19 @@ export const getAllCertificates = (): Certificate[] => {
       if (vaultUsers[email].certificates) {
         allCertificates.push(...vaultUsers[email].certificates);
       }
+    }
+  }
+  
+  // Also check user_certificates storage
+  const userCertsStr = localStorage.getItem('user_certificates');
+  if (userCertsStr) {
+    try {
+      const userCerts = JSON.parse(userCertsStr);
+      if (Array.isArray(userCerts)) {
+        allCertificates.push(...userCerts);
+      }
+    } catch (e) {
+      console.error("Error parsing user certificates:", e);
     }
   }
   

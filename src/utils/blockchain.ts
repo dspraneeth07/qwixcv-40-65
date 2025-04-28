@@ -1,8 +1,6 @@
 
 import html2pdf from 'html2pdf.js';
 import { Certificate } from '@/types/certification';
-import { useToast } from '@/components/ui/use-toast';
-import { getQwixVaultIdByEmail } from './blockchainDocuments';
 import QRCode from 'qrcode';
 
 // Generate Certificate PDF
@@ -18,7 +16,7 @@ export const generateCertificatePDF = async (elementId: string, fileName?: strin
       filename: fileName || 'certificate.pdf',
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
     
     // Generate PDF as a blob URL
@@ -226,4 +224,21 @@ export const updateCertificateVisibility = (certificateId: string, isPublic: boo
     console.error('Error updating certificate visibility:', error);
     return false;
   }
+};
+
+// Helper function to get user's QwixVault ID by email
+export const getQwixVaultIdByEmail = (email: string): string | null => {
+  try {
+    const vaultUsersStr = localStorage.getItem('qwixvault_users');
+    if (vaultUsersStr) {
+      const vaultUsers = JSON.parse(vaultUsersStr);
+      if (vaultUsers[email]) {
+        return vaultUsers[email].vaultId;
+      }
+    }
+  } catch (error) {
+    console.error('Error getting QwixVault ID:', error);
+  }
+  
+  return null;
 };
