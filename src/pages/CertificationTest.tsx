@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -10,7 +11,8 @@ import TestResults from '@/components/certification/TestResults';
 import CertificateGenerator from '@/components/certification/CertificateGenerator';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, FileText, AlertTriangle } from 'lucide-react';
-import { TestInfo, Question, Certificate } from "@/types/certification";
+import { TestInfo, Question } from "@/types/certification";
+import { Certificate, UserActivity } from "@/types/blockchain";
 import { generateCertificate } from '@/utils/blockchain';
 import { v4 as uuidv4 } from 'uuid';
 

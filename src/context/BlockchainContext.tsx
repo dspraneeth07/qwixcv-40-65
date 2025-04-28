@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { useToast } from '@/components/ui/use-toast';
@@ -7,7 +8,8 @@ import {
   Certificate,
   DocumentUploadParams,
   DocumentVerification,
-  QwixVaultUser
+  QwixVaultUser,
+  UserActivity
 } from '@/types/blockchain';
 import { hasWeb3Support } from '@/utils/qwixMaskWallet';
 import QRCode from 'qrcode';
@@ -87,7 +89,8 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({ children
         vaultId: `QVID-${Date.now().toString(36)}-${uuidv4().substring(0, 8)}`,
         createdAt: new Date().toISOString(),
         documents: [],
-        certificates: []
+        certificates: [],
+        activities: [] // Adding the activities array
       };
       
       vaultUsers[user.email] = newVaultUser;

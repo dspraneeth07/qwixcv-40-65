@@ -19,7 +19,7 @@ import ActivityFeed from '@/components/dashboard/ActivityFeed';
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const { isConnected, account, getUserDocuments, getUserCertificates } = useBlockchain();
+  const { isConnected, account, getUserDocuments, getUserCertificates, getVaultUser } = useBlockchain();
   const [documents, setDocuments] = useState<BlockchainDocument[]>([]);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -76,6 +76,9 @@ const Dashboard = () => {
       year: 'numeric'
     });
   };
+
+  // Get the vault user
+  const vaultUser = getVaultUser();
 
   return (
     <Layout>
