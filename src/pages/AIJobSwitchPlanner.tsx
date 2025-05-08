@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { GEMINI_API_KEY } from '@/utils/apiKeys';
-import { ArrowRight, Calendar, CheckCircle, Clock, FileHeart, FileText, Lightbulb, Puzzle, ListTree } from 'lucide-react';
+import { ArrowRight, Calendar, CheckCircle, Clock, FileHeart, FileText, Lightbulb, Puzzle } from 'lucide-react';
 
 const AIJobSwitchPlanner: React.FC = () => {
   const { toast } = useToast();
@@ -128,37 +127,7 @@ const AIJobSwitchPlanner: React.FC = () => {
             description: "Active community with mentorship opportunities",
             cost: "Free"
           }
-        ],
-        // New: Dependency graph data
-        dependencyGraph: {
-          nodes: [
-            { id: "fundamentals", label: "Learn Fundamentals", level: 1, status: "required" },
-            { id: "tools", label: "Master Essential Tools", level: 1, status: "required" },
-            { id: "projects", label: "Complete Practice Projects", level: 2, status: "required", depends: ["fundamentals", "tools"] },
-            { id: "advanced", label: "Advanced Techniques", level: 2, status: "optional", depends: ["fundamentals"] },
-            { id: "specialization", label: "Choose Specialization", level: 3, status: "required", depends: ["projects"] },
-            { id: "networking", label: "Industry Networking", level: 3, status: "recommended", depends: ["projects"] },
-            { id: "portfolio", label: "Build Portfolio", level: 3, status: "required", depends: ["projects", "specialization"] },
-            { id: "certification", label: "Get Certified", level: 4, status: "optional", depends: ["specialization", "advanced"] },
-            { id: "interviews", label: "Interview Practice", level: 4, status: "required", depends: ["portfolio"] },
-            { id: "job", label: "Job Applications", level: 5, status: "required", depends: ["portfolio", "interviews", "networking"] }
-          ],
-          connections: [
-            { from: "fundamentals", to: "projects" },
-            { from: "tools", to: "projects" },
-            { from: "fundamentals", to: "advanced" },
-            { from: "projects", to: "specialization" },
-            { from: "projects", to: "networking" },
-            { from: "projects", to: "portfolio" },
-            { from: "specialization", to: "portfolio" },
-            { from: "specialization", to: "certification" },
-            { from: "advanced", to: "certification" },
-            { from: "portfolio", to: "interviews" },
-            { from: "portfolio", to: "job" },
-            { from: "interviews", to: "job" },
-            { from: "networking", to: "job" }
-          ]
-        }
+        ]
       };
 
       setPlan(mockPlan);
@@ -379,117 +348,12 @@ const AIJobSwitchPlanner: React.FC = () => {
               </div>
             </div>
             
-            <Tabs defaultValue="dependency-graph">
+            <Tabs defaultValue="milestones">
               <TabsList className="mb-4">
-                <TabsTrigger value="dependency-graph">Learning Path</TabsTrigger>
                 <TabsTrigger value="milestones">Milestones</TabsTrigger>
                 <TabsTrigger value="skills">Skills Gap Analysis</TabsTrigger>
                 <TabsTrigger value="resources">Resources</TabsTrigger>
               </TabsList>
-              
-              {/* New tab for dependency graph */}
-              <TabsContent value="dependency-graph" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <ListTree className="h-5 w-5 text-blue-600" />
-                      METTA-Based Learning Dependency Graph
-                    </CardTitle>
-                    <CardDescription>
-                      Follow this path to efficiently build the skills needed for your target role
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="p-4 border rounded-lg bg-slate-50 overflow-x-auto">
-                      {/* Visual dependency graph representation */}
-                      <div className="min-w-[700px]">
-                        {plan.dependencyGraph.nodes.map((node: any) => (
-                          <div
-                            key={node.id}
-                            style={{
-                              position: 'relative',
-                              marginLeft: `${(node.level - 1) * 15}%`,
-                              marginBottom: '20px',
-                              width: '80%',
-                            }}
-                          >
-                            <div className={`
-                              p-3 rounded-lg shadow-sm flex items-center justify-between
-                              ${node.status === 'required' ? 'bg-blue-100 border border-blue-200' : 
-                                node.status === 'recommended' ? 'bg-green-100 border border-green-200' : 
-                                'bg-gray-100 border border-gray-200'}
-                            `}>
-                              <div>
-                                <div className="font-medium">{node.label}</div>
-                                <Badge variant="outline" className="mt-1">
-                                  {node.status === 'required' ? 'Required' : 
-                                   node.status === 'recommended' ? 'Recommended' : 'Optional'}
-                                </Badge>
-                              </div>
-                              {node.level === 1 && (
-                                <div className="h-7 w-7 rounded-full bg-blue-500 flex items-center justify-center">
-                                  <span className="text-xs font-bold text-white">1</span>
-                                </div>
-                              )}
-                            </div>
-                            
-                            {/* Lines connecting nodes */}
-                            {plan.dependencyGraph.connections
-                              .filter((conn: any) => conn.from === node.id)
-                              .map((conn: any, idx: number) => {
-                                const targetNode = plan.dependencyGraph.nodes.find(
-                                  (n: any) => n.id === conn.to
-                                );
-                                return (
-                                  <div 
-                                    key={`${conn.from}-${conn.to}`}
-                                    className="absolute border-r-2 border-b-2 border-blue-300"
-                                    style={{
-                                      right: '45%',
-                                      top: '100%',
-                                      height: '20px',
-                                      width: '20px',
-                                      borderBottomRightRadius: '10px',
-                                    }}
-                                  ></div>
-                                );
-                              })}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div className="mt-6">
-                      <h3 className="text-lg font-medium mb-4">Learning Path Legend</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="flex items-center gap-2">
-                          <div className="h-4 w-4 bg-blue-100 border border-blue-200 rounded"></div>
-                          <span>Required Skills</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="h-4 w-4 bg-green-100 border border-green-200 rounded"></div>
-                          <span>Recommended Skills</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="h-4 w-4 bg-gray-100 border border-gray-200 rounded"></div>
-                          <span>Optional Skills</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <div className="bg-amber-50 border border-amber-100 rounded-md p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Lightbulb className="h-4 w-4 text-amber-600" />
-                    <p className="font-medium text-amber-700">METTA Learning Path</p>
-                  </div>
-                  <p className="text-sm text-amber-600">
-                    This dependency graph shows what to learn first and which skills build on others. 
-                    Complete the required steps in the recommended order for the most efficient learning path.
-                  </p>
-                </div>
-              </TabsContent>
               
               <TabsContent value="milestones" className="space-y-4">
                 <div className="relative">
@@ -645,44 +509,61 @@ const AIJobSwitchPlanner: React.FC = () => {
                               </div>
                               
                               <div className="flex-1">
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                                  <h4 className="font-medium">{task.name}</h4>
-                                  <div className="text-xs text-muted-foreground">{task.duration}</div>
+                                <div className="flex items-start justify-between">
+                                  <span className="font-medium">{task.name}</span>
+                                  <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+                                    {task.duration}
+                                  </span>
                                 </div>
-                                
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                  <Badge variant="outline" className="text-xs">
+                                <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-2">
+                                  <span className="bg-gray-100 px-2 py-0.5 rounded-full">
                                     {task.skillCategory}
-                                  </Badge>
+                                  </span>
                                   {task.dependencies.length > 0 && (
-                                    <Badge variant="outline" className="text-xs bg-amber-50">
-                                      Depends on previous tasks
-                                    </Badge>
+                                    <span className="bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">
+                                      Dependencies: {task.dependencies.length}
+                                    </span>
                                   )}
                                 </div>
-                                
-                                {task.resources.length > 0 && (
-                                  <div className="text-xs text-muted-foreground mt-2">
-                                    Resources: {task.resources.join(", ")}
-                                  </div>
-                                )}
                               </div>
                             </div>
                           ))}
                         </div>
                         
-                        <div className="bg-gray-50 p-3">
-                          <div className="text-xs font-medium mb-1">Micro-skills developed this week:</div>
-                          <div className="flex flex-wrap gap-1">
-                            {week.microSkills.map((skill: string, i: number) => (
-                              <Badge key={i} variant="secondary" className="text-xs">
-                                {skill}
-                              </Badge>
-                            ))}
+                        <div className="bg-gray-50 p-3 border-t">
+                          <div className="text-xs text-muted-foreground">
+                            <span className="font-medium">Micro-skills: </span>
+                            {week.microSkills.join(', ')}
                           </div>
                         </div>
                       </div>
                     ))}
+                  </div>
+                  
+                  <div className="mt-8 text-center">
+                    <Button>
+                      <Puzzle className="mr-2 h-4 w-4" /> 
+                      Generate Full Learning Path
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Dependency Graph Visualization</CardTitle>
+                  <CardDescription>
+                    METTA-based logical structure showing skill dependencies and learning paths
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="h-64 bg-gray-50 rounded-md flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-muted-foreground">
+                      Graph visualization placeholder
+                      <p className="text-sm mt-2">
+                        This would display a force-directed graph showing the relationships between different skills and tasks
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
