@@ -1,4 +1,3 @@
-
 import { InterviewQuestion, InterviewFeedback } from "@/types/interview";
 import { jsPDF } from "jspdf";
 
@@ -18,15 +17,15 @@ export const generateInterviewQuestions = async (
   
   const baseQuestions = [
     {
-      type: "Behavioral",
+      type: "Behavioral" as "Behavioral",
       question: "Tell me about a time when you had to deal with a difficult colleague or team member?",
     },
     {
-      type: "Technical",
+      type: "Technical" as "Technical",
       question: "What are the key considerations when designing a scalable application architecture?",
     },
     {
-      type: "HR",
+      type: "HR" as "HR",
       question: "Where do you see yourself in 5 years in your career?",
     }
   ];
@@ -37,45 +36,45 @@ export const generateInterviewQuestions = async (
   if (jobRole.includes('frontend')) {
     jobSpecificQuestions = [
       {
-        type: "Technical", 
+        type: "Technical" as "Technical", 
         question: "Explain the concept of React hooks and give examples of how you've used them in projects."
       },
       {
-        type: "Technical",
+        type: "Technical" as "Technical",
         question: "How would you optimize the performance of a React application that's rendering slowly?"
       },
       {
-        type: "Behavioral",
+        type: "Behavioral" as "Behavioral",
         question: "Tell me about a UI/UX challenge you faced and how you solved it."
       }
     ];
   } else if (jobRole.includes('backend')) {
     jobSpecificQuestions = [
       {
-        type: "Technical",
+        type: "Technical" as "Technical",
         question: "Explain how you would design a RESTful API for a social media platform."
       },
       {
-        type: "Technical",
+        type: "Technical" as "Technical",
         question: "What strategies do you use for database optimization and query performance?"
       },
       {
-        type: "Behavioral",
+        type: "Behavioral" as "Behavioral",
         question: "Describe a situation where you had to make a critical decision about system architecture."
       }
     ];
   } else if (jobRole.includes('data')) {
     jobSpecificQuestions = [
       {
-        type: "Technical",
+        type: "Technical" as "Technical",
         question: "Explain the difference between supervised and unsupervised learning with examples."
       },
       {
-        type: "Technical",
+        type: "Technical" as "Technical",
         question: "How would you handle missing data in a dataset before training a model?"
       },
       {
-        type: "Behavioral",
+        type: "Behavioral" as "Behavioral",
         question: "Tell me about a data analysis project where your findings led to meaningful business impact."
       }
     ];
@@ -91,7 +90,7 @@ export const generateInterviewQuestions = async (
     if (extractedSkills.length > 0) {
       resumeQuestions = [
         {
-          type: "Technical",
+          type: "Technical" as "Technical",
           question: `I see you have experience with ${extractedSkills.join(', ')}. Can you explain a project where you applied these skills?`
         }
       ];
