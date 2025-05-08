@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
+import { generateQwiXProContent, generateProjectDescription } from '@/utils/qwixProApi';
 import {
   Code,
   FileText,
@@ -68,8 +68,6 @@ const QwiXProBuilder: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedProject, setGeneratedProject] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState('code');
-  const [apiKey, setApiKey] = useState('');
-  const [isApiKeyValid, setIsApiKeyValid] = useState(false);
   const [previewUrl, setPreviewUrl] = useState('');
   const [projectFiles, setProjectFiles] = useState<{path: string, content: string}[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -83,25 +81,6 @@ const QwiXProBuilder: React.FC = () => {
   });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Validate API key format (basic check)
-  const validateApiKey = () => {
-    // Simple validation - in a real app you would validate with the actual API
-    if (apiKey.length > 20) {
-      setIsApiKeyValid(true);
-      toast({
-        title: "API Key validated",
-        description: "You can now proceed with project generation.",
-      });
-    } else {
-      setIsApiKeyValid(false);
-      toast({
-        title: "Invalid API key",
-        description: "Please enter a valid API key to continue.",
-        variant: "destructive"
-      });
-    }
-  };
 
   // Generate project based on specifications
   const handleGenerateProject = async () => {
@@ -117,8 +96,44 @@ const QwiXProBuilder: React.FC = () => {
     setIsGenerating(true);
     
     try {
-      // In a production app, we would call an AI API here
-      await simulateProjectGeneration();
+      // Get the selected template details
+      const template = ProjectTemplates.find(t => t.id === selectedTemplate);
+      
+      // Generate project description with Gemini API if not provided by user
+      let projectDesc = projectDescription;
+      if (!projectDesc && template) {
+        try {
+          projectDesc = await generateProjectDescription(
+            projectName, 
+            template.dependencies, 
+            "Developer"
+          );
+        } catch (error) {
+          console.error("Failed to generate project description:", error);
+          // Fall back to default description if API fails
+          projectDesc = `A ${template.name} project created with QwiXProBuilder.`;
+        }
+      }
+      
+      // Generate files based on template and AI
+      const generatedFiles = await generateProjectFiles(selectedTemplate || '', projectName, projectDesc);
+      
+      const mockProject = {
+        name: projectName,
+        description: projectDesc,
+        template: template?.name || "Custom Project",
+        createdAt: new Date().toISOString(),
+        dependencies: template?.dependencies || [],
+        files: generatedFiles
+      };
+      
+      setGeneratedProject(mockProject);
+      setProjectFiles(mockProject.files);
+      setSelectedFile(mockProject.files[0].path);
+      setFileContent(mockProject.files[0].content);
+      
+      // Set mock preview URL
+      setPreviewUrl(`https://preview.qwixpro.dev/${projectName.toLowerCase().replace(/\s+/g, '-')}`);
       
       toast({
         title: "Project generated successfully",
@@ -139,44 +154,15 @@ const QwiXProBuilder: React.FC = () => {
     }
   };
   
-  // Simulate project generation with a delay
-  const simulateProjectGeneration = async () => {
-    return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        // Generate mock project data
-        const template = ProjectTemplates.find(t => t.id === selectedTemplate);
-        
-        const mockProject = {
-          name: projectName,
-          description: projectDescription,
-          template: template?.name || "Custom Project",
-          createdAt: new Date().toISOString(),
-          dependencies: template?.dependencies || [],
-          files: generateMockProjectFiles(selectedTemplate || '', projectName)
-        };
-        
-        setGeneratedProject(mockProject);
-        setProjectFiles(mockProject.files);
-        setSelectedFile(mockProject.files[0].path);
-        setFileContent(mockProject.files[0].content);
-        
-        // Set mock preview URL
-        setPreviewUrl(`https://preview.qwixpro.dev/${projectName.toLowerCase().replace(/\s+/g, '-')}`);
-        
-        resolve();
-      }, 2500);
-    });
-  };
-  
-  // Generate mock project files based on template
-  const generateMockProjectFiles = (templateId: string, name: string) => {
+  // Generate project files using Gemini API
+  const generateProjectFiles = async (templateId: string, name: string, description: string) => {
     const sanitizedName = name.toLowerCase().replace(/\s+/g, '-');
     
     // Basic files every project will have
     const commonFiles = [
       {
         path: 'README.md',
-        content: `# ${name}\n\n${projectDescription || 'A project generated with QwiXProBuilder.'}\n\n## Getting Started\n\nInstall dependencies:\n\n\`\`\`\nnpm install\n\`\`\`\n\nStart the development server:\n\n\`\`\`\nnpm run dev\n\`\`\`\n`
+        content: `# ${name}\n\n${description || 'A project generated with QwiXProBuilder.'}\n\n## Getting Started\n\nInstall dependencies:\n\n\`\`\`\nnpm install\n\`\`\`\n\nStart the development server:\n\n\`\`\`\nnpm run dev\n\`\`\`\n`
       },
       {
         path: 'package.json',
@@ -184,15 +170,219 @@ const QwiXProBuilder: React.FC = () => {
       }
     ];
     
-    // Template-specific files
-    let templateFiles = [] as {path: string, content: string}[];
+    // Generate template-specific files using AI
+    let templateFiles: {path: string, content: string}[] = [];
     
+    try {
+      switch (templateId) {
+        case 'react-tailwind':
+          templateFiles = await generateReactTailwindFiles(name, description);
+          break;
+          
+        case 'nextjs-dashboard':
+          templateFiles = await generateNextJsDashboardFiles(name, description);
+          break;
+          
+        case 'mern-stack':
+          templateFiles = await generateMERNStackFiles(name, description, sanitizedName);
+          break;
+          
+        case 'react-typescript':
+          templateFiles = await generateReactTypeScriptFiles(name, description);
+          break;
+      }
+    } catch (error) {
+      console.error("Error generating template files:", error);
+      // Fall back to hardcoded files if API fails
+      templateFiles = generateFallbackTemplateFiles(templateId, name, description, sanitizedName);
+    }
+    
+    return [...commonFiles, ...templateFiles];
+  };
+  
+  // Generate React + Tailwind template files using Gemini API
+  const generateReactTailwindFiles = async (name: string, description: string) => {
+    try {
+      const appJsxPrompt = `
+        Generate a React functional component (App.jsx) for a project named "${name}" with this description: "${description}".
+        It should use Tailwind CSS classes for styling and have:
+        1. A responsive header with navigation
+        2. A hero section with a title and description
+        3. A features section with 3 feature cards
+        4. A responsive footer
+        
+        Return only the complete React component code, nothing else.
+      `;
+      
+      const appJsxContent = await generateQwiXProContent(appJsxPrompt);
+      
+      const tailwindConfigPrompt = `
+        Generate a complete tailwind.config.js file with customizations for a project named "${name}".
+        Include custom colors and font settings that would suit this project.
+        
+        Return only the configuration file code, nothing else.
+      `;
+      
+      const tailwindConfigContent = await generateQwiXProContent(tailwindConfigPrompt);
+      
+      return [
+        {
+          path: 'src/App.jsx',
+          content: appJsxContent
+        },
+        {
+          path: 'tailwind.config.js',
+          content: tailwindConfigContent
+        },
+        {
+          path: 'src/index.jsx',
+          content: `import React from 'react';\nimport ReactDOM from 'react-dom/client';\nimport './index.css';\nimport App from './App';\n\nconst root = ReactDOM.createRoot(document.getElementById('root'));\nroot.render(\n  <React.StrictMode>\n    <App />\n  </React.StrictMode>\n);\n`
+        }
+      ];
+    } catch (error) {
+      throw new Error(`Failed to generate React Tailwind files: ${error}`);
+    }
+  };
+  
+  // Generate Next.js dashboard files using Gemini API
+  const generateNextJsDashboardFiles = async (name: string, description: string) => {
+    try {
+      const indexJsPrompt = `
+        Generate a Next.js page component (pages/index.js) for a dashboard project named "${name}" with this description: "${description}".
+        The page should import a Dashboard component and include proper Next.js Head component setup.
+        
+        Return only the complete Next.js page component code, nothing else.
+      `;
+      
+      const indexJsContent = await generateQwiXProContent(indexJsPrompt);
+      
+      const dashboardComponentPrompt = `
+        Generate a React functional component (Dashboard.jsx) for a dashboard project named "${name}".
+        It should use Tailwind CSS for styling and include:
+        1. A responsive navigation bar
+        2. A dashboard header with title and actions
+        3. A statistics summary section with 3-4 stat cards
+        4. A main content area with a placeholder
+        
+        Return only the complete React component code, nothing else.
+      `;
+      
+      const dashboardContent = await generateQwiXProContent(dashboardComponentPrompt);
+      
+      return [
+        {
+          path: 'pages/index.js',
+          content: indexJsContent
+        },
+        {
+          path: 'components/Dashboard.jsx',
+          content: dashboardContent
+        }
+      ];
+    } catch (error) {
+      throw new Error(`Failed to generate Next.js dashboard files: ${error}`);
+    }
+  };
+  
+  // Generate MERN stack files using Gemini API
+  const generateMERNStackFiles = async (name: string, description: string, sanitizedName: string) => {
+    try {
+      const serverJsPrompt = `
+        Generate a Node.js Express server file (server.js) for a MERN stack project named "${name}" with this description: "${description}".
+        Include:
+        1. Express setup with necessary middleware
+        2. MongoDB connection using mongoose
+        3. Basic API routes structure
+        4. Error handling
+        5. Server startup code
+        
+        The MongoDB database name should be "${sanitizedName}".
+        Return only the complete server.js code, nothing else.
+      `;
+      
+      const serverJsContent = await generateQwiXProContent(serverJsPrompt);
+      
+      const clientAppJsPrompt = `
+        Generate a React client-side App.js file for a MERN stack project named "${name}" with this description: "${description}".
+        Include:
+        1. State for storing data from the API
+        2. useEffect hook to fetch data from the backend API
+        3. Basic UI with React components
+        4. Error handling for API requests
+        
+        Return only the complete React App.js code, nothing else.
+      `;
+      
+      const clientAppJsContent = await generateQwiXProContent(clientAppJsPrompt);
+      
+      return [
+        {
+          path: 'server/server.js',
+          content: serverJsContent
+        },
+        {
+          path: 'client/src/App.js',
+          content: clientAppJsContent
+        }
+      ];
+    } catch (error) {
+      throw new Error(`Failed to generate MERN stack files: ${error}`);
+    }
+  };
+  
+  // Generate React + TypeScript files using Gemini API
+  const generateReactTypeScriptFiles = async (name: string, description: string) => {
+    try {
+      const appTsxPrompt = `
+        Generate a React TypeScript component (App.tsx) for a project named "${name}" with this description: "${description}".
+        Include:
+        1. Proper TypeScript interfaces/types
+        2. State management with useState and proper typing
+        3. Event handlers with TypeScript event types
+        4. A simple but functional UI
+        
+        Return only the complete TypeScript React component code, nothing else.
+      `;
+      
+      const appTsxContent = await generateQwiXProContent(appTsxPrompt);
+      
+      const tsconfigPrompt = `
+        Generate a complete tsconfig.json file for a React TypeScript project.
+        Include standard settings for a modern React application.
+        
+        Return only the complete tsconfig.json content, nothing else.
+      `;
+      
+      const tsconfigContent = await generateQwiXProContent(tsconfigPrompt);
+      
+      return [
+        {
+          path: 'src/App.tsx',
+          content: appTsxContent
+        },
+        {
+          path: 'tsconfig.json',
+          content: tsconfigContent
+        }
+      ];
+    } catch (error) {
+      throw new Error(`Failed to generate React TypeScript files: ${error}`);
+    }
+  };
+  
+  // Fallback file generation if API fails
+  const generateFallbackTemplateFiles = (
+    templateId: string, 
+    name: string, 
+    description: string, 
+    sanitizedName: string
+  ) => {
     switch (templateId) {
       case 'react-tailwind':
-        templateFiles = [
+        return [
           {
             path: 'src/App.jsx',
-            content: `import React from 'react';\nimport './App.css';\n\nfunction App() {\n  return (\n    <div className="min-h-screen bg-gray-100 flex items-center justify-center">\n      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">\n        <h1 className="text-3xl font-bold text-center mb-6">${name}</h1>\n        <p className="text-gray-600 text-center">\n          ${projectDescription || 'Edit src/App.jsx and save to reload.'}\n        </p>\n        <div className="mt-8 flex justify-center">\n          <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">\n            Get Started\n          </button>\n        </div>\n      </div>\n    </div>\n  );\n}\n\nexport default App;\n`
+            content: `import React from 'react';\nimport './App.css';\n\nfunction App() {\n  return (\n    <div className="min-h-screen bg-gray-100 flex items-center justify-center">\n      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">\n        <h1 className="text-3xl font-bold text-center mb-6">${name}</h1>\n        <p className="text-gray-600 text-center">\n          ${description || 'Edit src/App.jsx and save to reload.'}\n        </p>\n        <div className="mt-8 flex justify-center">\n          <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">\n            Get Started\n          </button>\n        </div>\n      </div>\n    </div>\n  );\n}\n\nexport default App;\n`
           },
           {
             path: 'tailwind.config.js',
@@ -203,49 +393,46 @@ const QwiXProBuilder: React.FC = () => {
             content: `import React from 'react';\nimport ReactDOM from 'react-dom/client';\nimport './index.css';\nimport App from './App';\n\nconst root = ReactDOM.createRoot(document.getElementById('root'));\nroot.render(\n  <React.StrictMode>\n    <App />\n  </React.StrictMode>\n);\n`
           }
         ];
-        break;
         
       case 'nextjs-dashboard':
-        templateFiles = [
+        return [
           {
             path: 'pages/index.js',
-            content: `import Head from 'next/head';\nimport Dashboard from '../components/Dashboard';\n\nexport default function Home() {\n  return (\n    <div>\n      <Head>\n        <title>${name} - Dashboard</title>\n        <meta name="description" content="${projectDescription || 'Generated by QwiXProBuilder'}" />\n        <link rel="icon" href="/favicon.ico" />\n      </Head>\n\n      <main>\n        <Dashboard />\n      </main>\n    </div>\n  );\n}\n`
+            content: `import Head from 'next/head';\nimport Dashboard from '../components/Dashboard';\n\nexport default function Home() {\n  return (\n    <div>\n      <Head>\n        <title>${name} - Dashboard</title>\n        <meta name="description" content="${description || 'Generated by QwiXProBuilder'}" />\n        <link rel="icon" href="/favicon.ico" />\n      </Head>\n\n      <main>\n        <Dashboard />\n      </main>\n    </div>\n  );\n}\n`
           },
           {
             path: 'components/Dashboard.jsx',
             content: `import React from 'react';\n\nexport default function Dashboard() {\n  return (\n    <div className="min-h-screen bg-gray-50">\n      <nav className="bg-white shadow-sm">\n        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">\n          <div className="flex justify-between h-16">\n            <div className="flex">\n              <div className="flex-shrink-0 flex items-center">\n                <h1 className="text-xl font-bold">${name}</h1>\n              </div>\n            </div>\n          </div>\n        </div>\n      </nav>\n\n      <div className="py-10">\n        <header>\n          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">\n            <h2 className="text-3xl font-bold leading-tight text-gray-900">Dashboard</h2>\n          </div>\n        </header>\n        <main>\n          <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">\n            <div className="px-4 py-8 sm:px-0">\n              <div className="border-4 border-dashed border-gray-200 rounded-lg h-96 flex items-center justify-center">\n                <p className="text-lg text-gray-500">Your dashboard content goes here</p>\n              </div>\n            </div>\n          </div>\n        </main>\n      </div>\n    </div>\n  );\n}\n`
           }
         ];
-        break;
         
       case 'mern-stack':
-        templateFiles = [
+        return [
           {
             path: 'server/server.js',
             content: `const express = require('express');\nconst mongoose = require('mongoose');\nconst cors = require('cors');\nrequire('dotenv').config();\n\nconst app = express();\nconst PORT = process.env.PORT || 5000;\n\n// Middleware\napp.use(cors());\napp.use(express.json());\n\n// Connect to MongoDB\nmongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/${sanitizedName}', {\n  useNewUrlParser: true,\n  useUnifiedTopology: true\n})\n  .then(() => console.log('Connected to MongoDB'))\n  .catch(err => console.error('Could not connect to MongoDB', err));\n\n// Routes\napp.get('/', (req, res) => {\n  res.send('API is running...');\n});\n\n// Start server\napp.listen(PORT, () => console.log(\`Server running on port \${PORT}\`));\n`
           },
           {
             path: 'client/src/App.js',
-            content: `import React, { useState, useEffect } from 'react';\nimport axios from 'axios';\nimport './App.css';\n\nfunction App() {\n  const [message, setMessage] = useState('');\n\n  useEffect(() => {\n    // Fetch data from API\n    axios.get('http://localhost:5000/')\n      .then(res => setMessage(res.data))\n      .catch(err => console.error(err));\n  }, []);\n\n  return (\n    <div className="App">\n      <header className="App-header">\n        <h1>${name}</h1>\n        <p>${projectDescription || 'A MERN stack application'}</p>\n        <div className="message-box">\n          <p>Message from server: {message}</p>\n        </div>\n      </header>\n    </div>\n  );\n}\n\nexport default App;\n`
+            content: `import React, { useState, useEffect } from 'react';\nimport axios from 'axios';\nimport './App.css';\n\nfunction App() {\n  const [message, setMessage] = useState('');\n\n  useEffect(() => {\n    // Fetch data from API\n    axios.get('http://localhost:5000/')\n      .then(res => setMessage(res.data))\n      .catch(err => console.error(err));\n  }, []);\n\n  return (\n    <div className="App">\n      <header className="App-header">\n        <h1>${name}</h1>\n        <p>${description || 'A MERN stack application'}</p>\n        <div className="message-box">\n          <p>Message from server: {message}</p>\n        </div>\n      </header>\n    </div>\n  );\n}\n\nexport default App;\n`
           }
         ];
-        break;
         
       case 'react-typescript':
-        templateFiles = [
+        return [
           {
             path: 'src/App.tsx',
-            content: `import React, { useState } from 'react';\nimport './App.css';\n\ninterface Item {\n  id: number;\n  text: string;\n}\n\nfunction App(): JSX.Element {\n  const [items, setItems] = useState<Item[]>([]);\n  const [text, setText] = useState<string>('');\n\n  const handleSubmit = (e: React.FormEvent) => {\n    e.preventDefault();\n    if (!text.trim()) return;\n    \n    const newItem: Item = {\n      id: Date.now(),\n      text\n    };\n    \n    setItems([...items, newItem]);\n    setText('');\n  };\n\n  return (\n    <div className="App">\n      <header className="App-header">\n        <h1>${name}</h1>\n        <p>${projectDescription || 'A React TypeScript application'}</p>\n      </header>\n      \n      <main className="App-main">\n        <form onSubmit={handleSubmit} className="item-form">\n          <input \n            type="text" \n            value={text} \n            onChange={(e) => setText(e.target.value)} \n            placeholder="Add an item..." \n          />\n          <button type="submit">Add</button>\n        </form>\n        \n        <ul className="item-list">\n          {items.map((item) => (\n            <li key={item.id}>{item.text}</li>\n          ))}\n        </ul>\n      </main>\n    </div>\n  );\n}\n\nexport default App;\n`
+            content: `import React, { useState } from 'react';\nimport './App.css';\n\ninterface Item {\n  id: number;\n  text: string;\n}\n\nfunction App(): JSX.Element {\n  const [items, setItems] = useState<Item[]>([]);\n  const [text, setText] = useState<string>('');\n\n  const handleSubmit = (e: React.FormEvent) => {\n    e.preventDefault();\n    if (!text.trim()) return;\n    \n    const newItem: Item = {\n      id: Date.now(),\n      text\n    };\n    \n    setItems([...items, newItem]);\n    setText('');\n  };\n\n  return (\n    <div className="App">\n      <header className="App-header">\n        <h1>${name}</h1>\n        <p>${description || 'A React TypeScript application'}</p>\n      </header>\n      \n      <main className="App-main">\n        <form onSubmit={handleSubmit} className="item-form">\n          <input \n            type="text" \n            value={text} \n            onChange={(e) => setText(e.target.value)} \n            placeholder="Add an item..." \n          />\n          <button type="submit">Add</button>\n        </form>\n        \n        <ul className="item-list">\n          {items.map((item) => (\n            <li key={item.id}>{item.text}</li>\n          ))}\n        </ul>\n      </main>\n    </div>\n  );\n}\n\nexport default App;\n`
           },
           {
             path: 'tsconfig.json',
             content: `{\n  "compilerOptions": {\n    "target": "es5",\n    "lib": [\n      "dom",\n      "dom.iterable",\n      "esnext"\n    ],\n    "allowJs": true,\n    "skipLibCheck": true,\n    "esModuleInterop": true,\n    "allowSyntheticDefaultImports": true,\n    "strict": true,\n    "forceConsistentCasingInFileNames": true,\n    "noFallthroughCasesInSwitch": true,\n    "module": "esnext",\n    "moduleResolution": "node",\n    "resolveJsonModule": true,\n    "isolatedModules": true,\n    "noEmit": true,\n    "jsx": "react-jsx"\n  },\n  "include": [\n    "src"\n  ]\n}\n`
           }
         ];
-        break;
+        
+      default:
+        return [];
     }
-    
-    return [...commonFiles, ...templateFiles];
   };
   
   // Update the selected file content
@@ -535,343 +722,3 @@ const QwiXProBuilder: React.FC = () => {
                           id="deployment-ready" 
                           checked={projectSettings.deploymentReady}
                           onCheckedChange={(checked) => setProjectSettings({...projectSettings, deploymentReady: checked})}
-                          disabled={!isApiKeyValid}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    onClick={handleGenerateProject} 
-                    disabled={isGenerating || !isApiKeyValid || !projectName || !selectedTemplate}
-                    className="w-full"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                        Generating Project...
-                      </>
-                    ) : (
-                      <>
-                        <Code className="mr-2 h-4 w-4" />
-                        Generate Project
-                      </>
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </div>
-            
-            {/* Preview Placeholder */}
-            <div className="lg:col-span-2">
-              <Card className="h-full">
-                <CardHeader>
-                  <CardTitle>Project Preview</CardTitle>
-                  <CardDescription>
-                    Your generated project will appear here
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1">
-                  <div className="h-[500px] flex items-center justify-center border border-dashed rounded-md">
-                    <div className="text-center max-w-md p-6">
-                      <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                        <Code className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                      <h3 className="text-lg font-medium mb-2">No project generated yet</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Fill in the project details and click "Generate Project" to create your application with AI.
-                      </p>
-                      
-                      <div className="text-xs text-muted-foreground bg-muted/50 rounded p-3 text-left">
-                        <div className="font-mono mb-1.5">// QwiXProBuilder features:</div>
-                        <div>• Generate complete project codebases with AI</div>
-                        <div>• Choose from multiple project templates</div>
-                        <div>• Edit and customize your code</div>
-                        <div>• Preview your application in real-time</div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        ) : (
-          <div>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="mb-4">
-                <TabsTrigger value="code" className="flex items-center gap-1.5">
-                  <Code className="h-4 w-4" />
-                  Code Editor
-                </TabsTrigger>
-                <TabsTrigger value="preview" className="flex items-center gap-1.5">
-                  <Eye className="h-4 w-4" />
-                  Live Preview
-                </TabsTrigger>
-                <TabsTrigger value="settings" className="flex items-center gap-1.5">
-                  <Settings className="h-4 w-4" />
-                  Project Settings
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="code" className="m-0">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  {/* File Explorer */}
-                  <div className="col-span-1 border rounded-lg overflow-hidden">
-                    <div className="p-3 bg-muted flex justify-between items-center">
-                      <h3 className="text-sm font-medium">Files</h3>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={addNewFile}>
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => fileInputRef.current?.click()}>
-                          <Upload className="h-4 w-4" />
-                        </Button>
-                        <Input
-                          type="file"
-                          ref={fileInputRef}
-                          className="hidden"
-                          onChange={handleFileUpload}
-                        />
-                      </div>
-                    </div>
-                    <div className="p-2 max-h-[70vh] overflow-y-auto">
-                      <div className="relative mb-2">
-                        <Search className="h-4 w-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          placeholder="Search files..."
-                          className="pl-8"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        {projectFiles.map((file, index) => (
-                          <div
-                            key={index}
-                            className={`flex items-center px-2 py-1.5 rounded text-sm cursor-pointer ${selectedFile === file.path ? 'bg-primary/10 text-primary' : 'hover:bg-muted'}`}
-                            onClick={() => handleFileSelect(file.path)}
-                          >
-                            <FileText className="h-4 w-4 mr-2 flex-shrink-0" />
-                            <span className="truncate">{file.path}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Code Editor */}
-                  <div className="col-span-1 md:col-span-3 border rounded-lg overflow-hidden">
-                    <div className="p-3 bg-muted flex justify-between items-center">
-                      <h3 className="text-sm font-medium truncate">
-                        {selectedFile || 'No file selected'}
-                      </h3>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={updateFileContent}>
-                          <Save className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigator.clipboard.writeText(fileContent)}>
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={deleteSelectedFile}>
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="max-h-[70vh] overflow-auto">
-                      <Textarea
-                        value={fileContent}
-                        onChange={(e) => setFileContent(e.target.value)}
-                        className="font-mono text-sm min-h-[600px] p-4 border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                        placeholder="// Code content will appear here"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="preview" className="m-0">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex justify-between items-center">
-                      <span>Live Preview</span>
-                      {previewUrl && (
-                        <Button variant="outline" size="sm" asChild>
-                          <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="flex items-center">
-                            <ExternalLink className="h-4 w-4 mr-1.5" />
-                            Open in new tab
-                          </a>
-                        </Button>
-                      )}
-                    </CardTitle>
-                    <CardDescription>
-                      See your project in action
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="border rounded-md overflow-hidden h-[600px] bg-white">
-                      {previewUrl ? (
-                        <div className="h-full flex flex-col">
-                          <div className="p-2 bg-gray-100 border-b flex items-center">
-                            <div className="flex gap-1.5 mr-4">
-                              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                              <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                            </div>
-                            <div className="flex-1 text-center text-sm text-muted-foreground">{previewUrl}</div>
-                            <div className="w-10"></div> {/* Spacer for alignment */}
-                          </div>
-                          <div className="flex-1 bg-white flex items-center justify-center">
-                            <div className="text-center p-8">
-                              <h1 className="text-3xl font-bold mb-4">{projectName}</h1>
-                              <p className="mb-8">{projectDescription || "A project generated with QwiXProBuilder"}</p>
-                              <div className="inline-block border px-6 py-3 rounded-md font-medium">
-                                Get Started
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="h-full flex items-center justify-center">
-                          <p className="text-muted-foreground">Preview not available</p>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="settings" className="m-0">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Project Settings</CardTitle>
-                    <CardDescription>
-                      Configure project settings and deployment options
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div>
-                      <h3 className="text-base font-medium mb-4">Project Information</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="project-name-edit">Project Name</Label>
-                          <Input 
-                            id="project-name-edit"
-                            value={projectName} 
-                            onChange={(e) => setProjectName(e.target.value)} 
-                            className="mt-1.5"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="project-template-edit">Template</Label>
-                          <Select 
-                            value={selectedTemplate || ''} 
-                            onValueChange={setSelectedTemplate}
-                          >
-                            <SelectTrigger id="project-template-edit" className="mt-1.5">
-                              <SelectValue placeholder="Select template" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {ProjectTemplates.map(template => (
-                                <SelectItem key={template.id} value={template.id}>
-                                  {template.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-4">
-                        <Label htmlFor="project-description-edit">Description</Label>
-                        <Textarea 
-                          id="project-description-edit"
-                          value={projectDescription} 
-                          onChange={(e) => setProjectDescription(e.target.value)} 
-                          rows={3}
-                          className="mt-1.5 resize-none"
-                        />
-                      </div>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div>
-                      <h3 className="text-base font-medium mb-4">Build Settings</h3>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="include-tests-edit" className="cursor-pointer">Include tests</Label>
-                          <Switch 
-                            id="include-tests-edit" 
-                            checked={projectSettings.includeTests}
-                            onCheckedChange={(checked) => setProjectSettings({...projectSettings, includeTests: checked})}
-                          />
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="include-docs-edit" className="cursor-pointer">Generate documentation</Label>
-                          <Switch 
-                            id="include-docs-edit" 
-                            checked={projectSettings.includeDocumentation}
-                            onCheckedChange={(checked) => setProjectSettings({...projectSettings, includeDocumentation: checked})}
-                          />
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <Label htmlFor="create-git-repo-edit" className="cursor-pointer">Initialize Git repository</Label>
-                            <p className="text-xs text-muted-foreground">Create initial commit and .gitignore file</p>
-                          </div>
-                          <Switch 
-                            id="create-git-repo-edit" 
-                            checked={projectSettings.createGitRepo}
-                            onCheckedChange={(checked) => setProjectSettings({...projectSettings, createGitRepo: checked})}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div>
-                      <h3 className="text-base font-medium mb-4">Deployment Settings</h3>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <Label htmlFor="deployment-ready-edit" className="cursor-pointer">Production-ready build</Label>
-                            <p className="text-xs text-muted-foreground">Configure for production deployment</p>
-                          </div>
-                          <Switch 
-                            id="deployment-ready-edit" 
-                            checked={projectSettings.deploymentReady}
-                            onCheckedChange={(checked) => setProjectSettings({...projectSettings, deploymentReady: checked})}
-                          />
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <Label htmlFor="private-packages-edit" className="cursor-pointer">Use private packages</Label>
-                            <p className="text-xs text-muted-foreground">Use private npm registry if available</p>
-                          </div>
-                          <Switch 
-                            id="private-packages-edit" 
-                            checked={projectSettings.privatePackages}
-                            onCheckedChange={(checked) => setProjectSettings({...projectSettings, privatePackages: checked})}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-between">
-                    <Button variant="outline">Restore Defaults</Button>
-                    <Button>Save Settings</Button>
-                  </CardFooter>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
-        )}
-      </div>
-    </Layout>
-  );
-};
-
-export default QwiXProBuilder;
