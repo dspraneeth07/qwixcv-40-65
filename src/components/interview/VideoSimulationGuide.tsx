@@ -3,8 +3,18 @@ import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Video, Users, FileText, Download } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 export const VideoSimulationGuide = () => {
+  const { toast } = useToast();
+  
+  const handleButtonClick = (action: string) => {
+    toast({
+      title: "Feature Coming Soon",
+      description: `The ${action} feature will be available in the next update.`,
+    });
+  };
+  
   return (
     <Card className="shadow-md mt-6">
       <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30">
@@ -27,7 +37,11 @@ export const VideoSimulationGuide = () => {
               <p className="text-sm text-muted-foreground">
                 Watch expert-led videos on answering common interview questions effectively
               </p>
-              <Button variant="link" className="px-0 text-blue-600 dark:text-blue-400">
+              <Button 
+                variant="link" 
+                className="px-0 text-blue-600 dark:text-blue-400"
+                onClick={() => handleButtonClick("Video Tutorials")}
+              >
                 Watch Now
               </Button>
             </div>
@@ -42,7 +56,11 @@ export const VideoSimulationGuide = () => {
               <p className="text-sm text-muted-foreground">
                 Download comprehensive guides for different interview types
               </p>
-              <Button variant="link" className="px-0 text-purple-600 dark:text-purple-400">
+              <Button 
+                variant="link" 
+                className="px-0 text-purple-600 dark:text-purple-400"
+                onClick={() => handleButtonClick("Interview Guides")}
+              >
                 Download PDF
               </Button>
             </div>
@@ -59,7 +77,11 @@ export const VideoSimulationGuide = () => {
               <p className="text-sm text-muted-foreground">
                 Practice with real-time AI feedback that simulates a live interview
               </p>
-              <Button variant="link" className="px-0 text-green-600 dark:text-green-400">
+              <Button 
+                variant="link" 
+                className="px-0 text-green-600 dark:text-green-400"
+                onClick={() => handleButtonClick("Live Simulation")}
+              >
                 Try Simulation
               </Button>
             </div>
@@ -74,7 +96,11 @@ export const VideoSimulationGuide = () => {
               <p className="text-sm text-muted-foreground">
                 Get detailed PDF reports analyzing your interview performance
               </p>
-              <Button variant="link" className="px-0 text-amber-600 dark:text-amber-400">
+              <Button 
+                variant="link" 
+                className="px-0 text-amber-600 dark:text-amber-400"
+                onClick={() => handleButtonClick("Performance Reports")}
+              >
                 Generate Report
               </Button>
             </div>
