@@ -26,8 +26,8 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      <AuthProvider>
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<Home />} />
@@ -49,8 +49,8 @@ const App: React.FC = () => {
           <Route path="/ai-layoff-readiness-toolkit" element={<ProtectedRoute><AILayoffReadinessToolkit /></ProtectedRoute>} />
         </Routes>
         <Toaster />
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 };
 
