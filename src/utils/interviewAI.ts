@@ -1,4 +1,3 @@
-
 import { InterviewSettings } from '@/components/interview/InterviewSetup';
 import { InterviewMessage, InterviewFeedback } from '@/types/interview';
 
@@ -320,6 +319,14 @@ export const generateInterviewFeedback = async (
     const presentationScore = Math.floor(Math.random() * 15) + 80;
     
     const feedback: InterviewFeedback = {
+      strengths: "You demonstrated good communication skills with a professional approach.",
+      improvements: "Consider providing more detailed technical examples and reducing filler words.",
+      suggestions: "Try to structure responses using the STAR method for more effective answers.",
+      scores: {
+        relevance: Math.floor((technicalScore + communicationScore) / 2),
+        clarity: communicationScore,
+        depth: technicalScore
+      },
       technical: {
         score: technicalScore,
         strengths: [
@@ -398,6 +405,14 @@ export const generateInterviewFeedback = async (
     
     // Return a default feedback object if the API fails
     return {
+      strengths: "You showed good communication skills and a professional approach.",
+      improvements: "Your answers could benefit from more structured examples and technical details.",
+      suggestions: "Using the STAR method would help structure your answers better.",
+      scores: {
+        relevance: 75,
+        clarity: 80,
+        depth: 70
+      },
       technical: {
         score: 75,
         strengths: ["Good technical foundation", "Relevant experience"],
