@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,9 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { GEMINI_API_KEY } from '@/utils/apiKeys';
-import { ArrowRight, Calendar, CheckCircle, Clock, FileCheck, FileText, Lightbulb, Puzzle } from 'lucide-react';
+import { ArrowRight, Calendar, CheckCircle, Clock, FileHeart, FileText, Lightbulb, Puzzle } from 'lucide-react';
 
 const AIJobSwitchPlanner: React.FC = () => {
   const { toast } = useToast();

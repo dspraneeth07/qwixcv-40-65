@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
 import { BlockchainProvider } from "./context/BlockchainContext";
 import { AuthProvider } from "./context/AuthContext";
+import { QueryClientProvider } from '@tanstack/react-query';
+import { createQueryClient } from "./utils/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import Index from "./pages/Index";
 import ResumeBuilder from "./pages/ResumeBuilder";
@@ -35,9 +37,8 @@ import MindprintAssessment from "./pages/MindprintAssessment";
 import AICodingCoach from "./pages/AICodingCoach";
 import QwiXProBuilder from "./pages/QwiXProBuilder";
 import AIJobSwitchPlanner from "./pages/AIJobSwitchPlanner";
-import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 
-const queryClient = new QueryClient();
+const queryClient = createQueryClient();
 
 function App() {
   useEffect(() => {
