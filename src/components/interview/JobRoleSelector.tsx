@@ -68,8 +68,8 @@ export const JobRoleSelector = ({ selectedRole, onRoleSelect }: JobRoleSelectorP
                 <CommandItem
                   key={role.value}
                   value={role.value}
-                  onSelect={(value) => {
-                    onRoleSelect(value);
+                  onSelect={() => {
+                    onRoleSelect(role.value);
                     setOpen(false);
                   }}
                 >
