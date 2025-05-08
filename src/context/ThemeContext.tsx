@@ -1,33 +1,27 @@
 
-import React, { createContext, useContext } from "react";
+import { createContext, useContext, ReactNode, useState, useEffect } from "react";
 
 type ThemeContextType = {
-  theme: "light";
-  toggleTheme: () => void;
+  theme: string;
 };
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextType>({ theme: 'light' });
 
-export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  // Always use light theme
-  const theme = "light";
-  
-  // Toggle function is empty since we're only using light theme
-  const toggleTheme = () => {
-    // No-op
-  };
-  
+export const useTheme = () => useContext(ThemeContext);
+
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+  const [theme] = useState('light');
+
+  // Apply theme class to document
+  useEffect(() => {
+    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.add('light');
+    localStorage.setItem('theme', 'light');
+  }, [theme]);
+
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme }}>
       {children}
     </ThemeContext.Provider>
   );
-};
-
-export const useTheme = (): ThemeContextType => {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
 };

@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import WalletConnect from "@/components/blockchain/WalletConnect";
 import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/ui/mode-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -62,6 +61,18 @@ export const Layout = ({ children }: LayoutProps) => {
               Resume Builder
             </Link>
             <Link
+              to="/linkedin-optimizer"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              LinkedIn Optimizer
+            </Link>
+            <Link
+              to="/mindprint-assessment"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Mindprint Assessment
+            </Link>
+            <Link
               to="/job-board"
               className="text-sm font-medium transition-colors hover:text-primary"
             >
@@ -79,18 +90,10 @@ export const Layout = ({ children }: LayoutProps) => {
             >
               Career Paths
             </Link>
-            <Link
-              to="/interview-coach"
-              className="text-sm font-medium text-primary transition-colors hover:text-primary"
-            >
-              Interview Coach
-            </Link>
           </nav>
 
           <div className="ml-auto flex items-center space-x-4">
             <WalletConnect />
-
-            <ModeToggle />
 
             {isAuthenticated && user ? (
               <DropdownMenu>

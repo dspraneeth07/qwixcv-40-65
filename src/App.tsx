@@ -30,6 +30,8 @@ import VerifyDocument from "./pages/VerifyDocument";
 import QwixVaultProfile from "./pages/QwixVaultProfile";
 import InterviewCoach from "./pages/InterviewCoach";
 import SkillGapAnalysis from "./pages/SkillGapAnalysis";
+import LinkedInOptimizer from "./pages/LinkedInOptimizer";
+import MindprintAssessment from "./pages/MindprintAssessment";
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 
 const queryClient = new QueryClient();
@@ -71,6 +73,8 @@ function App() {
                 <Route path="/qwixvault/:address" element={<QwixVaultProfile />} />
                 <Route path="/interview-coach" element={<InterviewCoach />} />
                 <Route path="/skill-gap-analysis" element={<SkillGapAnalysis />} />
+                <Route path="/linkedin-optimizer" element={<LinkedInOptimizer />} />
+                <Route path="/mindprint-assessment" element={<MindprintAssessment />} />
 
                 <Route path="/builder" element={<ProtectedRoute allowedRoles={['student']}><ResumeBuilder /></ProtectedRoute>} />
                 <Route path="/resume-preview" element={<ProtectedRoute allowedRoles={['student']}><ResumePreview /></ProtectedRoute>} />
