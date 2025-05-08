@@ -157,6 +157,7 @@ export const generateCareerPaths = async (resumeData: any): Promise<CareerPath[]
   
   // 1. Ambitious Path (Leadership)
   const ambitiousPath: CareerPath = {
+    name: "Leadership Track",
     type: "ambitious",
     title: "Leadership Track",
     description: ambitiousDescription,
@@ -210,6 +211,7 @@ export const generateCareerPaths = async (resumeData: any): Promise<CareerPath[]
   
   // 2. Skills Growth Path (Technical Depth)
   const skillsPath: CareerPath = {
+    name: "Technical Specialization",
     type: "skills",
     title: "Technical Specialization",
     description: skillsDescription,
@@ -263,6 +265,7 @@ export const generateCareerPaths = async (resumeData: any): Promise<CareerPath[]
   
   // 3. Balanced Path (Work-Life Balance)
   const balancedPath: CareerPath = {
+    name: "Balanced Growth",
     type: "balanced",
     title: "Balanced Growth",
     description: balancedDescription,

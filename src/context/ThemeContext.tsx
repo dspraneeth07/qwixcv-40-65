@@ -1,3 +1,4 @@
+
 import { createContext, useContext, ReactNode, useState, useEffect } from "react";
 
 type ThemeContextType = {
@@ -15,7 +16,7 @@ export const useTheme = () => useContext(ThemeContext);
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState('light');
 
-  // Toggle theme function
+  // Toggle theme function - as requested, we only use light theme
   const toggleTheme = () => {
     // Since we're only using light theme as requested, this is a no-op function
     // but we keep it for interface compatibility

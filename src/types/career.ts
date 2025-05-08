@@ -35,7 +35,7 @@ export interface CareerPath {
   type: "ambitious" | "balanced" | "skills";
   description: string;
   nodes: CareerNode[];
-  title?: string; // Added title property to fix the TypeScript error
+  title?: string; // Optional title property
 }
 
 // New types for mindprint assessment

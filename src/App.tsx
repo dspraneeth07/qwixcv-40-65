@@ -32,6 +32,7 @@ import InterviewCoach from "./pages/InterviewCoach";
 import SkillGapAnalysis from "./pages/SkillGapAnalysis";
 import LinkedInOptimizer from "./pages/LinkedInOptimizer";
 import MindprintAssessment from "./pages/MindprintAssessment";
+import AICodingCoach from "./pages/AICodingCoach";
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 
 const queryClient = new QueryClient();
@@ -75,6 +76,7 @@ function App() {
                 <Route path="/skill-gap-analysis" element={<SkillGapAnalysis />} />
                 <Route path="/linkedin-optimizer" element={<LinkedInOptimizer />} />
                 <Route path="/mindprint-assessment" element={<MindprintAssessment />} />
+                <Route path="/ai-coding-coach" element={<AICodingCoach />} />
 
                 <Route path="/builder" element={<ProtectedRoute allowedRoles={['student']}><ResumeBuilder /></ProtectedRoute>} />
                 <Route path="/resume-preview" element={<ProtectedRoute allowedRoles={['student']}><ResumePreview /></ProtectedRoute>} />

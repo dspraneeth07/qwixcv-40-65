@@ -12,8 +12,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, FileText, Linkedin, Brain, Code, ChevronDown } from "lucide-react";
 
 interface LayoutProps {
   children: ReactNode;
@@ -54,24 +59,65 @@ export const Layout = ({ children }: LayoutProps) => {
             >
               Home
             </Link>
-            <Link
-              to="/builder"
-              className="text-sm font-medium transition-colors hover:text-primary"
-            >
-              Resume Builder
-            </Link>
-            <Link
-              to="/linkedin-optimizer"
-              className="text-sm font-medium transition-colors hover:text-primary"
-            >
-              LinkedIn Optimizer
-            </Link>
-            <Link
-              to="/mindprint-assessment"
-              className="text-sm font-medium transition-colors hover:text-primary"
-            >
-              Mindprint Assessment
-            </Link>
+            
+            {/* CV Tools Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="link" className="p-0 h-auto text-sm font-medium transition-colors hover:text-primary">
+                  CV Tools <ChevronDown className="h-4 w-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuItem asChild>
+                  <Link to="/builder" className="w-full">
+                    <FileText className="mr-2 h-4 w-4" />
+                    Resume Builder
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/linkedin-optimizer" className="w-full">
+                    <Linkedin className="mr-2 h-4 w-4" />
+                    LinkedIn Optimizer
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/ats-scanner" className="w-full">
+                    <FileText className="mr-2 h-4 w-4" />
+                    ATS Scanner
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            {/* QwiX Learn Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="link" className="p-0 h-auto text-sm font-medium transition-colors hover:text-primary">
+                  QwiX Learn <ChevronDown className="h-4 w-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuItem asChild>
+                  <Link to="/mindprint-assessment" className="w-full">
+                    <Brain className="mr-2 h-4 w-4" />
+                    Mindprint Assessment
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/ai-coding-coach" className="w-full">
+                    <Code className="mr-2 h-4 w-4" />
+                    AI Coding Coach
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/interview-coach" className="w-full">
+                    <User className="mr-2 h-4 w-4" />
+                    Interview Coach
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
             <Link
               to="/job-board"
               className="text-sm font-medium transition-colors hover:text-primary"

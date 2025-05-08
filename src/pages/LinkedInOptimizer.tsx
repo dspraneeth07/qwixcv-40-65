@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -19,32 +18,101 @@ import {
   FileText, 
   CheckCircle2
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+
+// Function to analyze LinkedIn profile
+const analyzeLinkedInProfile = async (url: string) => {
+  try {
+    // Extract LinkedIn username from URL
+    const usernameMatch = url.match(/linkedin\.com\/in\/([^/]+)/);
+    if (!usernameMatch) throw new Error("Invalid LinkedIn URL format");
+    const username = usernameMatch[1];
+    
+    console.log("Analyzing profile for:", username);
+    
+    // In a production app, we would call a server endpoint here
+    // For now, we'll simulate scraping with the transformer utility
+    const API_KEY = "AIzaSyDRuULswOC1iFSJr83VqRaeP1g8p0Vn4Lc"; // This key is a placeholder
+    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+    
+    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ 
+            text: `Analyze this LinkedIn profile: linkedin.com/in/${username}
+            
+            Provide a detailed assessment in the following JSON format:
+            {
+              "headline": {
+                "current": "Current headline text",
+                "suggested": "Suggested improved headline text",
+                "score": 65
+              },
+              "summary": {
+                "current": "Current summary text",
+                "suggested": "Detailed suggested summary with achievements and keywords",
+                "score": 45
+              },
+              "keywords": {
+                "missing": ["keyword1", "keyword2", "keyword3"],
+                "recommended": ["keyword1", "keyword2", "keyword3"]
+              },
+              "experience": {
+                "suggestions": ["suggestion1", "suggestion2", "suggestion3"]
+              }
+            }
+            
+            Make sure to provide real and specific optimization suggestions based on LinkedIn best practices.`
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 2048
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const aiResponse = data.candidates[0].content.parts[0].text;
+    
+    // Extract the JSON portion from the response
+    const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("Could not parse analysis results");
+    
+    // Parse the JSON result
+    const analysisResults = JSON.parse(jsonMatch[0]);
+    return analysisResults;
+  } catch (error) {
+    console.error("Error analyzing LinkedIn profile:", error);
+    throw error;
+  }
+};
 
 const LinkedInOptimizer = () => {
   const [linkedInUrl, setLinkedInUrl] = useState("");
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisComplete, setAnalysisComplete] = useState(false);
   const { toast } = useToast();
 
-  // Simulated analysis results (in a real app, this would come from an API)
-  const [analysisResults, setAnalysisResults] = useState({
-    headline: {
-      current: "",
-      suggested: "",
-      score: 0
-    },
-    summary: {
-      current: "",
-      suggested: "",
-      score: 0
-    },
-    keywords: {
-      missing: [] as string[],
-      recommended: [] as string[]
-    },
-    experience: {
-      suggestions: [] as string[]
-    }
+  const { 
+    data: analysisResults, 
+    isLoading: isAnalyzing, 
+    isError, 
+    error, 
+    refetch,
+    isSuccess: analysisComplete 
+  } = useQuery({
+    queryKey: ['linkedinAnalysis', linkedInUrl],
+    queryFn: () => analyzeLinkedInProfile(linkedInUrl),
+    enabled: false, // Don't run automatically
+    retry: 1,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const handleAnalyze = async () => {
@@ -58,44 +126,7 @@ const LinkedInOptimizer = () => {
       return;
     }
 
-    setIsAnalyzing(true);
-    
-    // Simulate API call delay
-    setTimeout(() => {
-      // Mock analysis results
-      setAnalysisResults({
-        headline: {
-          current: "Software Developer at XYZ Company",
-          suggested: "Full Stack Developer | React & Node.js Expert | Cloud Solutions Architect",
-          score: 65
-        },
-        summary: {
-          current: "I am a software developer with 5 years of experience.",
-          suggested: "Results-driven Full Stack Developer with 5+ years of experience building scalable web applications. Specialized in React, Node.js, and AWS cloud architecture. Passionate about creating efficient, user-focused solutions that drive business growth. Reduced load times by 40% and increased user engagement by 25% at XYZ Company through frontend optimization.",
-          score: 45
-        },
-        keywords: {
-          missing: ["React Native", "TypeScript", "CI/CD", "Agile", "Team Leadership"],
-          recommended: ["Full Stack Development", "React.js", "Node.js", "AWS", "Performance Optimization"]
-        },
-        experience: {
-          suggestions: [
-            "Add quantifiable achievements to your XYZ Company role (e.g., 'Increased site performance by 40%')",
-            "Use more action verbs in your ABC Corp experience",
-            "Highlight team leadership and collaboration across your roles",
-            "Incorporate more industry-specific keywords in your job descriptions"
-          ]
-        }
-      });
-      
-      setIsAnalyzing(false);
-      setAnalysisComplete(true);
-      
-      toast({
-        title: "LinkedIn Profile Analysis Complete",
-        description: "We've analyzed your profile and have recommendations for optimization"
-      });
-    }, 3000);
+    refetch();
   };
 
   const getScoreColor = (score: number) => {
@@ -197,10 +228,17 @@ const LinkedInOptimizer = () => {
                   </div>
                 </div>
               )}
+
+              {isError && (
+                <div className="mt-6 p-4 border border-red-300 bg-red-50 rounded-md">
+                  <h3 className="font-medium text-red-800">Error analyzing profile</h3>
+                  <p className="text-red-600">{(error as Error).message || "Please check the URL and try again."}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
           
-          {analysisComplete && (
+          {analysisComplete && analysisResults && (
             <Tabs defaultValue="headline" className="mt-8">
               <TabsList className="grid grid-cols-4 mb-8">
                 <TabsTrigger value="headline">Headline</TabsTrigger>
