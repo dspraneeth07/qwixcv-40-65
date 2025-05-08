@@ -14,7 +14,6 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { Camera, Video, Mic, FileText, Download, MessageCircle, User, Clock, ArrowRight } from 'lucide-react';
 import { GEMINI_API_KEY } from '@/utils/apiKeys';
-import { useEffect } from 'react';
 
 const InterviewCoach: React.FC = () => {
   const { toast } = useToast();
@@ -541,7 +540,7 @@ const InterviewCoach: React.FC = () => {
                     {Object.entries(feedbackData.metrics).map(([key, value]) => (
                       <div key={key} className="text-center">
                         <div className="mb-1">
-                          <Progress value={value as number} className="h-1" />
+                          <Progress value={Number(value)} className="h-1" />
                         </div>
                         <div className="text-lg font-semibold">{value}%</div>
                         <div className="text-xs text-muted-foreground capitalize">{key.replace(/([A-Z])/g, ' $1')}</div>
