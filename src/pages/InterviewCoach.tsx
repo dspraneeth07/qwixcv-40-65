@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +13,8 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { Camera, Video, Mic, FileText, Download, MessageCircle, User, Clock, ArrowRight } from 'lucide-react';
+import { GEMINI_API_KEY } from '@/utils/apiKeys';
+import { useEffect } from 'react';
 
 const InterviewCoach: React.FC = () => {
   const { toast } = useToast();
@@ -28,8 +29,6 @@ const InterviewCoach: React.FC = () => {
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [answers, setAnswers] = useState<string[]>([]);
   const [feedbackData, setFeedbackData] = useState<any>(null);
-  const [apiKey, setApiKey] = useState('');
-  const [isApiKeyValid, setIsApiKeyValid] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -289,25 +288,6 @@ const InterviewCoach: React.FC = () => {
     };
   }, []);
 
-  // Validate API key format (basic check)
-  const validateApiKey = () => {
-    // Simple validation - in a real app you would validate with the actual API
-    if (apiKey.length > 20) {
-      setIsApiKeyValid(true);
-      toast({
-        title: "API Key validated",
-        description: "You can now proceed with the interview setup.",
-      });
-    } else {
-      setIsApiKeyValid(false);
-      toast({
-        title: "Invalid API key",
-        description: "Please enter a valid API key to continue.",
-        variant: "destructive"
-      });
-    }
-  };
-
   return (
     <Layout>
       <div className="container max-w-6xl py-8">
@@ -319,28 +299,10 @@ const InterviewCoach: React.FC = () => {
             <CardHeader>
               <CardTitle>Interview Setup</CardTitle>
               <CardDescription>
-                Configure your mock interview session and provide your API key for AI analysis
+                Configure your mock interview session 
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div>
-                <Label htmlFor="api-key">AI API Key</Label>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <Input 
-                    id="api-key"
-                    type="password" 
-                    value={apiKey} 
-                    onChange={(e) => setApiKey(e.target.value)} 
-                    placeholder="Enter your API key for AI analysis"
-                    className="flex-1"
-                  />
-                  <Button onClick={validateApiKey}>Verify</Button>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Required for AI-powered analysis and feedback on your interview performance
-                </p>
-              </div>
-              
               <div className="grid sm:grid-cols-2 gap-6">
                 <div>
                   <Label htmlFor="job-role">Job Role</Label>
@@ -350,7 +312,6 @@ const InterviewCoach: React.FC = () => {
                     onChange={(e) => setJobRole(e.target.value)} 
                     placeholder="e.g., Full Stack Developer"
                     className="mt-1.5"
-                    disabled={!isApiKeyValid}
                   />
                 </div>
                 <div>
@@ -361,7 +322,6 @@ const InterviewCoach: React.FC = () => {
                     onChange={(e) => setCompanyName(e.target.value)} 
                     placeholder="e.g., Google"
                     className="mt-1.5"
-                    disabled={!isApiKeyValid}
                   />
                 </div>
               </div>
@@ -373,7 +333,6 @@ const InterviewCoach: React.FC = () => {
                   value={difficultyLevel} 
                   onValueChange={(value: 'easy' | 'moderate' | 'hard') => setDifficultyLevel(value)}
                   className="flex space-x-4 mt-1.5"
-                  disabled={!isApiKeyValid}
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="easy" id="easy" />
@@ -389,11 +348,24 @@ const InterviewCoach: React.FC = () => {
                   </div>
                 </RadioGroup>
               </div>
+              
+              <div className="bg-blue-50 border border-blue-100 rounded-md p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center">
+                    <span className="text-blue-600 text-xs">i</span>
+                  </div>
+                  <p className="font-medium text-blue-700">AI-Powered Analysis</p>
+                </div>
+                <p className="text-sm text-blue-600">
+                  The interview will use AI to analyze your body language, speech patterns, 
+                  and responses to provide real-time feedback and generate a comprehensive report.
+                </p>
+              </div>
             </CardContent>
             <CardFooter>
               <Button 
                 onClick={generateInterviewQuestions} 
-                disabled={!isApiKeyValid || !jobRole || !companyName}
+                disabled={!jobRole || !companyName}
               >
                 Generate Interview Questions
               </Button>
@@ -587,7 +559,7 @@ const InterviewCoach: React.FC = () => {
                     </TabsList>
                     
                     <TabsContent value="improvement" className="space-y-4">
-                      {feedbackData.improvement.map((item, i) => (
+                      {feedbackData.improvement.map((item: string, i: number) => (
                         <div key={i} className="flex items-start gap-3 pb-3 border-b">
                           <div className="h-6 w-6 rounded-full bg-red-100 flex items-center justify-center text-red-600 flex-shrink-0">
                             <span className="text-xs font-bold">{i+1}</span>
@@ -598,7 +570,7 @@ const InterviewCoach: React.FC = () => {
                     </TabsContent>
                     
                     <TabsContent value="strengths" className="space-y-4">
-                      {feedbackData.strengths.map((item, i) => (
+                      {feedbackData.strengths.map((item: string, i: number) => (
                         <div key={i} className="flex items-start gap-3 pb-3 border-b">
                           <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center text-green-600 flex-shrink-0">
                             <span className="text-xs font-bold">✓</span>

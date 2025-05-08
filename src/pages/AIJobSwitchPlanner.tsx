@@ -11,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
+import { GEMINI_API_KEY } from '@/utils/apiKeys';
+import { ArrowRight, Calendar, CheckCircle, Clock, FileCheck, FileText, Lightbulb, Puzzle } from 'lucide-react';
 
 const AIJobSwitchPlanner: React.FC = () => {
   const { toast } = useToast();
@@ -18,28 +20,8 @@ const AIJobSwitchPlanner: React.FC = () => {
   const [targetRole, setTargetRole] = useState('');
   const [experience, setExperience] = useState('');
   const [skills, setSkills] = useState('');
-  const [apiKey, setApiKey] = useState('');
-  const [isApiKeyValid, setIsApiKeyValid] = useState(false);
   const [plan, setPlan] = useState<any>(null);
-
-  // Validate API key format (basic check)
-  const validateApiKey = () => {
-    // Simple validation for demo purposes
-    if (apiKey.length > 20) {
-      setIsApiKeyValid(true);
-      toast({
-        title: "API Key validated",
-        description: "You can now proceed with generating your career transition plan.",
-      });
-    } else {
-      setIsApiKeyValid(false);
-      toast({
-        title: "Invalid API key",
-        description: "Please enter a valid API key to continue.",
-        variant: "destructive"
-      });
-    }
-  };
+  const [taskSchedule, setTaskSchedule] = useState<any>(null);
 
   // Generate a career switch plan based on inputs
   const generatePlan = () => {
@@ -52,100 +34,208 @@ const AIJobSwitchPlanner: React.FC = () => {
       return;
     }
 
+    toast({
+      title: "Analyzing career transition...",
+      description: "Using AI to create your personalized transition plan.",
+    });
+
     // For demo purposes, generate a mock plan
-    const mockPlan = {
-      summary: `Transitioning from ${currentRole} to ${targetRole} will take approximately 8-10 months with focused effort.`,
-      timeframe: {
-        months: 9,
-        effort: "15-20 hours per week"
-      },
-      skillGaps: [
-        { 
-          name: "Technical skill 1", 
-          proficiency: 30,
-          targetProficiency: 80
+    // In a real application, this would use the GEMINI_API_KEY to call the API
+    setTimeout(() => {
+      const mockPlan = {
+        summary: `Transitioning from ${currentRole} to ${targetRole} will take approximately 8-10 months with focused effort.`,
+        timeframe: {
+          months: 9,
+          effort: "15-20 hours per week"
         },
-        { 
-          name: "Technical skill 2", 
-          proficiency: 10,
-          targetProficiency: 70 
+        skillGaps: [
+          { 
+            name: "Technical skill 1", 
+            proficiency: 30,
+            targetProficiency: 80
+          },
+          { 
+            name: "Technical skill 2", 
+            proficiency: 10,
+            targetProficiency: 70 
+          },
+          { 
+            name: "Soft skill 1", 
+            proficiency: 60,
+            targetProficiency: 90 
+          }
+        ],
+        milestones: [
+          {
+            title: "Foundation Building",
+            duration: "2 months",
+            description: "Build foundational knowledge through online courses and reading material",
+            tasks: [
+              "Complete online course on fundamental concepts",
+              "Read 2-3 key books in the field",
+              "Join relevant communities and forums"
+            ]
+          },
+          {
+            title: "Skill Development",
+            duration: "3 months",
+            description: "Develop practical skills through projects and hands-on experience",
+            tasks: [
+              "Complete 2-3 personal projects",
+              "Contribute to open source if applicable",
+              "Take advanced specialized courses"
+            ]
+          },
+          {
+            title: "Experience Building",
+            duration: "2 months",
+            description: "Gain relevant experience through volunteering, freelancing, or internships",
+            tasks: [
+              "Find volunteer opportunities",
+              "Take on freelance projects",
+              "Shadow professionals in the target role"
+            ]
+          },
+          {
+            title: "Job Search Preparation",
+            duration: "2 months",
+            description: "Prepare for job search and interviews",
+            tasks: [
+              "Update resume and portfolio",
+              "Prepare for technical interviews",
+              "Network with professionals in target field"
+            ]
+          }
+        ],
+        resources: [
+          {
+            type: "Course",
+            name: "Foundational Course 1",
+            provider: "Coursera",
+            duration: "40 hours",
+            cost: "$49"
+          },
+          {
+            type: "Book",
+            name: "Essential Guide to Target Field",
+            author: "Industry Expert",
+            cost: "$35"
+          },
+          {
+            type: "Community",
+            name: "Professional Network Group",
+            description: "Active community with mentorship opportunities",
+            cost: "Free"
+          }
+        ]
+      };
+
+      setPlan(mockPlan);
+      generateTaskScheduler(mockPlan);
+      
+      toast({
+        title: "Plan generated",
+        description: "Your job transition plan is ready for review.",
+      });
+    }, 2000);
+  };
+
+  // Generate METTA-based task scheduler using SingularityNET concepts
+  const generateTaskScheduler = (plan: any) => {
+    // In a real app, this would call an API using the GEMINI_API_KEY
+    // For demo purposes, generate a mock task schedule
+    const mockTaskSchedule = {
+      weeks: [
+        {
+          weekNumber: 1,
+          theme: "Introduction and Assessment",
+          description: "Understand the target role and assess current skills",
+          tasks: [
+            {
+              id: "task-1-1",
+              name: "Research target role requirements",
+              status: "completed",
+              dependencies: [],
+              skillCategory: "Research",
+              duration: "3 hours",
+              resources: ["Job descriptions", "Industry reports"]
+            },
+            {
+              id: "task-1-2",
+              name: "Self-assessment of relevant skills",
+              status: "in-progress",
+              dependencies: ["task-1-1"],
+              skillCategory: "Self-awareness",
+              duration: "4 hours",
+              resources: ["Assessment templates", "Skills matrix"]
+            },
+            {
+              id: "task-1-3",
+              name: "Set up learning environment",
+              status: "pending",
+              dependencies: ["task-1-2"],
+              skillCategory: "Organization",
+              duration: "2 hours",
+              resources: ["Learning tools", "Calendar app"]
+            }
+          ],
+          microSkills: ["Time management", "Career research", "Self-evaluation"]
         },
-        { 
-          name: "Soft skill 1", 
-          proficiency: 60,
-          targetProficiency: 90 
+        {
+          weekNumber: 2,
+          theme: "Learning Fundamentals",
+          description: "Begin acquiring basic knowledge required for the role",
+          tasks: [
+            {
+              id: "task-2-1",
+              name: "Complete introductory online course",
+              status: "pending",
+              dependencies: ["task-1-3"],
+              skillCategory: "Technical",
+              duration: "8 hours",
+              resources: ["Online course", "Practice exercises"]
+            },
+            {
+              id: "task-2-2",
+              name: "Read first chapter of key textbook",
+              status: "pending",
+              dependencies: [],
+              skillCategory: "Knowledge",
+              duration: "5 hours",
+              resources: ["Textbook", "Study notes template"]
+            },
+            {
+              id: "task-2-3",
+              name: "Join professional community",
+              status: "pending",
+              dependencies: [],
+              skillCategory: "Networking",
+              duration: "1 hour",
+              resources: ["Industry forums", "LinkedIn groups"]
+            }
+          ],
+          microSkills: ["Active learning", "Note-taking", "Critical thinking"]
         }
       ],
-      milestones: [
-        {
-          title: "Foundation Building",
-          duration: "2 months",
-          description: "Build foundational knowledge through online courses and reading material",
-          tasks: [
-            "Complete online course on fundamental concepts",
-            "Read 2-3 key books in the field",
-            "Join relevant communities and forums"
-          ]
-        },
-        {
-          title: "Skill Development",
-          duration: "3 months",
-          description: "Develop practical skills through projects and hands-on experience",
-          tasks: [
-            "Complete 2-3 personal projects",
-            "Contribute to open source if applicable",
-            "Take advanced specialized courses"
-          ]
-        },
-        {
-          title: "Experience Building",
-          duration: "2 months",
-          description: "Gain relevant experience through volunteering, freelancing, or internships",
-          tasks: [
-            "Find volunteer opportunities",
-            "Take on freelance projects",
-            "Shadow professionals in the target role"
-          ]
-        },
-        {
-          title: "Job Search Preparation",
-          duration: "2 months",
-          description: "Prepare for job search and interviews",
-          tasks: [
-            "Update resume and portfolio",
-            "Prepare for technical interviews",
-            "Network with professionals in target field"
-          ]
-        }
-      ],
-      resources: [
-        {
-          type: "Course",
-          name: "Foundational Course 1",
-          provider: "Coursera",
-          duration: "40 hours",
-          cost: "$49"
-        },
-        {
-          type: "Book",
-          name: "Essential Guide to Target Field",
-          author: "Industry Expert",
-          cost: "$35"
-        },
-        {
-          type: "Community",
-          name: "Professional Network Group",
-          description: "Active community with mentorship opportunities",
-          cost: "Free"
-        }
-      ]
+      graphData: {
+        nodes: [
+          { id: "Research", group: 1, size: 10 },
+          { id: "Technical Skills", group: 2, size: 15 },
+          { id: "Networking", group: 3, size: 8 },
+          { id: "Projects", group: 2, size: 12 },
+          { id: "Interview Prep", group: 4, size: 10 }
+        ],
+        links: [
+          { source: "Research", target: "Technical Skills", value: 3 },
+          { source: "Technical Skills", target: "Projects", value: 5 },
+          { source: "Projects", target: "Networking", value: 2 },
+          { source: "Networking", target: "Interview Prep", value: 4 },
+          { source: "Technical Skills", target: "Interview Prep", value: 5 }
+        ]
+      }
     };
 
-    setPlan(mockPlan);
-    toast({
-      title: "Plan generated",
-      description: "Your job transition plan is ready for review.",
-    });
+    setTaskSchedule(mockTaskSchedule);
   };
 
   return (
@@ -162,25 +252,7 @@ const AIJobSwitchPlanner: React.FC = () => {
                 Tell us about your current role and where you want to go
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <Label htmlFor="api-key">Gemini AI API Key</Label>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <Input 
-                    id="api-key"
-                    type="password" 
-                    value={apiKey} 
-                    onChange={(e) => setApiKey(e.target.value)} 
-                    placeholder="Enter your Gemini API key"
-                    className="flex-1"
-                  />
-                  <Button onClick={validateApiKey}>Verify</Button>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Required for AI-powered career transition plan generation
-                </p>
-              </div>
-              
+            <CardContent className="space-y-6">              
               <div className="grid sm:grid-cols-2 gap-6">
                 <div>
                   <Label htmlFor="current-role">Current Role</Label>
@@ -190,7 +262,6 @@ const AIJobSwitchPlanner: React.FC = () => {
                     onChange={(e) => setCurrentRole(e.target.value)} 
                     placeholder="e.g., QA Engineer"
                     className="mt-1.5"
-                    disabled={!isApiKeyValid}
                   />
                 </div>
                 <div>
@@ -201,7 +272,6 @@ const AIJobSwitchPlanner: React.FC = () => {
                     onChange={(e) => setTargetRole(e.target.value)} 
                     placeholder="e.g., Product Manager"
                     className="mt-1.5"
-                    disabled={!isApiKeyValid}
                   />
                 </div>
               </div>
@@ -209,7 +279,6 @@ const AIJobSwitchPlanner: React.FC = () => {
               <div>
                 <Label htmlFor="experience">Years of Experience</Label>
                 <Select 
-                  disabled={!isApiKeyValid} 
                   value={experience} 
                   onValueChange={setExperience}
                 >
@@ -235,16 +304,30 @@ const AIJobSwitchPlanner: React.FC = () => {
                   placeholder="List your current skills, certifications, and relevant experience"
                   rows={4}
                   className="mt-1.5 resize-none"
-                  disabled={!isApiKeyValid}
                 />
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-100 rounded-md p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center">
+                    <Lightbulb className="h-3 w-3 text-blue-600" />
+                  </div>
+                  <p className="font-medium text-blue-700">AI-Powered Analysis</p>
+                </div>
+                <p className="text-sm text-blue-600">
+                  Our AI will analyze your current profile and generate a personalized transition plan
+                  with skill recommendations, learning resources, and timeline estimates.
+                </p>
               </div>
             </CardContent>
             <CardFooter>
               <Button 
                 onClick={generatePlan} 
-                disabled={!isApiKeyValid || !currentRole || !targetRole}
+                disabled={!currentRole || !targetRole}
+                className="gap-2"
               >
                 Generate Career Transition Plan
+                <ArrowRight className="h-4 w-4" />
               </Button>
             </CardFooter>
           </Card>
@@ -276,7 +359,7 @@ const AIJobSwitchPlanner: React.FC = () => {
                 <div className="relative">
                   <div className="absolute left-5 top-0 h-full w-0.5 bg-gray-200"></div>
                   <div className="space-y-8">
-                    {plan.milestones.map((milestone, i) => (
+                    {plan.milestones.map((milestone: any, i: number) => (
                       <div key={i} className="relative pl-12">
                         <div className="absolute left-0 top-0 bg-blue-600 rounded-full h-10 w-10 flex items-center justify-center text-white font-bold">
                           {i+1}
@@ -284,7 +367,7 @@ const AIJobSwitchPlanner: React.FC = () => {
                         <h3 className="font-bold text-lg">{milestone.title} <span className="text-sm font-normal text-gray-500">({milestone.duration})</span></h3>
                         <p className="text-gray-600 mb-3">{milestone.description}</p>
                         <ul className="space-y-2">
-                          {milestone.tasks.map((task, j) => (
+                          {milestone.tasks.map((task: string, j: number) => (
                             <li key={j} className="flex items-baseline gap-2">
                               <div className="h-1.5 w-1.5 rounded-full bg-blue-500 mt-1.5"></div>
                               <span>{task}</span>
@@ -298,7 +381,7 @@ const AIJobSwitchPlanner: React.FC = () => {
               </TabsContent>
               
               <TabsContent value="skills" className="space-y-6">
-                {plan.skillGaps.map((skill, i) => (
+                {plan.skillGaps.map((skill: any, i: number) => (
                   <div key={i} className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="font-medium">{skill.name}</span>
@@ -340,7 +423,7 @@ const AIJobSwitchPlanner: React.FC = () => {
               </TabsContent>
               
               <TabsContent value="resources" className="space-y-4">
-                {plan.resources.map((resource, i) => (
+                {plan.resources.map((resource: any, i: number) => (
                   <Card key={i}>
                     <CardContent className="p-4">
                       <div className="flex justify-between mb-1">
@@ -374,20 +457,118 @@ const AIJobSwitchPlanner: React.FC = () => {
         <div className="mt-12 border-t pt-8">
           <h2 className="text-xl font-semibold mb-4">To-Do Task Scheduler</h2>
           <p className="text-muted-foreground mb-6">
-            Plan your career transition using a dynamic task scheduler
+            Plan your career transition using a dynamic METTA-based task scheduler
           </p>
           
-          <div className="text-center py-12">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+          {!taskSchedule ? (
+            <div className="text-center py-12">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
+                <Calendar className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-medium mb-2">Generate a plan first</h3>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Complete the career transition planner above to generate a task schedule based on your specific needs
+              </p>
             </div>
-            <h3 className="text-lg font-medium mb-2">Generate a plan first</h3>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              Complete the career transition planner above to generate a task schedule based on your specific needs
-            </p>
-          </div>
+          ) : (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>METTA-Based Task Scheduler</CardTitle>
+                  <CardDescription>
+                    Adaptive learning path with dynamic task adjustments based on your progress
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-8">
+                    {taskSchedule.weeks.map((week: any) => (
+                      <div key={week.weekNumber} className="border rounded-lg overflow-hidden">
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b">
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-semibold">Week {week.weekNumber}: {week.theme}</h3>
+                            <Badge variant="outline" className="bg-white">
+                              {week.tasks.filter((t: any) => t.status === 'completed').length}/{week.tasks.length} Tasks
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">{week.description}</p>
+                        </div>
+                        
+                        <div className="divide-y">
+                          {week.tasks.map((task: any) => (
+                            <div key={task.id} className="p-4 flex items-start gap-3">
+                              <div className={`mt-0.5 h-5 w-5 rounded-full flex items-center justify-center flex-shrink-0 
+                                ${task.status === 'completed' ? 'bg-green-100' : 
+                                  task.status === 'in-progress' ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                                {task.status === 'completed' ? (
+                                  <CheckCircle className="h-3 w-3 text-green-600" />
+                                ) : task.status === 'in-progress' ? (
+                                  <Clock className="h-3 w-3 text-blue-600" />
+                                ) : (
+                                  <div className="h-2 w-2 rounded-full bg-gray-400"></div>
+                                )}
+                              </div>
+                              
+                              <div className="flex-1">
+                                <div className="flex items-start justify-between">
+                                  <span className="font-medium">{task.name}</span>
+                                  <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+                                    {task.duration}
+                                  </span>
+                                </div>
+                                <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-2">
+                                  <span className="bg-gray-100 px-2 py-0.5 rounded-full">
+                                    {task.skillCategory}
+                                  </span>
+                                  {task.dependencies.length > 0 && (
+                                    <span className="bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">
+                                      Dependencies: {task.dependencies.length}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        <div className="bg-gray-50 p-3 border-t">
+                          <div className="text-xs text-muted-foreground">
+                            <span className="font-medium">Micro-skills: </span>
+                            {week.microSkills.join(', ')}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="mt-8 text-center">
+                    <Button>
+                      <Puzzle className="mr-2 h-4 w-4" /> 
+                      Generate Full Learning Path
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Dependency Graph Visualization</CardTitle>
+                  <CardDescription>
+                    METTA-based logical structure showing skill dependencies and learning paths
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="h-64 bg-gray-50 rounded-md flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-muted-foreground">
+                      Graph visualization placeholder
+                      <p className="text-sm mt-2">
+                        This would display a force-directed graph showing the relationships between different skills and tasks
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </div>
     </Layout>
