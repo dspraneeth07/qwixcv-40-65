@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
 import { BlockchainProvider } from "./context/BlockchainContext";
@@ -29,7 +30,7 @@ import VerifyDocument from "./pages/VerifyDocument";
 import QwixVaultProfile from "./pages/QwixVaultProfile";
 import InterviewCoach from "./pages/InterviewCoach";
 import SkillGapAnalysis from "./pages/SkillGapAnalysis";
-import { QueryClientProvider, QueryClient } from 'react-query';
+import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 
 const queryClient = new QueryClient();
 
@@ -53,7 +54,7 @@ function App() {
 
   return (
     <Router>
-      <ThemeProvider defaultTheme="system" storageKey="qwix-theme">
+      <ThemeProvider>
         <AuthProvider>
           <BlockchainProvider>
             <QueryClientProvider client={queryClient}>
