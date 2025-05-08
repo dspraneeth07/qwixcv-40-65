@@ -5,12 +5,12 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/context/AuthContext';
 
 // Pages
-import Home from '@/pages/Home';
+import Home from '@/pages/Index';
 import About from '@/pages/About';
 import Contact from '@/pages/Contact';
 import Dashboard from '@/pages/Dashboard';
 import JobBoard from '@/pages/JobBoard';
-import Builder from '@/pages/Builder';
+import ResumeBuilder from '@/pages/ResumeBuilder';
 import ATSScanner from '@/pages/ATSScanner';
 import CareerPathSimulator from '@/pages/CareerPathSimulator';
 import InterviewCoach from '@/pages/InterviewCoach';
@@ -18,11 +18,11 @@ import SkillGapAnalysis from '@/pages/SkillGapAnalysis';
 import AIJobSwitchPlanner from '@/pages/AIJobSwitchPlanner';
 import AIShadowCareerSimulator from '@/pages/AIShadowCareerSimulator';
 import AILayoffReadinessToolkit from '@/pages/AILayoffReadinessToolkit';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
+import Login from '@/pages/Auth/Login';
+import Register from '@/pages/Auth/Register';
 
 // Auth protected route component
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 const App: React.FC = () => {
   return (
@@ -39,7 +39,7 @@ const App: React.FC = () => {
           {/* Protected routes */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/job-board" element={<ProtectedRoute><JobBoard /></ProtectedRoute>} />
-          <Route path="/builder" element={<ProtectedRoute><Builder /></ProtectedRoute>} />
+          <Route path="/builder" element={<ProtectedRoute><ResumeBuilder /></ProtectedRoute>} />
           <Route path="/ats-scanner" element={<ProtectedRoute><ATSScanner /></ProtectedRoute>} />
           <Route path="/career-path-simulator" element={<ProtectedRoute><CareerPathSimulator /></ProtectedRoute>} />
           <Route path="/interview-coach" element={<ProtectedRoute><InterviewCoach /></ProtectedRoute>} />
