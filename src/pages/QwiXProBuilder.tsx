@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +19,10 @@ import {
   Rocket,
   Server,
   Sparkles,
-  Terminal
+  Terminal,
+  Check,
+  ArrowRight,
+  Cpu
 } from "lucide-react";
 
 const QwiXProBuilder = () => {
@@ -28,7 +31,20 @@ const QwiXProBuilder = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState("frontend");
   const [generatedResult, setGeneratedResult] = useState<any>(null);
+  const [viewedFile, setViewedFile] = useState<string | null>(null);
+  const previewIframeRef = useRef<HTMLIFrameElement>(null);
   const { toast } = useToast();
+
+  // Set the viewed file when results are generated
+  useEffect(() => {
+    if (generatedResult) {
+      if (activeTab === "frontend" && generatedResult.frontendCode) {
+        setViewedFile(Object.keys(generatedResult.frontendCode)[0]);
+      } else if (activeTab === "backend" && generatedResult.backendCode) {
+        setViewedFile(Object.keys(generatedResult.backendCode)[0]);
+      }
+    }
+  }, [generatedResult, activeTab]);
 
   const handleGenerate = () => {
     if (!prompt.trim()) {
@@ -151,7 +167,6 @@ app.listen(PORT, () => {
   }
 }`
         },
-        previewUrl: "https://stackblitz.com/edit/react-ts-qrureo",
       };
 
       setGeneratedResult(mockResult);
@@ -163,6 +178,48 @@ app.listen(PORT, () => {
       });
     }, 3000);
   };
+
+  const generatePreviewHTML = () => {
+    if (!generatedResult) return "";
+
+    const { frontendCode } = generatedResult;
+    
+    // Extract necessary files
+    const indexHTML = frontendCode["index.html"] || "";
+    const appJSX = frontendCode["App.jsx"] || "";
+    const styles = frontendCode["styles.css"] || "";
+    
+    // Combine into a single HTML document for the iframe
+    const combinedHTML = indexHTML.replace(
+      '<script type="text/babel" src="./App.jsx"></script>',
+      `<style>${styles}</style>
+      <script type="text/babel">
+        ${appJSX}
+      </script>`
+    );
+    
+    return combinedHTML;
+  };
+
+  const refreshPreview = () => {
+    if (previewIframeRef.current && previewIframeRef.current.contentWindow) {
+      try {
+        const previewDoc = previewIframeRef.current.contentWindow.document;
+        previewDoc.open();
+        previewDoc.write(generatePreviewHTML());
+        previewDoc.close();
+      } catch (error) {
+        console.error("Error updating preview:", error);
+      }
+    }
+  };
+
+  // Update preview when tab changes to preview
+  useEffect(() => {
+    if (activeTab === "preview" && generatedResult) {
+      refreshPreview();
+    }
+  }, [activeTab, generatedResult]);
 
   const handleDownload = () => {
     // In a real implementation, this would create a ZIP file with all the generated files
@@ -178,6 +235,18 @@ app.listen(PORT, () => {
         description: "Project files downloaded successfully.",
       });
     }, 1500);
+  };
+
+  const getCurrentFileContent = () => {
+    if (!generatedResult || !viewedFile) return "";
+    
+    if (activeTab === "frontend" && generatedResult.frontendCode && generatedResult.frontendCode[viewedFile]) {
+      return generatedResult.frontendCode[viewedFile];
+    } else if (activeTab === "backend" && generatedResult.backendCode && generatedResult.backendCode[viewedFile]) {
+      return generatedResult.backendCode[viewedFile];
+    }
+    
+    return "";
   };
 
   return (
@@ -288,14 +357,14 @@ app.listen(PORT, () => {
                     Download as ZIP
                   </Button>
                   
-                  {generatedResult.previewUrl && (
+                  {activeTab !== "preview" && (
                     <Button 
                       variant="outline" 
                       className="w-full" 
-                      onClick={() => window.open(generatedResult.previewUrl, '_blank')}
+                      onClick={() => setActiveTab("preview")}
                     >
                       <Play className="mr-2 h-4 w-4" />
-                      Open in CodeSandbox
+                      Open Live Preview
                     </Button>
                   )}
                 </CardContent>
@@ -317,7 +386,7 @@ app.listen(PORT, () => {
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-xl font-medium">Generating Your Project</h3>
+                      <h3 className="text-xl font-medium mb-2">Generating Your Project</h3>
                       <p className="text-muted-foreground mt-1">
                         Our AI is creating your application based on your description...
                       </p>
@@ -368,23 +437,30 @@ app.listen(PORT, () => {
                         <div className="mb-4">
                           <h3 className="text-sm font-medium mb-2">Frontend Files</h3>
                           <div className="flex gap-2 flex-wrap">
-                            {Object.keys(generatedResult.frontendCode).map((filename) => (
-                              <Badge key={filename} variant="outline" className="bg-slate-100">
+                            {generatedResult.frontendCode && Object.keys(generatedResult.frontendCode).map((filename) => (
+                              <Badge 
+                                key={filename} 
+                                variant={viewedFile === filename ? "default" : "outline"} 
+                                className={`cursor-pointer ${viewedFile === filename ? "" : "bg-slate-100"}`}
+                                onClick={() => setViewedFile(filename)}
+                              >
                                 <FileCode className="h-3.5 w-3.5 mr-1" /> {filename}
                               </Badge>
                             ))}
                           </div>
                         </div>
                         
-                        <div className="border rounded-lg">
-                          <div className="p-2 border-b bg-slate-50 flex items-center">
-                            <FileCode className="h-4 w-4 mr-2" />
-                            <span className="text-sm font-medium">App.jsx</span>
+                        {viewedFile && (
+                          <div className="border rounded-lg">
+                            <div className="p-2 border-b bg-slate-50 flex items-center">
+                              <FileCode className="h-4 w-4 mr-2" />
+                              <span className="text-sm font-medium">{viewedFile}</span>
+                            </div>
+                            <pre className="p-4 overflow-auto text-sm font-mono bg-slate-50 rounded-b-lg max-h-[500px]">
+                              {getCurrentFileContent()}
+                            </pre>
                           </div>
-                          <pre className="p-4 overflow-auto text-sm font-mono bg-slate-50 rounded-b-lg max-h-[500px]">
-                            {generatedResult.frontendCode["App.jsx"]}
-                          </pre>
-                        </div>
+                        )}
                       </div>
                     </TabsContent>
                     
@@ -393,37 +469,55 @@ app.listen(PORT, () => {
                         <div className="mb-4">
                           <h3 className="text-sm font-medium mb-2">Backend Files</h3>
                           <div className="flex gap-2 flex-wrap">
-                            {Object.keys(generatedResult.backendCode).map((filename) => (
-                              <Badge key={filename} variant="outline" className="bg-slate-100">
+                            {generatedResult.backendCode && Object.keys(generatedResult.backendCode).map((filename) => (
+                              <Badge 
+                                key={filename} 
+                                variant={viewedFile === filename ? "default" : "outline"} 
+                                className={`cursor-pointer ${viewedFile === filename ? "" : "bg-slate-100"}`}
+                                onClick={() => setViewedFile(filename)}
+                              >
                                 <Terminal className="h-3.5 w-3.5 mr-1" /> {filename}
                               </Badge>
                             ))}
                           </div>
                         </div>
                         
-                        <div className="border rounded-lg">
-                          <div className="p-2 border-b bg-slate-50 flex items-center">
-                            <Terminal className="h-4 w-4 mr-2" />
-                            <span className="text-sm font-medium">server.js</span>
+                        {viewedFile && (
+                          <div className="border rounded-lg">
+                            <div className="p-2 border-b bg-slate-50 flex items-center">
+                              <Terminal className="h-4 w-4 mr-2" />
+                              <span className="text-sm font-medium">{viewedFile}</span>
+                            </div>
+                            <pre className="p-4 overflow-auto text-sm font-mono bg-slate-50 rounded-b-lg max-h-[500px]">
+                              {getCurrentFileContent()}
+                            </pre>
                           </div>
-                          <pre className="p-4 overflow-auto text-sm font-mono bg-slate-50 rounded-b-lg max-h-[500px]">
-                            {generatedResult.backendCode["server.js"]}
-                          </pre>
-                        </div>
+                        )}
                       </div>
                     </TabsContent>
                     
                     <TabsContent value="preview" className="p-0 m-0">
                       <div className="p-4">
-                        <div className="border rounded-lg bg-slate-50 p-4 text-center">
-                          <h3 className="text-lg font-medium mb-2">Live Preview</h3>
-                          <p className="mb-4 text-muted-foreground">Preview your application in a live coding environment</p>
-                          <Button 
-                            onClick={() => window.open(generatedResult.previewUrl, '_blank')}
-                          >
-                            <Play className="mr-2 h-4 w-4" />
-                            Open in CodeSandbox
-                          </Button>
+                        <div className="border rounded-lg bg-slate-50 p-4">
+                          <h3 className="text-lg font-medium mb-2 text-center">Live Preview</h3>
+                          <div className="bg-white p-2 border rounded-lg mb-4 min-h-[500px]">
+                            <iframe 
+                              ref={previewIframeRef} 
+                              title="Project Preview"
+                              className="w-full h-[500px] border-0"
+                              sandbox="allow-scripts allow-same-origin"
+                            />
+                          </div>
+                          <div className="flex justify-center">
+                            <Button 
+                              onClick={refreshPreview}
+                              size="sm"
+                              variant="outline"
+                            >
+                              <Cpu className="mr-2 h-4 w-4" />
+                              Refresh Preview
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </TabsContent>

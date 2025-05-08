@@ -87,6 +87,7 @@ const UserNavbar = () => {
       .substring(0, 2);
   };
   
+  // CV Tools dropdown items
   const cvTools = [
     { name: "Resume Builder", href: "/builder", icon: FileText },
     { name: "ATS Scanner", href: "/ats-scanner", icon: BarChart },
@@ -94,12 +95,14 @@ const UserNavbar = () => {
     { name: "Compare Resumes", href: "/resume-compare", icon: FileText },
   ];
   
+  // QwiX Jobs dropdown items
   const jobTools = [
     { name: "Job Board", href: "/job-board", icon: Briefcase },
     { name: "Career Path Simulator", href: "/career-path-simulator", icon: Sparkles },
     { name: "Interview Coach", href: "/interview-coach", icon: MessageSquare },
   ];
 
+  // QwiX Learn dropdown items
   const learnTools = [
     { name: "AI Coding Coach", href: "/ai-coding-coach", icon: Code },
     { name: "QwiXPro Builder", href: "/qwixpro-builder", icon: Rocket },
@@ -264,7 +267,7 @@ const UserNavbar = () => {
                 </div>
 
                 <div className="space-y-1 px-2">
-                  <p className="text-sm font-semibold text-white/70 mb-2">QWIXLEARN</p>
+                  <p className="text-sm font-semibold text-white/70 mb-2">QWIX LEARN</p>
                   {learnTools.map((item) => (
                     <Link
                       key={item.name}
