@@ -42,36 +42,44 @@ interface JobRoleSelectorProps {
 export const JobRoleSelector = ({ selectedRole, onRoleSelect }: JobRoleSelectorProps) => {
   const [open, setOpen] = React.useState(false);
   
+  // Find the current selected role label or use placeholder
+  const selectedRoleLabel = React.useMemo(() => {
+    if (!selectedRole) return "Select a job role...";
+    const role = popularRoles.find(role => role.value === selectedRole);
+    return role ? role.label : "Select a job role...";
+  }, [selectedRole]);
+
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">Select Job Role</label>
+      <label className="text-sm font-medium text-black dark:text-white">Select Job Role</label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-full justify-between"
+            className="w-full justify-between border-2 border-gray-300 dark:border-gray-700"
           >
-            {selectedRole
-              ? popularRoles.find((role) => role.value === selectedRole)?.label || "Select a job role..."
-              : "Select a job role..."}
+            <span className="text-black dark:text-white">{selectedRoleLabel}</span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[300px] p-0 bg-white dark:bg-slate-950 shadow-md">
+        <PopoverContent className="w-[300px] p-0 bg-white dark:bg-slate-950 shadow-md border-2 border-gray-300 dark:border-gray-700">
           <Command>
-            <CommandInput placeholder="Search roles..." />
-            <CommandEmpty>No role found.</CommandEmpty>
+            <CommandInput placeholder="Search roles..." className="text-black dark:text-white" />
+            <CommandEmpty className="text-black dark:text-white">No role found.</CommandEmpty>
             <CommandGroup className="max-h-60 overflow-auto">
               {popularRoles.map((role) => (
                 <CommandItem
                   key={role.value}
                   value={role.value}
-                  onSelect={() => {
-                    onRoleSelect(role.value);
+                  onSelect={(value) => {
+                    // Make sure we're selecting a valid value
+                    const selectedValue = value || role.value;
+                    onRoleSelect(selectedValue);
                     setOpen(false);
                   }}
+                  className="text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                   <Check
                     className={cn(
