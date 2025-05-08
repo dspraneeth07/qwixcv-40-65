@@ -381,7 +381,7 @@ const QwiXProBuilder: React.FC = () => {
           }
           
           setSelectedFile(filePath);
-          setFileContent(event.target.result);
+          setFileContent(event.target.result as string);
           
           toast({
             title: "File uploaded",
@@ -636,11 +636,13 @@ const QwiXProBuilder: React.FC = () => {
                       </div>
                     </div>
                     <div className="p-2 max-h-[70vh] overflow-y-auto">
-                      <Input
-                        placeholder="Search files..."
-                        className="mb-2"
-                        prefix={<Search className="h-4 w-4 ml-2 text-muted-foreground" />}
-                      />
+                      <div className="relative mb-2">
+                        <Search className="h-4 w-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          placeholder="Search files..."
+                          className="pl-8"
+                        />
+                      </div>
                       <div className="space-y-1">
                         {projectFiles.map((file, index) => (
                           <div

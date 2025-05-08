@@ -15,8 +15,6 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { Camera, Video, Mic, FileText, Download, MessageCircle, User, Clock, ArrowRight } from 'lucide-react';
 
-import { useEffect, useState, useRef } from 'react';
-
 const InterviewCoach: React.FC = () => {
   const { toast } = useToast();
   const [stage, setStage] = useState<'setup' | 'preparation' | 'interview' | 'feedback'>('setup');
