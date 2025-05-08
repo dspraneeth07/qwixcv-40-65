@@ -54,12 +54,12 @@ export const JobRoleSelector = ({ selectedRole, onRoleSelect }: JobRoleSelectorP
             className="w-full justify-between"
           >
             {selectedRole
-              ? popularRoles.find((role) => role.value === selectedRole)?.label
+              ? popularRoles.find((role) => role.value === selectedRole)?.label || "Select a job role..."
               : "Select a job role..."}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[300px] p-0">
+        <PopoverContent className="w-[300px] p-0 bg-white dark:bg-slate-950 shadow-md">
           <Command>
             <CommandInput placeholder="Search roles..." />
             <CommandEmpty>No role found.</CommandEmpty>

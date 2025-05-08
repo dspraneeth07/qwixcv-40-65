@@ -1,11 +1,12 @@
+
 import { InterviewSettings } from '@/components/interview/InterviewSetup';
-import { InterviewMessage, InterviewFeedback } from '@/types/interview';
+import { InterviewMessage, InterviewFeedback, InterviewQuestion } from '@/types/interview';
 
 // Analyze resume and generate questions based on the resume and job details
 export const analyzeResumeAndGenerateQuestions = async (
   settings: InterviewSettings,
   apiKey: string
-): Promise<string[]> => {
+): Promise<InterviewQuestion[]> => {
   try {
     console.log('Analyzing resume and generating questions...');
     
@@ -80,7 +81,37 @@ export const analyzeResumeAndGenerateQuestions = async (
     const text = data.candidates[0].content.parts[0].text.trim();
     
     // Split by newlines and filter out empty strings
-    const questions = text.split('\n').filter(q => q.trim() !== '');
+    const questionsText = text.split('\n').filter(q => q.trim() !== '');
+    
+    // Convert to the required InterviewQuestion format
+    const questions: InterviewQuestion[] = questionsText.map(question => {
+      // Determine if the question is technical, behavioral, or HR based on content
+      let type: "Technical" | "Behavioral" | "HR" = "Behavioral"; // Default
+      
+      const lowerCaseQuestion = question.toLowerCase();
+      
+      if (lowerCaseQuestion.includes('code') || 
+          lowerCaseQuestion.includes('technical') || 
+          lowerCaseQuestion.includes('programming') ||
+          lowerCaseQuestion.includes('architecture') ||
+          lowerCaseQuestion.includes('algorithm') ||
+          lowerCaseQuestion.includes('technology') ||
+          lowerCaseQuestion.includes('tool') ||
+          lowerCaseQuestion.includes('framework')) {
+        type = "Technical";
+      } else if (lowerCaseQuestion.includes('salary') || 
+                lowerCaseQuestion.includes('benefit') ||
+                lowerCaseQuestion.includes('culture') ||
+                lowerCaseQuestion.includes('work-life balance') ||
+                lowerCaseQuestion.includes('policy')) {
+        type = "HR";
+      }
+      
+      return {
+        type,
+        question
+      };
+    });
     
     return questions;
     
@@ -89,14 +120,38 @@ export const analyzeResumeAndGenerateQuestions = async (
     
     // Return fallback questions if the API fails
     return [
-      "Can you walk me through your background and experience?",
-      "What makes you interested in this position?",
-      "Tell me about a challenging project you worked on.",
-      "How do you prioritize tasks when you have multiple deadlines?",
-      "What are your greatest strengths related to this role?",
-      "Where do you see yourself professionally in 5 years?",
-      "Describe a situation where you had to learn something new quickly.",
-      "How do you handle feedback or criticism?"
+      { 
+        type: "Behavioral", 
+        question: "Can you walk me through your background and experience?"
+      },
+      { 
+        type: "Behavioral", 
+        question: "What makes you interested in this position?"
+      },
+      { 
+        type: "Behavioral", 
+        question: "Tell me about a challenging project you worked on."
+      },
+      { 
+        type: "Behavioral", 
+        question: "How do you prioritize tasks when you have multiple deadlines?"
+      },
+      { 
+        type: "Behavioral", 
+        question: "What are your greatest strengths related to this role?"
+      },
+      { 
+        type: "Behavioral", 
+        question: "Where do you see yourself professionally in 5 years?"
+      },
+      { 
+        type: "Technical", 
+        question: "Describe a situation where you had to learn something new quickly."
+      },
+      { 
+        type: "Behavioral", 
+        question: "How do you handle feedback or criticism?"
+      }
     ];
   }
 };
@@ -452,5 +507,54 @@ export const generateInterviewFeedback = async (
         nextSteps: ["Practice mock interviews", "Research companies thoroughly"]
       }
     };
+  }
+};
+
+// New function for PDF generation with enhanced formatting
+export const generateEnhancedPDF = async (
+  jobRole: string,
+  questions: InterviewQuestion[],
+  answers: string[],
+  feedback: (InterviewFeedback | null)[],
+): Promise<string> => {
+  try {
+    console.log('Generating enhanced PDF report...');
+    
+    // In a real implementation, this would use a library like jsPDF or html2pdf
+    // to generate a well-formatted PDF with sections for each question and feedback
+    
+    // For now, simulate successful PDF generation
+    
+    // Calculate overall scores based on feedback
+    let overallScore = 0;
+    let technicalScore = 0;
+    let communicationScore = 0;
+    let presentationScore = 0;
+    let validFeedbackCount = 0;
+    
+    feedback.forEach(fb => {
+      if (fb && fb.overall) {
+        overallScore += fb.overall.score;
+        technicalScore += fb.technical?.score || 0;
+        communicationScore += fb.communication?.score || 0;
+        presentationScore += fb.presentation?.score || 0;
+        validFeedbackCount++;
+      }
+    });
+    
+    if (validFeedbackCount > 0) {
+      overallScore = Math.round(overallScore / validFeedbackCount);
+      technicalScore = Math.round(technicalScore / validFeedbackCount);
+      communicationScore = Math.round(communicationScore / validFeedbackCount);
+      presentationScore = Math.round(presentationScore / validFeedbackCount);
+    }
+    
+    // In a real implementation, this would return the URL to the downloaded PDF
+    // For this mock implementation, we'll just return a message
+    return `interview_report_${jobRole.replace(/\s+/g, '_').toLowerCase()}_${Date.now()}.pdf`;
+    
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    throw new Error('Failed to generate PDF report');
   }
 };

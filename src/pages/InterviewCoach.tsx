@@ -30,6 +30,7 @@ import { useInterviewSimulator } from "@/hooks/useInterviewSimulator";
 import { InterviewUpload } from "@/components/interview/InterviewUpload";
 import { InterviewSettings } from "@/components/interview/InterviewSettings";
 import { JobRoleSelector } from "@/components/interview/JobRoleSelector";
+import { VideoSimulationGuide } from "@/components/interview/VideoSimulationGuide";
 
 const InterviewCoach = () => {
   const { toast } = useToast();
@@ -81,49 +82,53 @@ const InterviewCoach = () => {
         </div>
         
         {!interviewStarted && !interviewCompleted && (
-          <Card className="shadow-md">
-            <CardHeader>
-              <CardTitle>Set Up Your Interview</CardTitle>
-              <CardDescription>
-                Customize your interview settings and upload your resume to get tailored questions
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <JobRoleSelector 
-                selectedRole={jobRole} 
-                onRoleSelect={setJobRole} 
-              />
-              
-              <InterviewSettings 
-                timePerQuestion={timePerQuestion}
-                onTimeChange={setTimePerQuestion}
-              />
-              
-              <InterviewUpload 
-                resumeText={resumeText}
-                onResumeTextChange={setResumeText}
-              />
-            </CardContent>
-            <CardFooter>
-              <Button
-                onClick={startInterview}
-                disabled={!jobRole || isLoading}
-                className="w-full"
-              >
-                {isLoading ? (
-                  <>
-                    <span className="mr-2">Preparing Questions...</span>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  </>
-                ) : (
-                  <>
-                    <Play className="mr-2 h-4 w-4" />
-                    Start Interview
-                  </>
-                )}
-              </Button>
-            </CardFooter>
-          </Card>
+          <>
+            <Card className="shadow-md">
+              <CardHeader>
+                <CardTitle>Set Up Your Interview</CardTitle>
+                <CardDescription>
+                  Customize your interview settings and upload your resume to get tailored questions
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <JobRoleSelector 
+                  selectedRole={jobRole} 
+                  onRoleSelect={setJobRole} 
+                />
+                
+                <InterviewSettings 
+                  timePerQuestion={timePerQuestion}
+                  onTimeChange={setTimePerQuestion}
+                />
+                
+                <InterviewUpload 
+                  resumeText={resumeText}
+                  onResumeTextChange={setResumeText}
+                />
+              </CardContent>
+              <CardFooter>
+                <Button
+                  onClick={startInterview}
+                  disabled={!jobRole || isLoading}
+                  className="w-full"
+                >
+                  {isLoading ? (
+                    <>
+                      <span className="mr-2">Preparing Questions...</span>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="mr-2 h-4 w-4" />
+                      Start Interview
+                    </>
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+            
+            <VideoSimulationGuide />
+          </>
         )}
         
         {interviewStarted && !interviewCompleted && currentQuestion && (
