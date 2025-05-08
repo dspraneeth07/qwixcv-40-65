@@ -37,6 +37,8 @@ import MindprintAssessment from "./pages/MindprintAssessment";
 import AICodingCoach from "./pages/AICodingCoach";
 import QwiXProBuilder from "./pages/QwiXProBuilder";
 import AIJobSwitchPlanner from "./pages/AIJobSwitchPlanner";
+import AIShadowCareerSimulator from "./pages/AIShadowCareerSimulator";
+import AILayoffReadinessToolkit from "./pages/AILayoffReadinessToolkit";
 
 const queryClient = createQueryClient();
 
@@ -82,6 +84,8 @@ function App() {
                 <Route path="/ai-coding-coach" element={<AICodingCoach />} />
                 <Route path="/qwixpro-builder" element={<QwiXProBuilder />} />
                 <Route path="/ai-job-switch-planner" element={<AIJobSwitchPlanner />} />
+                <Route path="/ai-shadow-career-simulator" element={<AIShadowCareerSimulator />} />
+                <Route path="/ai-layoff-readiness-toolkit" element={<AILayoffReadinessToolkit />} />
 
                 <Route path="/builder" element={<ProtectedRoute allowedRoles={['student']}><ResumeBuilder /></ProtectedRoute>} />
                 <Route path="/resume-preview" element={<ProtectedRoute allowedRoles={['student']}><ResumePreview /></ProtectedRoute>} />

@@ -1,7 +1,7 @@
 
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { FileText, Instagram, Twitter, Linkedin, Globe, Sparkles, Award, Shield, User, MessageSquare, Briefcase, GraduationCap } from "lucide-react";
+import { FileText, Instagram, Twitter, Linkedin, Globe, Sparkles, Award, Shield, User, MessageSquare, Briefcase, GraduationCap, Route, BarChart } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import PublicNavbar from "./PublicNavbar";
 import UserNavbar from "./UserNavbar";
@@ -11,11 +11,17 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
 
   const productLinks = [
     { name: "Resume Builder", href: "/builder", icon: FileText },
-    { name: "ATS Scanner", href: "/ats-scanner", icon: Sparkles },
+    { name: "ATS Scanner", href: "/ats-scanner", icon: BarChart },
     { name: "Compare Resumes", href: "/resume-compare", icon: FileText },
     { name: "QwiXCert", href: "/certification-center", icon: Shield },
     { name: "Job Board", href: "/job-board", icon: Briefcase },
-    { name: "Career Simulator", href: "/career-path-simulator", icon: Sparkles },
+  ];
+
+  const careerGuideLinks = [
+    { name: "Career Path Simulator", href: "/career-path-simulator", icon: Route },
+    { name: "AI Job Switch Planner", href: "/ai-job-switch-planner", icon: Sparkles },
+    { name: "AI Shadow Career Simulator", href: "/ai-shadow-career-simulator", icon: Briefcase },
+    { name: "AI Layoff Readiness Toolkit", href: "/ai-layoff-readiness-toolkit", icon: Sparkles },
   ];
 
   const companyLinks = [
@@ -71,8 +77,18 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
           </div>
           
           <div className="md:col-span-4 flex flex-col gap-3">
-            <p className="font-medium font-sf-pro">Company</p>
+            <p className="font-medium font-sf-pro">Career Guide</p>
             <div className="grid grid-cols-2 gap-2">
+              {careerGuideLinks.map((link) => (
+                <Link 
+                  key={link.name} 
+                  to={link.href} 
+                  className="text-sm text-gray-300 hover:text-white font-poppins flex items-center gap-2"
+                >
+                  <link.icon className="h-4 w-4" />
+                  {link.name}
+                </Link>
+              ))}
               {companyLinks.map((link) => (
                 <Link 
                   key={link.name} 

@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileText, Menu, ChevronDown, User, Settings, LogOut, BarChart, Award, Sparkles, Briefcase, Shield, LucideIcon, GraduationCap, MessageSquare, Book, TrendingUp, Star, Linkedin, Code, Rocket } from "lucide-react";
+import { FileText, Menu, ChevronDown, User, Settings, LogOut, BarChart, Award, Sparkles, Briefcase, Shield, LucideIcon, GraduationCap, MessageSquare, Book, TrendingUp, Star, Linkedin, Code, Rocket, Route } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -95,11 +95,14 @@ const UserNavbar = () => {
     { name: "Compare Resumes", href: "/resume-compare", icon: FileText },
   ];
   
-  // QwiX Jobs dropdown items
-  const jobTools = [
-    { name: "Job Board", href: "/job-board", icon: Briefcase },
-    { name: "Career Path Simulator", href: "/career-path-simulator", icon: Sparkles },
+  // QwiX Career Guide dropdown items
+  const careerGuideTools = [
+    { name: "Career Path Simulator", href: "/career-path-simulator", icon: Route },
     { name: "Interview Coach", href: "/interview-coach", icon: MessageSquare },
+    { name: "AI Job Switch Planner", href: "/ai-job-switch-planner", icon: Sparkles },
+    { name: "AI Shadow Career Simulator", href: "/ai-shadow-career-simulator", icon: Briefcase },
+    { name: "Skill Gap Analysis", href: "/skill-gap-analysis", icon: BarChart },
+    { name: "AI Layoff Readiness Toolkit", href: "/ai-layoff-readiness-toolkit", icon: Sparkles },
   ];
 
   // QwiX Learn dropdown items
@@ -132,9 +135,9 @@ const UserNavbar = () => {
           />
           
           <NavDropdown 
-            label="QwiX Jobs" 
+            label="QwiX Career Guide" 
             icon={Briefcase} 
-            items={jobTools}
+            items={careerGuideTools}
           />
 
           <NavDropdown 
@@ -150,13 +153,8 @@ const UserNavbar = () => {
           />
           
           <NavLink 
-            href="/about" 
-            label="About Us"
-          />
-          
-          <NavLink 
-            href="/contact" 
-            label="Contact Us"
+            href="/job-board" 
+            label="Job Board"
           />
           
           {/* User Menu */}
@@ -252,8 +250,8 @@ const UserNavbar = () => {
                 </div>
                 
                 <div className="space-y-1 px-2">
-                  <p className="text-sm font-semibold text-white/70 mb-2">QWIX JOBS</p>
-                  {jobTools.map((item) => (
+                  <p className="text-sm font-semibold text-white/70 mb-2">QWIX CAREER GUIDE</p>
+                  {careerGuideTools.map((item) => (
                     <Link
                       key={item.name}
                       to={item.href}
@@ -290,6 +288,14 @@ const UserNavbar = () => {
                   >
                     <Award className="h-5 w-5" />
                     QwiXCert
+                  </Link>
+                  <Link
+                    to="/job-board"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Briefcase className="h-5 w-5" />
+                    Job Board
                   </Link>
                   <Link
                     to="/dashboard"

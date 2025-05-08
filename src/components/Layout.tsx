@@ -18,7 +18,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User, FileText, Linkedin, Brain, Code, ChevronDown } from "lucide-react";
+import { LogOut, User, FileText, Linkedin, Brain, Code, ChevronDown, Briefcase, Sparkles, Route, BarChart } from "lucide-react";
 
 interface LayoutProps {
   children: ReactNode;
@@ -89,6 +89,53 @@ export const Layout = ({ children }: LayoutProps) => {
               </DropdownMenuContent>
             </DropdownMenu>
             
+            {/* QwiX Career Guide Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="link" className="p-0 h-auto text-sm font-medium transition-colors hover:text-primary">
+                  QwiX Career Guide <ChevronDown className="h-4 w-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuItem asChild>
+                  <Link to="/career-path-simulator" className="w-full">
+                    <Route className="mr-2 h-4 w-4" />
+                    Career Path Simulator
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/interview-coach" className="w-full">
+                    <User className="mr-2 h-4 w-4" />
+                    Interview Coach
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/ai-job-switch-planner" className="w-full">
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    AI Job Switch Planner
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/ai-shadow-career-simulator" className="w-full">
+                    <Briefcase className="mr-2 h-4 w-4" />
+                    AI Shadow Career Simulator
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/skill-gap-analysis" className="w-full">
+                    <BarChart className="mr-2 h-4 w-4" />
+                    Skill Gap Analysis
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/ai-layoff-readiness-toolkit" className="w-full">
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    AI Layoff Readiness Toolkit
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
             {/* QwiX Learn Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -109,12 +156,6 @@ export const Layout = ({ children }: LayoutProps) => {
                     AI Coding Coach
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/interview-coach" className="w-full">
-                    <User className="mr-2 h-4 w-4" />
-                    Interview Coach
-                  </Link>
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             
@@ -129,12 +170,6 @@ export const Layout = ({ children }: LayoutProps) => {
               className="text-sm font-medium transition-colors hover:text-primary"
             >
               Certifications
-            </Link>
-            <Link
-              to="/career-path-simulator"
-              className="text-sm font-medium transition-colors hover:text-primary"
-            >
-              Career Paths
             </Link>
           </nav>
 
