@@ -1,9 +1,16 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, LogIn, UserPlus, GraduationCap } from "lucide-react";
+import { Menu, LogIn, UserPlus, GraduationCap, ChevronDown } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const PublicNavbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,16 +37,136 @@ const PublicNavbar = () => {
         </div>
         
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-8">
-          {navigation.map((item) => (
-            <Link
-              key={item.name}
-              to={item.href}
-              className="text-sm font-medium text-white/90 transition-colors hover:text-white font-poppins"
-            >
-              {item.name}
+        <div className="hidden md:flex items-center gap-4">
+          {/* CV Tools Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                className="text-white/90 hover:text-white hover:bg-white/10 p-1.5 h-auto px-2"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="font-medium text-sm">CV Tools</span>
+                  <ChevronDown className="h-4 w-4" />
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-48">
+              <DropdownMenuGroup>
+                <DropdownMenuItem asChild>
+                  <Link to="/login" className="cursor-pointer">
+                    <span>Resume Builder</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/login" className="cursor-pointer">
+                    <span>ATS Scanner</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/login" className="cursor-pointer">
+                    <span>LinkedIn Optimizer</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/login" className="cursor-pointer">
+                    <span>Resume Compare</span>
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          {/* QwiX Jobs Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                className="text-white/90 hover:text-white hover:bg-white/10 p-1.5 h-auto px-2"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="font-medium text-sm">QwiX Jobs</span>
+                  <ChevronDown className="h-4 w-4" />
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-48">
+              <DropdownMenuGroup>
+                <DropdownMenuItem asChild>
+                  <Link to="/login" className="cursor-pointer">
+                    <span>Job Board</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/login" className="cursor-pointer">
+                    <span>Career Path Simulator</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/login" className="cursor-pointer">
+                    <span>Interview Coach</span>
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          {/* QwiX Learn Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="ghost" 
+                className="text-white/90 hover:text-white hover:bg-white/10 p-1.5 h-auto px-2"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="font-medium text-sm">QwiX Learn</span>
+                  <ChevronDown className="h-4 w-4" />
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-48">
+              <DropdownMenuGroup>
+                <DropdownMenuItem asChild>
+                  <Link to="/login" className="cursor-pointer">
+                    <span>AI Coding Coach</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/login" className="cursor-pointer">
+                    <span>QwiXPro Builder</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/login" className="cursor-pointer">
+                    <span>Skill Gap Analysis</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/login" className="cursor-pointer">
+                    <span>Mindprint Assessment</span>
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          <Button asChild variant="ghost" className="text-white hover:bg-white/10">
+            <Link to="/login">
+              QwiXCert
             </Link>
-          ))}
+          </Button>
+          
+          <Button asChild variant="ghost" className="text-white hover:bg-white/10">
+            <Link to="/about">
+              About
+            </Link>
+          </Button>
+          
+          <Button asChild variant="ghost" className="text-white hover:bg-white/10">
+            <Link to="/contact">
+              Contact
+            </Link>
+          </Button>
         </div>
         
         {/* Auth Buttons */}
@@ -73,16 +200,119 @@ const PublicNavbar = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[80%] sm:w-[385px] bg-gradient-to-b from-modern-blue-600 to-soft-purple text-white">
               <div className="flex flex-col gap-6 pt-10">
-                {navigation.map((item) => (
+                <div className="space-y-1 px-2">
+                  <p className="text-sm font-semibold text-white/70 mb-2">CV TOOLS</p>
                   <Link
-                    key={item.name}
-                    to={item.href}
-                    className="text-base font-medium text-white/90 transition-colors hover:text-white font-poppins"
+                    to="/login"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    {item.name}
+                    Resume Builder
                   </Link>
-                ))}
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    ATS Scanner
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    LinkedIn Optimizer
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Resume Compare
+                  </Link>
+                </div>
+                
+                <div className="space-y-1 px-2">
+                  <p className="text-sm font-semibold text-white/70 mb-2">QWIX JOBS</p>
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Job Board
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Career Path Simulator
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Interview Coach
+                  </Link>
+                </div>
+
+                <div className="space-y-1 px-2">
+                  <p className="text-sm font-semibold text-white/70 mb-2">QWIX LEARN</p>
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    AI Coding Coach
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    QwiXPro Builder
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Skill Gap Analysis
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Mindprint Assessment
+                  </Link>
+                </div>
+                
+                <div className="space-y-1 px-2">
+                  <p className="text-sm font-semibold text-white/70 mb-2">NAVIGATION</p>
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    QwiXCert
+                  </Link>
+                  <Link
+                    to="/about"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    About Us
+                  </Link>
+                  <Link
+                    to="/contact"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Contact Us
+                  </Link>
+                </div>
                 
                 <div className="pt-6 mt-6 border-t border-white/20">
                   <Button asChild className="w-full">

@@ -1,6 +1,7 @@
+
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileText, Menu, ChevronDown, User, Settings, LogOut, BarChart, Award, Sparkles, Briefcase, Shield, LucideIcon, GraduationCap, MessageSquare, Book, TrendingUp, Star } from "lucide-react";
+import { FileText, Menu, ChevronDown, User, Settings, LogOut, BarChart, Award, Sparkles, Briefcase, Shield, LucideIcon, GraduationCap, MessageSquare, Book, TrendingUp, Star, Linkedin, Code, Rocket } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -89,6 +90,7 @@ const UserNavbar = () => {
   const cvTools = [
     { name: "Resume Builder", href: "/builder", icon: FileText },
     { name: "ATS Scanner", href: "/ats-scanner", icon: BarChart },
+    { name: "LinkedIn Optimizer", href: "/linkedin-optimizer", icon: Linkedin },
     { name: "Compare Resumes", href: "/resume-compare", icon: FileText },
   ];
   
@@ -99,9 +101,10 @@ const UserNavbar = () => {
   ];
 
   const learnTools = [
+    { name: "AI Coding Coach", href: "/ai-coding-coach", icon: Code },
+    { name: "QwiXPro Builder", href: "/qwixpro-builder", icon: Rocket },
     { name: "Skill Gap Analysis", href: "/skill-gap-analysis", icon: TrendingUp },
-    { name: "Learning Paths", href: "/skill-gap-analysis", icon: Book },
-    { name: "Recommended Courses", href: "/skill-gap-analysis", icon: Star },
+    { name: "Mindprint Assessment", href: "/mindprint-assessment", icon: Star },
   ];
 
   return (
@@ -126,13 +129,13 @@ const UserNavbar = () => {
           />
           
           <NavDropdown 
-            label="Jobs" 
+            label="QwiX Jobs" 
             icon={Briefcase} 
             items={jobTools}
           />
 
           <NavDropdown 
-            label="QwixLearn" 
+            label="QwiX Learn" 
             icon={Book} 
             items={learnTools}
           />
@@ -246,7 +249,7 @@ const UserNavbar = () => {
                 </div>
                 
                 <div className="space-y-1 px-2">
-                  <p className="text-sm font-semibold text-white/70 mb-2">JOB TOOLS</p>
+                  <p className="text-sm font-semibold text-white/70 mb-2">QWIX JOBS</p>
                   {jobTools.map((item) => (
                     <Link
                       key={item.name}

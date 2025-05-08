@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Progress } from "@/components/ui/progress";
+import MainLayout from "@/components/layout/MainLayout";
 
 // Mock function to analyze code
 const analyzeCode = async (code: string, language: string, analysisType: string) => {
@@ -170,6 +171,11 @@ function bubbleSort(arr) {
   const [analysisType, setAnalysisType] = useState("quality");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [fullScreen, setFullScreen] = useState(false);
+  const [promptInput, setPromptInput] = useState("");
+  const [explanation, setExplanation] = useState("");
+  const [isExplaining, setIsExplaining] = useState(false);
+  const [codeOutput, setCodeOutput] = useState("");
+  const [isRunning, setIsRunning] = useState(false);
   const { toast } = useToast();
   
   const { 
@@ -197,6 +203,83 @@ function bubbleSort(arr) {
     }
     refetch();
   };
+
+  const handleRunCode = () => {
+    setIsRunning(true);
+    // Simulate code execution with a timeout
+    setTimeout(() => {
+      try {
+        // For JavaScript code, we can try to evaluate it safely
+        if (language === "javascript") {
+          // Create a sandbox function to evaluate the code
+          const sandbox = new Function(`
+            try {
+              ${code}
+              // Test the function if it exists
+              if (typeof bubbleSort === 'function') {
+                return "Output: " + JSON.stringify(bubbleSort([5, 3, 8, 1, 2, 7]));
+              }
+              return "Code executed successfully. No output to display.";
+            } catch(e) {
+              return "Error: " + e.message;
+            }
+          `);
+          
+          const result = sandbox();
+          setCodeOutput(result);
+        } else {
+          setCodeOutput(`Code execution for ${language} is simulated.\nNo actual execution environment available in browser.`);
+        }
+      } catch (error) {
+        setCodeOutput(`Error executing code: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      } finally {
+        setIsRunning(false);
+      }
+    }, 1000);
+  };
+  
+  const handleExplainCode = () => {
+    if (!code.trim()) {
+      toast({
+        title: "Empty Code",
+        description: "Please enter code to explain",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsExplaining(true);
+    
+    // Simulate AI explanation
+    setTimeout(() => {
+      const explanationText = `
+# Code Explanation
+
+This code implements the Bubble Sort algorithm in JavaScript.
+
+## How it works:
+1. The function \`bubbleSort\` takes an array as input
+2. It uses two nested loops to compare adjacent elements
+3. If an element is greater than the next one, they are swapped
+4. This process continues until the array is sorted
+
+## Time Complexity:
+- Worst Case: O(n²)
+- Average Case: O(n²)
+- Best Case: O(n) with optimized implementation
+
+## Space Complexity:
+- O(1) - The algorithm sorts in place
+
+## Potential Improvements:
+- Add an optimization to break early if no swaps occur in an iteration
+- Consider using a more efficient algorithm like Quick Sort or Merge Sort for large datasets
+      `;
+      
+      setExplanation(explanationText);
+      setIsExplaining(false);
+    }, 1500);
+  };
   
   const renderQualityAnalysis = () => {
     if (!analysisResults) return null;
@@ -207,8 +290,8 @@ function bubbleSort(arr) {
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-lg font-medium">Overall Quality Score</h3>
             <Badge variant={
-              analysisResults.overallQuality >= 80 ? "success" :
-              analysisResults.overallQuality >= 60 ? "warning" : "destructive"
+              analysisResults.overallQuality >= 80 ? "default" :
+              analysisResults.overallQuality >= 60 ? "outline" : "destructive"
             }>
               {analysisResults.overallQuality}/100
             </Badge>
@@ -258,7 +341,7 @@ function bubbleSort(arr) {
                 <div className="flex items-start gap-2">
                   <Badge variant={
                     rec.severity === 'critical' ? "destructive" :
-                    rec.severity === 'major' ? "warning" : "outline"
+                    rec.severity === 'major' ? "outline" : "outline"
                   } className="mt-0.5">
                     Line {rec.line}
                   </Badge>
@@ -362,8 +445,8 @@ function bubbleSort(arr) {
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-lg font-medium">Best Practices Score</h3>
             <Badge variant={
-              analysisResults.score >= 80 ? "success" :
-              analysisResults.score >= 60 ? "warning" : "destructive"
+              analysisResults.score >= 80 ? "default" :
+              analysisResults.score >= 60 ? "outline" : "destructive"
             }>
               {analysisResults.score}/100
             </Badge>
@@ -450,7 +533,7 @@ function bubbleSort(arr) {
                 <div className="flex items-start gap-2">
                   <Badge variant={
                     suggestion.severity === 'critical' ? "destructive" :
-                    suggestion.severity === 'major' ? "warning" : "outline"
+                    suggestion.severity === 'major' ? "outline" : "outline"
                   } className="mt-0.5">
                     Line {suggestion.line}
                   </Badge>
@@ -489,7 +572,7 @@ function bubbleSort(arr) {
   };
 
   return (
-    <Layout>
+    <MainLayout>
       <div className={`container py-6 ${fullScreen ? 'max-w-none px-2' : ''}`}>
         <div className="mb-6">
           <h1 className="text-3xl font-bold tracking-tight mb-2">AI Coding Coach</h1>
@@ -573,6 +656,49 @@ function bubbleSort(arr) {
                     )}
                   </Button>
                 </div>
+                
+                <div className="mt-4">
+                  <Button className="w-full" onClick={handleRunCode} disabled={isRunning} variant="secondary">
+                    {isRunning ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Running...
+                      </>
+                    ) : (
+                      <>
+                        <Play className="mr-2 h-4 w-4" />
+                        Run Code
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="mt-6 pt-6 border-t">
+                <h3 className="text-lg font-medium mb-2">Code Explanation</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Ask AI to explain the code or generate code based on your prompt
+                </p>
+                
+                <Textarea
+                  placeholder="Ask a question about your code or request code generation..."
+                  value={promptInput}
+                  onChange={(e) => setPromptInput(e.target.value)}
+                  className="min-h-20 mb-2"
+                />
+                <Button className="w-full" onClick={handleExplainCode} disabled={isExplaining}>
+                  {isExplaining ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      Explain Code
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
           </div>
@@ -598,7 +724,7 @@ function bubbleSort(arr) {
                     <Button variant="ghost" size="icon" title="Upload Code" className="h-7 w-7">
                       <Upload className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" title="Run Code" className="h-7 w-7">
+                    <Button variant="ghost" size="icon" title="Run Code" className="h-7 w-7" onClick={handleRunCode}>
                       <Play className="h-4 w-4" />
                     </Button>
                   </div>
@@ -611,6 +737,36 @@ function bubbleSort(arr) {
                   spellCheck={false}
                 />
               </div>
+              
+              {codeOutput && (
+                <Card className="mb-4">
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-sm font-medium flex items-center">
+                      <Play className="mr-2 h-4 w-4 text-green-600" />
+                      Code Output
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <pre className="bg-slate-50 p-3 rounded-md text-sm overflow-auto whitespace-pre-wrap">{codeOutput}</pre>
+                  </CardContent>
+                </Card>
+              )}
+              
+              {explanation && (
+                <Card className="mb-4">
+                  <CardHeader className="py-3">
+                    <CardTitle className="text-sm font-medium flex items-center">
+                      <MessageSquare className="mr-2 h-4 w-4 text-blue-600" />
+                      Code Explanation
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="prose prose-sm max-w-none">
+                      <div className="whitespace-pre-wrap">{explanation}</div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
               
               {isAnalyzing && (
                 <div className="p-6 border rounded-lg mb-4 flex flex-col items-center">
@@ -662,7 +818,7 @@ function bubbleSort(arr) {
           </div>
         </div>
       </div>
-    </Layout>
+    </MainLayout>
   );
 };
 
