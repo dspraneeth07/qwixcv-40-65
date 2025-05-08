@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -542,7 +542,7 @@ const InterviewCoach: React.FC = () => {
                         <div className="mb-1">
                           <Progress value={Number(value)} className="h-1" />
                         </div>
-                        <div className="text-lg font-semibold">{value}%</div>
+                        <div className="text-lg font-semibold">{String(value)}%</div>
                         <div className="text-xs text-muted-foreground capitalize">{key.replace(/([A-Z])/g, ' $1')}</div>
                       </div>
                     ))}
