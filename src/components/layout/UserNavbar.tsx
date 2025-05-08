@@ -95,18 +95,20 @@ const UserNavbar = () => {
     { name: "Compare Resumes", href: "/resume-compare", icon: FileText },
   ];
   
-  // QwiX Jobs dropdown items
-  const jobTools = [
-    { name: "Job Board", href: "/job-board", icon: Briefcase },
-    { name: "Career Path Simulator", href: "/career-path-simulator", icon: Sparkles },
+  // QwiX Career Guide dropdown items
+  const careerGuideTools = [
+    { name: "AI Job Switch Planner", href: "/ai-job-switch-planner", icon: Briefcase },
+    { name: "AI Shadow Career Simulator", href: "/ai-shadow-career-simulator", icon: User },
+    { name: "Career Path Simulator", href: "/career-path-simulator", icon: BarChart },
     { name: "Interview Coach", href: "/interview-coach", icon: MessageSquare },
+    { name: "Skill Gap Analysis", href: "/skill-gap-analysis", icon: TrendingUp },
+    { name: "AI Layoff Readiness Toolkit", href: "/ai-layoff-readiness-toolkit", icon: Shield },
   ];
 
   // QwiX Learn dropdown items
   const learnTools = [
     { name: "AI Coding Coach", href: "/ai-coding-coach", icon: Code },
     { name: "QwiXPro Builder", href: "/qwixpro-builder", icon: Rocket },
-    { name: "Skill Gap Analysis", href: "/skill-gap-analysis", icon: TrendingUp },
     { name: "Mindprint Assessment", href: "/mindprint-assessment", icon: Star },
   ];
 
@@ -132,15 +134,21 @@ const UserNavbar = () => {
           />
           
           <NavDropdown 
-            label="QwiX Jobs" 
+            label="QwiX Career Guide" 
             icon={Briefcase} 
-            items={jobTools}
+            items={careerGuideTools}
           />
 
           <NavDropdown 
             label="QwiX Learn" 
             icon={Book} 
             items={learnTools}
+          />
+          
+          <NavLink 
+            href="/job-board" 
+            icon={Briefcase} 
+            label="Job Board"
           />
           
           <NavLink 
@@ -252,8 +260,8 @@ const UserNavbar = () => {
                 </div>
                 
                 <div className="space-y-1 px-2">
-                  <p className="text-sm font-semibold text-white/70 mb-2">QWIX JOBS</p>
-                  {jobTools.map((item) => (
+                  <p className="text-sm font-semibold text-white/70 mb-2">QWIX CAREER GUIDE</p>
+                  {careerGuideTools.map((item) => (
                     <Link
                       key={item.name}
                       to={item.href}
@@ -283,6 +291,14 @@ const UserNavbar = () => {
                 
                 <div className="space-y-1 px-2">
                   <p className="text-sm font-semibold text-white/70 mb-2">NAVIGATION</p>
+                  <Link
+                    to="/job-board"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Briefcase className="h-5 w-5" />
+                    Job Board
+                  </Link>
                   <Link
                     to="/certification-center"
                     className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"

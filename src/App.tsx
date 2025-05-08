@@ -1,109 +1,57 @@
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "./context/ThemeContext";
-import { BlockchainProvider } from "./context/BlockchainContext";
-import { AuthProvider } from "./context/AuthContext";
-import { QueryClientProvider } from '@tanstack/react-query';
-import { createQueryClient } from "./utils/queryClient";
-import { Toaster } from "@/components/ui/toaster";
-import Index from "./pages/Index";
-import ResumeBuilder from "./pages/ResumeBuilder";
-import ResumePreview from "./pages/ResumePreview";
-import ShareToCompany from "./pages/ShareToCompany";
-import JobBoard from "./pages/JobBoard";
-import Contact from "./pages/Contact";
-import About from "./pages/About";
-import NotFound from "./pages/NotFound";
-import ATSScanner from "./pages/ATSScanner";
-import ResumeCompare from "./pages/ResumeCompare";
-import CareerPathSimulator from "./pages/CareerPathSimulator";
-import Dashboard from "./pages/Dashboard";
-import CertificationCenter from "./pages/CertificationCenter";
-import CertificationTest from "./pages/CertificationTest";
-import CertificateVerification from "./pages/CertificateVerification";
-import Login from "./pages/Auth/Login";
-import Register from "./pages/Auth/Register";
-import ForgotPassword from "./pages/Auth/ForgotPassword";
-import Unauthorized from "./pages/Auth/Unauthorized";
-import BlockchainVault from "./pages/BlockchainVault";
-import ProtectedRoute from "./components/ProtectedRoute";
-import { useEffect } from "react";
-import VerifyDocument from "./pages/VerifyDocument";
-import QwixVaultProfile from "./pages/QwixVaultProfile";
-import InterviewCoach from "./pages/InterviewCoach";
-import SkillGapAnalysis from "./pages/SkillGapAnalysis";
-import LinkedInOptimizer from "./pages/LinkedInOptimizer";
-import MindprintAssessment from "./pages/MindprintAssessment";
-import AICodingCoach from "./pages/AICodingCoach";
-import QwiXProBuilder from "./pages/QwiXProBuilder";
-import AIJobSwitchPlanner from "./pages/AIJobSwitchPlanner";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from '@/components/ui/toaster';
+import { AuthProvider } from '@/context/AuthContext';
 
-const queryClient = createQueryClient();
+// Pages
+import Home from '@/pages/Home';
+import About from '@/pages/About';
+import Contact from '@/pages/Contact';
+import Dashboard from '@/pages/Dashboard';
+import JobBoard from '@/pages/JobBoard';
+import Builder from '@/pages/Builder';
+import ATSScanner from '@/pages/ATSScanner';
+import CareerPathSimulator from '@/pages/CareerPathSimulator';
+import InterviewCoach from '@/pages/InterviewCoach';
+import SkillGapAnalysis from '@/pages/SkillGapAnalysis';
+import AIJobSwitchPlanner from '@/pages/AIJobSwitchPlanner';
+import AIShadowCareerSimulator from '@/pages/AIShadowCareerSimulator';
+import AILayoffReadinessToolkit from '@/pages/AILayoffReadinessToolkit';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
 
-function App() {
-  useEffect(() => {
-    const fontLink = document.createElement('link');
-    fontLink.rel = 'stylesheet';
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap';
-    document.head.appendChild(fontLink);
+// Auth protected route component
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
-    const sfProLink = document.createElement('link');
-    sfProLink.rel = 'stylesheet';
-    sfProLink.href = 'https://fonts.cdnfonts.com/css/sf-pro-display';
-    document.head.appendChild(sfProLink);
-
-    return () => {
-      document.head.removeChild(fontLink);
-      document.head.removeChild(sfProLink);
-    };
-  }, []);
-
+const App: React.FC = () => {
   return (
-    <Router>
-      <ThemeProvider>
-        <AuthProvider>
-          <BlockchainProvider>
-            <QueryClientProvider client={queryClient}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/verify-cert/:certHash?" element={<CertificateVerification />} />
-                <Route path="/unauthorized" element={<Unauthorized />} />
-                <Route path="/verify-document/:uniqueId" element={<VerifyDocument />} />
-                <Route path="/qwixvault/:address" element={<QwixVaultProfile />} />
-                <Route path="/interview-coach" element={<InterviewCoach />} />
-                <Route path="/skill-gap-analysis" element={<SkillGapAnalysis />} />
-                <Route path="/linkedin-optimizer" element={<LinkedInOptimizer />} />
-                <Route path="/mindprint-assessment" element={<MindprintAssessment />} />
-                <Route path="/ai-coding-coach" element={<AICodingCoach />} />
-                <Route path="/qwixpro-builder" element={<QwiXProBuilder />} />
-                <Route path="/ai-job-switch-planner" element={<AIJobSwitchPlanner />} />
-
-                <Route path="/builder" element={<ProtectedRoute allowedRoles={['student']}><ResumeBuilder /></ProtectedRoute>} />
-                <Route path="/resume-preview" element={<ProtectedRoute allowedRoles={['student']}><ResumePreview /></ProtectedRoute>} />
-                <Route path="/share-to-company" element={<ProtectedRoute allowedRoles={['student']}><ShareToCompany /></ProtectedRoute>} />
-                <Route path="/job-board" element={<ProtectedRoute allowedRoles={['student']}><JobBoard /></ProtectedRoute>} />
-                <Route path="/ats-scanner" element={<ProtectedRoute allowedRoles={['student']}><ATSScanner /></ProtectedRoute>} />
-                <Route path="/resume-compare" element={<ProtectedRoute allowedRoles={['student']}><ResumeCompare /></ProtectedRoute>} />
-                <Route path="/career-path-simulator" element={<ProtectedRoute allowedRoles={['student']}><CareerPathSimulator /></ProtectedRoute>} />
-                <Route path="/blockchain-vault" element={<ProtectedRoute allowedRoles={['student']}><BlockchainVault /></ProtectedRoute>} />
-                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                <Route path="/certification-center" element={<ProtectedRoute><CertificationCenter /></ProtectedRoute>} />
-                <Route path="/certification/:testId" element={<ProtectedRoute><CertificationTest /></ProtectedRoute>} />
-                
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              <Toaster />
-            </QueryClientProvider>
-          </BlockchainProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          
+          {/* Protected routes */}
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/job-board" element={<ProtectedRoute><JobBoard /></ProtectedRoute>} />
+          <Route path="/builder" element={<ProtectedRoute><Builder /></ProtectedRoute>} />
+          <Route path="/ats-scanner" element={<ProtectedRoute><ATSScanner /></ProtectedRoute>} />
+          <Route path="/career-path-simulator" element={<ProtectedRoute><CareerPathSimulator /></ProtectedRoute>} />
+          <Route path="/interview-coach" element={<ProtectedRoute><InterviewCoach /></ProtectedRoute>} />
+          <Route path="/skill-gap-analysis" element={<ProtectedRoute><SkillGapAnalysis /></ProtectedRoute>} />
+          <Route path="/ai-job-switch-planner" element={<ProtectedRoute><AIJobSwitchPlanner /></ProtectedRoute>} />
+          <Route path="/ai-shadow-career-simulator" element={<ProtectedRoute><AIShadowCareerSimulator /></ProtectedRoute>} />
+          <Route path="/ai-layoff-readiness-toolkit" element={<ProtectedRoute><AILayoffReadinessToolkit /></ProtectedRoute>} />
+        </Routes>
+        <Toaster />
+      </Router>
+    </AuthProvider>
   );
-}
+};
 
 export default App;

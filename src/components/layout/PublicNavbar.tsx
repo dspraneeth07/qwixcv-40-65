@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, LogIn, UserPlus, GraduationCap, ChevronDown } from "lucide-react";
+import { Menu, LogIn, UserPlus, GraduationCap, ChevronDown, Briefcase } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import {
@@ -77,7 +77,7 @@ const PublicNavbar = () => {
             </DropdownMenuContent>
           </DropdownMenu>
           
-          {/* QwiX Jobs Dropdown */}
+          {/* QwiX Career Guide Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
@@ -85,7 +85,7 @@ const PublicNavbar = () => {
                 className="text-white/90 hover:text-white hover:bg-white/10 p-1.5 h-auto px-2"
               >
                 <div className="flex items-center gap-1.5">
-                  <span className="font-medium text-sm">QwiX Jobs</span>
+                  <span className="font-medium text-sm">QwiX Career Guide</span>
                   <ChevronDown className="h-4 w-4" />
                 </div>
               </Button>
@@ -94,7 +94,12 @@ const PublicNavbar = () => {
               <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
                   <Link to="/login" className="cursor-pointer">
-                    <span>Job Board</span>
+                    <span>AI Job Switch Planner</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/login" className="cursor-pointer">
+                    <span>AI Shadow Career Simulator</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
@@ -105,6 +110,16 @@ const PublicNavbar = () => {
                 <DropdownMenuItem asChild>
                   <Link to="/login" className="cursor-pointer">
                     <span>Interview Coach</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/login" className="cursor-pointer">
+                    <span>Skill Gap Analysis</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/login" className="cursor-pointer">
+                    <span>AI Layoff Readiness Toolkit</span>
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
@@ -138,17 +153,19 @@ const PublicNavbar = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/login" className="cursor-pointer">
-                    <span>Skill Gap Analysis</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/login" className="cursor-pointer">
                     <span>Mindprint Assessment</span>
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
+          
+          <Button asChild variant="ghost" className="text-white hover:bg-white/10">
+            <Link to="/login">
+              <Briefcase className="h-4 w-4 mr-2" />
+              Job Board
+            </Link>
+          </Button>
           
           <Button asChild variant="ghost" className="text-white hover:bg-white/10">
             <Link to="/login">
@@ -233,13 +250,20 @@ const PublicNavbar = () => {
                 </div>
                 
                 <div className="space-y-1 px-2">
-                  <p className="text-sm font-semibold text-white/70 mb-2">QWIX JOBS</p>
+                  <p className="text-sm font-semibold text-white/70 mb-2">QWIX CAREER GUIDE</p>
                   <Link
                     to="/login"
                     className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Job Board
+                    AI Job Switch Planner
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    AI Shadow Career Simulator
                   </Link>
                   <Link
                     to="/login"
@@ -254,6 +278,20 @@ const PublicNavbar = () => {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Interview Coach
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Skill Gap Analysis
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    AI Layoff Readiness Toolkit
                   </Link>
                 </div>
 
@@ -278,19 +316,20 @@ const PublicNavbar = () => {
                     className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Skill Gap Analysis
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
                     Mindprint Assessment
                   </Link>
                 </div>
                 
                 <div className="space-y-1 px-2">
                   <p className="text-sm font-semibold text-white/70 mb-2">NAVIGATION</p>
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Briefcase className="h-5 w-5" />
+                    Job Board
+                  </Link>
                   <Link
                     to="/login"
                     className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
