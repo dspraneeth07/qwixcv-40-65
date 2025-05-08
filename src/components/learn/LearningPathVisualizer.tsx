@@ -54,16 +54,16 @@ export function LearningPathVisualizer({ data }: LearningPathVisualizerProps) {
                     )}
                   </div>
                   <div className="text-center w-28">
-                    <p className="font-medium text-sm text-black dark:text-white">{node.title}</p>
-                    <p className="text-xs text-black dark:text-gray-300">{node.timeframe}</p>
+                    <p className="font-medium text-sm">{node.title}</p>
+                    <p className="text-xs text-muted-foreground">{node.timeframe}</p>
                   </div>
                 </div>
                 
-                {/* Connector - Make arrows more visible */}
+                {/* Connector */}
                 {index < data.length - 1 && (
-                  <div className="flex-1 h-1 bg-gradient-to-r from-blue-300 to-purple-300 dark:from-blue-500 dark:to-purple-500 mx-2 flex items-center justify-center">
-                    <div className="bg-white dark:bg-slate-950 px-1 rounded-full border border-gray-300 dark:border-gray-700">
-                      <ArrowRight className="h-5 w-5 text-black dark:text-white" />
+                  <div className="flex-1 h-0.5 bg-gradient-to-r from-blue-300 to-purple-300 dark:from-blue-600 dark:to-purple-600 mx-2 flex items-center justify-center">
+                    <div className="bg-white dark:bg-slate-950 px-1">
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
                     </div>
                   </div>
                 )}
@@ -74,21 +74,21 @@ export function LearningPathVisualizer({ data }: LearningPathVisualizerProps) {
           {/* Detailed cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
             {data.map((node, index) => (
-              <Card key={index} className="p-4 hover:shadow-md transition-shadow border-2 border-gray-200 dark:border-gray-800">
+              <Card key={index} className="p-4 hover:shadow-md transition-shadow">
                 <div className="flex items-start gap-3">
                   <div className={`w-8 h-8 rounded-full ${getNodeColor(index)} flex items-center justify-center text-white shrink-0`}>
                     {index + 1}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-black dark:text-white">{node.title}</h3>
-                    <p className="text-xs text-black dark:text-gray-300 mb-2">{node.timeframe}</p>
-                    <p className="text-sm mb-2 text-black dark:text-gray-300">{node.description}</p>
+                    <h3 className="font-semibold">{node.title}</h3>
+                    <p className="text-xs text-muted-foreground mb-2">{node.timeframe}</p>
+                    <p className="text-sm mb-2">{node.description}</p>
                     {node.resources.length > 0 && (
                       <div className="text-xs">
-                        <span className="font-medium text-black dark:text-white">Top resource:</span>{" "}
+                        <span className="font-medium">Top resource:</span>{" "}
                         <a 
                           href={node.resources[0].url} 
-                          className="text-modern-blue-500 hover:underline font-bold"
+                          className="text-modern-blue-500 hover:underline"
                           target="_blank"
                           rel="noopener noreferrer"
                         >

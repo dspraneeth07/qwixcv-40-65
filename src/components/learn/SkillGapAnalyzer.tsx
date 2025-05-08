@@ -62,45 +62,44 @@ export function SkillGapAnalyzer() {
     <div className="container max-w-5xl py-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-black dark:text-white">Skill Gap Analyzer</h1>
+          <h1 className="text-3xl font-bold">Skill Gap Analyzer</h1>
           <p className="text-muted-foreground">Analyze your skills and get a personalized learning path to your dream job</p>
         </div>
         <Badge 
           variant="outline" 
-          className="bg-modern-blue-500/20 text-modern-blue-500 border-modern-blue-500/50 px-3 py-1"
+          className="bg-modern-blue-500/10 text-modern-blue-500 border-modern-blue-500/30 px-3 py-1"
         >
           <GraduationCap className="w-4 h-4 mr-1" /> QwixLearn
         </Badge>
       </div>
 
-      <Card className="shadow-md border-2 border-gray-200 dark:border-gray-700">
-        <CardHeader className="bg-gray-50 dark:bg-gray-900">
-          <CardTitle className="text-black dark:text-white">Input Your Information</CardTitle>
-          <CardDescription className="text-black dark:text-gray-300">
+      <Card className="shadow-md">
+        <CardHeader>
+          <CardTitle>Input Your Information</CardTitle>
+          <CardDescription>
             Tell us about your current skills and the job role you're targeting
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4 pt-6">
+        <CardContent className="space-y-4">
           <div>
-            <label className="text-sm font-medium mb-1 block text-black dark:text-white">Current Skills</label>
+            <label className="text-sm font-medium mb-1 block">Current Skills</label>
             <Textarea 
               placeholder="List your current skills, separated by commas (e.g., JavaScript, React, TypeScript, Project Management...)"
               value={currentSkills}
               onChange={(e) => setCurrentSkills(e.target.value)}
-              className="min-h-24 border-2 border-gray-300 dark:border-gray-700"
+              className="min-h-24"
             />
-            <p className="text-xs text-black dark:text-gray-300 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Include both technical and soft skills for better results
             </p>
           </div>
           
           <div>
-            <label className="text-sm font-medium mb-1 block text-black dark:text-white">Target Job Role</label>
+            <label className="text-sm font-medium mb-1 block">Target Job Role</label>
             <Input 
               placeholder="Enter your target job role (e.g., Senior Frontend Developer)"
               value={targetJob}
               onChange={(e) => setTargetJob(e.target.value)}
-              className="border-2 border-gray-300 dark:border-gray-700"
             />
           </div>
         </CardContent>
@@ -108,7 +107,7 @@ export function SkillGapAnalyzer() {
           <Button 
             onClick={handleAnalyze} 
             disabled={loading || !currentSkills || !targetJob}
-            className="w-full font-bold"
+            className="w-full"
           >
             {loading ? (
               <>
@@ -127,48 +126,33 @@ export function SkillGapAnalyzer() {
 
       {analysis && (
         <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="analysis" className="w-full">
-          <TabsList className="grid grid-cols-3 mb-4 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
-            <TabsTrigger 
-              value="analysis" 
-              className="text-black dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900"
-            >
-              Skill Gap Analysis
-            </TabsTrigger>
-            <TabsTrigger 
-              value="path" 
-              className="text-black dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900"
-            >
-              Learning Path
-            </TabsTrigger>
-            <TabsTrigger 
-              value="visualization" 
-              className="text-black dark:text-white data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900"
-            >
-              Visual Roadmap
-            </TabsTrigger>
+          <TabsList className="grid grid-cols-3 mb-4">
+            <TabsTrigger value="analysis">Skill Gap Analysis</TabsTrigger>
+            <TabsTrigger value="path">Learning Path</TabsTrigger>
+            <TabsTrigger value="visualization">Visual Roadmap</TabsTrigger>
           </TabsList>
           
           <TabsContent value="analysis" className="space-y-4">
-            <Card className="border-2 border-gray-200 dark:border-gray-700">
-              <CardHeader className="bg-gray-50 dark:bg-gray-900">
-                <CardTitle className="flex items-center gap-2 text-black dark:text-white">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-modern-blue-500" />
                   Skill Gap Analysis for {targetJob}
                 </CardTitle>
-                <CardDescription className="text-black dark:text-gray-300">
+                <CardDescription>
                   Based on your current skills and the requirements for your target role
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-6">
+              <CardContent>
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-medium mb-2 flex items-center text-black dark:text-white">
+                    <h3 className="text-lg font-medium mb-2 flex items-center">
                       <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
                       Your Strengths
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {analysis.strengths.map((skill: string, index: number) => (
-                        <Badge key={index} variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 font-medium">
+                        <Badge key={index} variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400">
                           {skill}
                         </Badge>
                       ))}
@@ -176,25 +160,25 @@ export function SkillGapAnalyzer() {
                   </div>
                   
                   <div>
-                    <h3 className="text-lg font-medium mb-2 flex items-center text-black dark:text-white">
+                    <h3 className="text-lg font-medium mb-2 flex items-center">
                       <Star className="h-5 w-5 mr-2 text-amber-500" />
                       Skills to Develop
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {analysis.gapSkills.map((skill: string, index: number) => (
-                        <Badge key={index} variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 font-medium">
+                        <Badge key={index} variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400">
                           {skill}
                         </Badge>
                       ))}
                     </div>
                   </div>
                   
-                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md border border-blue-200 dark:border-blue-800">
-                    <h3 className="text-lg font-medium mb-2 flex items-center text-black dark:text-white">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md">
+                    <h3 className="text-lg font-medium mb-2 flex items-center">
                       <Lightbulb className="h-5 w-5 mr-2 text-blue-500" />
                       Career Insights
                     </h3>
-                    <p className="text-sm text-black dark:text-gray-300">{analysis.analysis}</p>
+                    <p className="text-sm text-muted-foreground">{analysis.analysis}</p>
                   </div>
                 </div>
               </CardContent>
@@ -202,28 +186,28 @@ export function SkillGapAnalyzer() {
           </TabsContent>
           
           <TabsContent value="path" className="space-y-4">
-            <Card className="border-2 border-gray-200 dark:border-gray-700">
-              <CardHeader className="bg-gray-50 dark:bg-gray-900">
-                <CardTitle className="flex items-center gap-2 text-black dark:text-white">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <MapPin className="h-5 w-5 text-purple-500" />
                   Your Learning Path to {targetJob}
                 </CardTitle>
-                <CardDescription className="text-black dark:text-gray-300">
+                <CardDescription>
                   A structured learning path to acquire the skills needed for your target role
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-6">
+              <CardContent>
                 <div className="space-y-8">
                   {analysis.learningPath.map((step: any, index: number) => (
-                    <div key={index} className="relative pl-8 pb-8 border-l-2 border-gray-300 dark:border-gray-700 last:border-0 last:pb-0">
-                      <div className="absolute left-[-9px] top-0 bg-white dark:bg-slate-950 rounded-full border-2 border-gray-300 dark:border-gray-700 flex items-center justify-center w-4 h-4">
+                    <div key={index} className="relative pl-8 pb-8 border-l-2 border-gray-200 dark:border-gray-800 last:border-0 last:pb-0">
+                      <div className="absolute left-[-9px] top-0 bg-white dark:bg-slate-950 rounded-full border-2 border-gray-200 dark:border-gray-800 flex items-center justify-center w-4 h-4">
                         <div className="w-2 h-2 rounded-full bg-modern-blue-500"></div>
                       </div>
                       <div className="mb-1 flex items-center">
-                        <h3 className="font-semibold text-lg text-black dark:text-white">{step.title}</h3>
+                        <h3 className="font-semibold text-lg">{step.title}</h3>
                         <Badge className="ml-2 bg-modern-blue-500">{step.timeframe}</Badge>
                       </div>
-                      <p className="text-sm text-black dark:text-gray-300 mb-2">{step.description}</p>
+                      <p className="text-sm text-muted-foreground mb-2">{step.description}</p>
                       <div className="space-y-2">
                         {step.resources.map((resource: any, rIndex: number) => (
                           <a 
@@ -231,12 +215,12 @@ export function SkillGapAnalyzer() {
                             href={resource.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center p-2 rounded-md bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors border border-gray-200 dark:border-gray-700"
+                            className="flex items-center p-2 rounded-md bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                           >
                             <Book className="h-4 w-4 mr-2 text-modern-blue-500" />
                             <div>
-                              <p className="text-sm font-medium text-black dark:text-white">{resource.name}</p>
-                              <p className="text-xs text-gray-600 dark:text-gray-400">{resource.type}</p>
+                              <p className="text-sm font-medium">{resource.name}</p>
+                              <p className="text-xs text-muted-foreground">{resource.type}</p>
                             </div>
                           </a>
                         ))}
@@ -249,10 +233,10 @@ export function SkillGapAnalyzer() {
           </TabsContent>
           
           <TabsContent value="visualization">
-            <Card className="border-2 border-gray-200 dark:border-gray-700">
-              <CardHeader className="bg-gray-50 dark:bg-gray-900">
-                <CardTitle className="text-black dark:text-white">Visual Learning Path Roadmap</CardTitle>
-                <CardDescription className="text-black dark:text-gray-300">
+            <Card>
+              <CardHeader>
+                <CardTitle>Visual Learning Path Roadmap</CardTitle>
+                <CardDescription>
                   A visual representation of your learning journey to {targetJob}
                 </CardDescription>
               </CardHeader>
