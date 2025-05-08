@@ -92,7 +92,8 @@ const AIShadowCareerSimulator = () => {
         Make it realistic, detailed and insightful to help someone understand what it's really like to work in this role.
       `;
 
-      const response = await generateQwiXProContent(prompt);
+      // Use the career-specific API key
+      const response = await generateQwiXProContent(prompt, 'career');
       
       // Extract the JSON object from the response
       const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/) || 

@@ -6,11 +6,20 @@ const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-
 /**
  * Generate content using the Gemini API for QwiX Pro Builder
  * @param prompt The prompt to send to the API
+ * @param apiKeyType The type of API key to use (default, career, or layoff)
  * @returns The generated content
  */
-export const generateQwiXProContent = async (prompt: string): Promise<string> => {
+export const generateQwiXProContent = async (prompt: string, apiKeyType: 'default' | 'career' | 'layoff' = 'default'): Promise<string> => {
+  // Select the appropriate API key based on the type
+  let apiKey = apiKeys.GEMINI_API_KEY;
+  if (apiKeyType === 'career') {
+    apiKey = apiKeys.CAREER_SIMULATOR_API_KEY;
+  } else if (apiKeyType === 'layoff') {
+    apiKey = apiKeys.LAYOFF_TOOLKIT_API_KEY;
+  }
+
   try {
-    const response = await fetch(`${API_URL}?key=${apiKeys.GEMINI_API_KEY}`, {
+    const response = await fetch(`${API_URL}?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

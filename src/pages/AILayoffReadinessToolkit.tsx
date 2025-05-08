@@ -93,7 +93,8 @@ const AILayoffReadinessToolkit = () => {
         Make it practical, actionable, and genuinely helpful for someone who needs to quickly pivot after an unexpected layoff.
       `;
 
-      const response = await generateQwiXProContent(prompt);
+      // Use the layoff-specific API key
+      const response = await generateQwiXProContent(prompt, 'layoff');
       
       // Extract the JSON object from the response
       const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/) || 
