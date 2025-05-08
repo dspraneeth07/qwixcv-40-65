@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,6 +73,8 @@ const QwiXProBuilder: React.FC = () => {
   const [projectFiles, setProjectFiles] = useState<{path: string, content: string}[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState('');
+  const [apiKey, setApiKey] = useState('');
+  const [isApiKeyValid, setIsApiKeyValid] = useState(false);
   const [projectSettings, setProjectSettings] = useState({
     includeTests: true,
     includeDocumentation: true,
@@ -81,6 +84,24 @@ const QwiXProBuilder: React.FC = () => {
   });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Validate API key
+  const validateApiKey = () => {
+    if (!apiKey) {
+      toast({
+        title: "API Key Required",
+        description: "Please enter a valid API key.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsApiKeyValid(true);
+    toast({
+      title: "API Key Validated",
+      description: "Your API key has been validated successfully."
+    });
+  };
 
   // Generate project based on specifications
   const handleGenerateProject = async () => {
@@ -722,3 +743,389 @@ const QwiXProBuilder: React.FC = () => {
                           id="deployment-ready" 
                           checked={projectSettings.deploymentReady}
                           onCheckedChange={(checked) => setProjectSettings({...projectSettings, deploymentReady: checked})}
+                          disabled={!isApiKeyValid}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="create-git" className="cursor-pointer">Initialize Git repository</Label>
+                        <Switch 
+                          id="create-git" 
+                          checked={projectSettings.createGitRepo}
+                          onCheckedChange={(checked) => setProjectSettings({...projectSettings, createGitRepo: checked})}
+                          disabled={!isApiKeyValid}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="private-packages" className="cursor-pointer">Use private packages</Label>
+                        <Switch 
+                          id="private-packages" 
+                          checked={projectSettings.privatePackages}
+                          onCheckedChange={(checked) => setProjectSettings({...projectSettings, privatePackages: checked})}
+                          disabled={!isApiKeyValid}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button 
+                    onClick={handleGenerateProject} 
+                    disabled={!projectName || !selectedTemplate || !isApiKeyValid || isGenerating}
+                    className="w-full"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Code className="mr-2 h-4 w-4" />
+                        Generate Project
+                      </>
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
+            
+            {/* Examples and Templates */}
+            <div className="lg:col-span-2">
+              <Card className="h-full">
+                <CardHeader>
+                  <CardTitle>Project Templates</CardTitle>
+                  <CardDescription>
+                    Browse example projects to get inspired
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card>
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">React Dashboard</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          A modern React dashboard with charts, tables, and responsive UI.
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          <Badge variant="outline">React</Badge>
+                          <Badge variant="outline">Tailwind CSS</Badge>
+                          <Badge variant="outline">Charts</Badge>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="p-4">
+                        <Button variant="outline" className="w-full" disabled={!isApiKeyValid}>
+                          Use Template
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">E-Commerce Store</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          Full-featured online store with product listings and shopping cart.
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          <Badge variant="outline">Next.js</Badge>
+                          <Badge variant="outline">Stripe</Badge>
+                          <Badge variant="outline">MongoDB</Badge>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="p-4">
+                        <Button variant="outline" className="w-full" disabled={!isApiKeyValid}>
+                          Use Template
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">SaaS Starter</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          SaaS application template with authentication and subscription management.
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          <Badge variant="outline">React</Badge>
+                          <Badge variant="outline">Firebase</Badge>
+                          <Badge variant="outline">Stripe</Badge>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="p-4">
+                        <Button variant="outline" className="w-full" disabled={!isApiKeyValid}>
+                          Use Template
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">Blog Platform</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          Modern blog platform with CMS integration and responsive design.
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          <Badge variant="outline">Next.js</Badge>
+                          <Badge variant="outline">MDX</Badge>
+                          <Badge variant="outline">Tailwind</Badge>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="p-4">
+                        <Button variant="outline" className="w-full" disabled={!isApiKeyValid}>
+                          Use Template
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <Tabs 
+              defaultValue="code" 
+              value={activeTab} 
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
+              <TabsList className="mb-4">
+                <TabsTrigger value="code">Code</TabsTrigger>
+                <TabsTrigger value="preview">Preview</TabsTrigger>
+                <TabsTrigger value="settings">Settings</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="code" className="mt-0">
+                <div className="grid grid-cols-12 gap-4">
+                  {/* File Explorer */}
+                  <div className="col-span-12 md:col-span-3">
+                    <Card>
+                      <CardHeader className="py-4">
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="text-lg">Files</CardTitle>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={addNewFile}>
+                              <Plus className="h-4 w-4" />
+                              <span className="sr-only">Add file</span>
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => fileInputRef.current?.click()}>
+                              <Upload className="h-4 w-4" />
+                              <span className="sr-only">Upload file</span>
+                            </Button>
+                            <input 
+                              type="file" 
+                              ref={fileInputRef}
+                              className="hidden"
+                              onChange={handleFileUpload}
+                            />
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        <div className="max-h-[500px] overflow-y-auto">
+                          <ul className="divide-y">
+                            {projectFiles.map((file, index) => (
+                              <li 
+                                key={index} 
+                                className={`px-4 py-2 cursor-pointer hover:bg-muted text-sm flex items-center justify-between ${selectedFile === file.path ? 'bg-muted' : ''}`}
+                                onClick={() => handleFileSelect(file.path)}
+                              >
+                                <div className="flex items-center">
+                                  <FileText className="h-4 w-4 mr-2 text-muted-foreground" />
+                                  <span className="truncate max-w-[180px]">{file.path}</span>
+                                </div>
+                                {selectedFile === file.path && (
+                                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={deleteSelectedFile}>
+                                    <Trash className="h-3 w-3" />
+                                    <span className="sr-only">Delete</span>
+                                  </Button>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  
+                  {/* Code Editor */}
+                  <div className="col-span-12 md:col-span-9">
+                    <Card>
+                      <CardHeader className="py-4 border-b">
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="text-lg truncate">
+                            {selectedFile || "No file selected"}
+                          </CardTitle>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="sm" className="h-8 px-2" onClick={updateFileContent}>
+                              <Save className="h-4 w-4 mr-1" />
+                              Save
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <Copy className="h-4 w-4" />
+                              <span className="sr-only">Copy</span>
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        <div className="min-h-[500px] relative">
+                          <Textarea 
+                            value={fileContent}
+                            onChange={(e) => setFileContent(e.target.value)}
+                            className="min-h-[500px] font-mono text-sm p-4 resize-none rounded-none border-0 focus-visible:ring-0"
+                            placeholder="// Select or create a file to begin coding"
+                            disabled={!selectedFile}
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="preview" className="mt-0">
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <CardTitle>Project Preview</CardTitle>
+                      {previewUrl && (
+                        <Button variant="outline" className="text-xs" asChild>
+                          <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="h-3 w-3 mr-1" />
+                            Open in new window
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="border-t h-[600px] w-full">
+                      <div className="w-full h-full flex items-center justify-center bg-slate-100">
+                        <div className="text-center">
+                          <p className="text-muted-foreground mb-2">Live preview will appear here after build</p>
+                          <Button variant="outline">Refresh Preview</Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="settings" className="mt-0">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Project Settings</CardTitle>
+                    <CardDescription>
+                      Configure build and deployment options
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-medium mb-2">General</h3>
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="project-name-settings">Project Name</Label>
+                            <Input 
+                              id="project-name-settings"
+                              value={projectName} 
+                              onChange={(e) => setProjectName(e.target.value)}
+                              className="mt-1" 
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="project-version">Version</Label>
+                            <Input 
+                              id="project-version"
+                              defaultValue="0.1.0"
+                              className="mt-1" 
+                            />
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="project-description-settings">Description</Label>
+                          <Textarea 
+                            id="project-description-settings"
+                            value={projectDescription} 
+                            onChange={(e) => setProjectDescription(e.target.value)}
+                            className="mt-1" 
+                            rows={2}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div>
+                      <h3 className="text-lg font-medium mb-2">Build Configuration</h3>
+                      <div className="space-y-3">
+                        <div>
+                          <Label htmlFor="build-command">Build Command</Label>
+                          <Input 
+                            id="build-command"
+                            defaultValue="npm run build" 
+                            className="mt-1"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="output-directory">Output Directory</Label>
+                          <Input 
+                            id="output-directory"
+                            defaultValue="dist" 
+                            className="mt-1"
+                          />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="minify" className="cursor-pointer">Minify output</Label>
+                          <Switch id="minify" defaultChecked />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div>
+                      <h3 className="text-lg font-medium mb-2">Environment Variables</h3>
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input placeholder="KEY" />
+                          <Input placeholder="Value" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input placeholder="KEY" />
+                          <Input placeholder="Value" />
+                        </div>
+                        <Button variant="outline" className="w-full">
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add Environment Variable
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Button variant="outline">Reset Changes</Button>
+                    <Button>Save Settings</Button>
+                  </CardFooter>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
+      </div>
+    </Layout>
+  );
+};
+
+export default QwiXProBuilder;
