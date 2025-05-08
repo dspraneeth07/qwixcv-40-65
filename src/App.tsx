@@ -1,5 +1,4 @@
 
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
 import { BlockchainProvider } from "./context/BlockchainContext";
@@ -29,6 +28,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { useEffect } from "react";
 import VerifyDocument from "./pages/VerifyDocument";
 import QwixVaultProfile from "./pages/QwixVaultProfile";
+import InterviewCoach from "./pages/InterviewCoach";
 
 function App() {
   useEffect(() => {
@@ -64,6 +64,7 @@ function App() {
               <Route path="/unauthorized" element={<Unauthorized />} />
               <Route path="/verify-document/:uniqueId" element={<VerifyDocument />} />
               <Route path="/qwixvault/:address" element={<QwixVaultProfile />} />
+              <Route path="/interview-coach" element={<InterviewCoach />} />
 
               <Route path="/builder" element={<ProtectedRoute allowedRoles={['student']}><ResumeBuilder /></ProtectedRoute>} />
               <Route path="/resume-preview" element={<ProtectedRoute allowedRoles={['student']}><ResumePreview /></ProtectedRoute>} />
