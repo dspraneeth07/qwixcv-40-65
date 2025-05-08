@@ -1,16 +1,26 @@
-
 import { createContext, useContext, ReactNode, useState, useEffect } from "react";
 
 type ThemeContextType = {
   theme: string;
+  toggleTheme: () => void;
 };
 
-const ThemeContext = createContext<ThemeContextType>({ theme: 'light' });
+const ThemeContext = createContext<ThemeContextType>({ 
+  theme: 'light',
+  toggleTheme: () => {} 
+});
 
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [theme] = useState('light');
+  const [theme, setTheme] = useState('light');
+
+  // Toggle theme function
+  const toggleTheme = () => {
+    // Since we're only using light theme as requested, this is a no-op function
+    // but we keep it for interface compatibility
+    setTheme('light');
+  };
 
   // Apply theme class to document
   useEffect(() => {
@@ -20,7 +30,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   }, [theme]);
 
   return (
-    <ThemeContext.Provider value={{ theme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

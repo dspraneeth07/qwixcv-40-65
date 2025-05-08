@@ -1,3 +1,4 @@
+
 // Define types for career paths and nodes
 
 export interface SkillRequirement {
@@ -29,11 +30,12 @@ export interface CareerNode {
 }
 
 export interface CareerPath {
-  id: string;
+  id?: string;
   name: string;
   type: "ambitious" | "balanced" | "skills";
   description: string;
   nodes: CareerNode[];
+  title?: string; // Added title property to fix the TypeScript error
 }
 
 // New types for mindprint assessment
