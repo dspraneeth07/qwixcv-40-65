@@ -68,10 +68,8 @@ export const JobRoleSelector = ({ selectedRole, onRoleSelect }: JobRoleSelectorP
                 <CommandItem
                   key={role.value}
                   value={role.value}
-                  onSelect={(currentValue) => {
-                    // Make sure we have a valid value before calling onRoleSelect
-                    const valueToUse = currentValue || role.value;
-                    onRoleSelect(valueToUse);
+                  onSelect={() => {
+                    onRoleSelect(role.value);
                     setOpen(false);
                   }}
                 >

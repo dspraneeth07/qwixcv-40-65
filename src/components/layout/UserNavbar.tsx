@@ -1,7 +1,6 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { FileText, Menu, ChevronDown, User, Settings, LogOut, BarChart, Award, Sparkles, Briefcase, Shield, LucideIcon, GraduationCap, MessageSquare } from "lucide-react";
+import { FileText, Menu, ChevronDown, User, Settings, LogOut, BarChart, Award, Sparkles, Briefcase, Shield, LucideIcon, GraduationCap, MessageSquare, Book, TrendingUp, Star } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -99,6 +98,12 @@ const UserNavbar = () => {
     { name: "Interview Coach", href: "/interview-coach", icon: MessageSquare },
   ];
 
+  const learnTools = [
+    { name: "Skill Gap Analysis", href: "/skill-gap-analysis", icon: TrendingUp },
+    { name: "Learning Paths", href: "/skill-gap-analysis", icon: Book },
+    { name: "Recommended Courses", href: "/skill-gap-analysis", icon: Star },
+  ];
+
   return (
     <header className="border-b bg-gradient-to-r from-modern-blue-600 to-soft-purple text-white sticky top-0 z-50">
       <div className="container flex h-16 items-center justify-between py-4">
@@ -124,6 +129,12 @@ const UserNavbar = () => {
             label="Jobs" 
             icon={Briefcase} 
             items={jobTools}
+          />
+
+          <NavDropdown 
+            label="QwixLearn" 
+            icon={Book} 
+            items={learnTools}
           />
           
           <NavLink 
@@ -237,6 +248,21 @@ const UserNavbar = () => {
                 <div className="space-y-1 px-2">
                   <p className="text-sm font-semibold text-white/70 mb-2">JOB TOOLS</p>
                   {jobTools.map((item) => (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      {item.icon && <item.icon className="h-5 w-5" />}
+                      {item.name}
+                    </Link>
+                  ))}
+                </div>
+
+                <div className="space-y-1 px-2">
+                  <p className="text-sm font-semibold text-white/70 mb-2">QWIXLEARN</p>
+                  {learnTools.map((item) => (
                     <Link
                       key={item.name}
                       to={item.href}
