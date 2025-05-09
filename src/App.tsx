@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
@@ -74,282 +75,336 @@ function App() {
               <Route path="/forgot-password" element={<AuthLayout><ForgotPassword /></AuthLayout>} />
               <Route path="/reset-password" element={<AuthLayout><ResetPassword /></AuthLayout>} />
               
-              {/* All other routes should be wrapped with the Layout component */}
-              <Route element={<Layout />}>
-                {/* Public verification routes */}
-                <Route path="/verify-cert/:certHash" element={<VerifyCertificate />} />
-                <Route path="/verify-document/:documentId" element={<VerifyDocument />} />
-                <Route path="/unauthorized" element={<Unauthorized />} />
-  
-                {/* Student landing page */}
-                <Route 
-                  path="/student-home" 
-                  element={
-                    <ProtectedRoute allowedRoles={['student', 'admin']}>
+              {/* Public verification routes */}
+              <Route path="/verify-cert/:certHash" element={<Layout><VerifyCertificate /></Layout>} />
+              <Route path="/verify-document/:documentId" element={<Layout><VerifyDocument /></Layout>} />
+              <Route path="/unauthorized" element={<Layout><Unauthorized /></Layout>} />
+
+              {/* Student landing page */}
+              <Route 
+                path="/student-home" 
+                element={
+                  <ProtectedRoute allowedRoles={['student', 'admin']}>
+                    <Layout>
                       <StudentHome />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                {/* Organization landing page */}
-                <Route 
-                  path="/organization-home" 
-                  element={
-                    <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Organization landing page */}
+              <Route 
+                path="/organization-home" 
+                element={
+                  <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    <Layout>
                       <OrganizationHome />
-                    </ProtectedRoute>
-                  } 
-                />
-  
-                {/* Protected user/student routes */}
-                <Route 
-                  path="/dashboard" 
-                  element={
-                    <ProtectedRoute>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+
+              {/* Protected user/student routes */}
+              <Route 
+                path="/dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
                       <Dashboard />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                {/* CV Tools Routes */}
-                <Route 
-                  path="/builder" 
-                  element={
-                    <ProtectedRoute>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* CV Tools Routes */}
+              <Route 
+                path="/builder" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
                       <ResumeBuilder />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/linkedin-optimizer" 
-                  element={
-                    <ProtectedRoute>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/linkedin-optimizer" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
                       <LinkedInOptimizer />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/ats-scanner" 
-                  element={
-                    <ProtectedRoute>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/ats-scanner" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
                       <ATSScanner />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/resume-compare" 
-                  element={
-                    <ProtectedRoute>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/resume-compare" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
                       <ResumeCompare />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                {/* Career Guide Routes */}
-                <Route 
-                  path="/career-path-simulator" 
-                  element={
-                    <ProtectedRoute>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Career Guide Routes */}
+              <Route 
+                path="/career-path-simulator" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
                       <CareerPathSimulator />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/interview-coach" 
-                  element={
-                    <ProtectedRoute>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/interview-coach" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
                       <InterviewCoach />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/ai-job-switch-planner" 
-                  element={
-                    <ProtectedRoute>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/ai-job-switch-planner" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
                       <AIJobSwitchPlanner />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/ai-shadow-career-simulator" 
-                  element={
-                    <ProtectedRoute>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/ai-shadow-career-simulator" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
                       <AIShadowCareerSimulator />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/skill-gap-analysis" 
-                  element={
-                    <ProtectedRoute>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/skill-gap-analysis" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
                       <SkillGapAnalysis />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/ai-layoff-readiness-toolkit" 
-                  element={
-                    <ProtectedRoute>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/ai-layoff-readiness-toolkit" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
                       <AILayoffReadinessToolkit />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                {/* QwiX Learn Routes */}
-                <Route 
-                  path="/mindprint-assessment" 
-                  element={
-                    <ProtectedRoute>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* QwiX Learn Routes */}
+              <Route 
+                path="/mindprint-assessment" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
                       <MindprintAssessment />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/ai-coding-coach" 
-                  element={
-                    <ProtectedRoute>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/ai-coding-coach" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
                       <AICodingCoach />
-                    </ProtectedRoute>
-                  } 
-                />
-  
-                <Route 
-                  path="/qwixpro-builder" 
-                  element={
-                    <ProtectedRoute>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+
+              <Route 
+                path="/qwixpro-builder" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
                       <QwiXProBuilder />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/job-board" 
-                  element={
-                    <ProtectedRoute>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/job-board" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
                       <JobBoard />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                {/* Other protected routes that should only be accessible for students/freelancers */}
-                <Route 
-                  path="/certification-center" 
-                  element={
-                    <ProtectedRoute allowedRoles={['student', 'admin']}>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Other protected routes that should only be accessible for students/freelancers */}
+              <Route 
+                path="/certification-center" 
+                element={
+                  <ProtectedRoute allowedRoles={['student', 'admin']}>
+                    <Layout>
                       <CertificationCenter />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/certificate/:id" 
-                  element={
-                    <ProtectedRoute allowedRoles={['student', 'admin']}>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/certificate/:id" 
+                element={
+                  <ProtectedRoute allowedRoles={['student', 'admin']}>
+                    <Layout>
                       <CertificateDetails />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/profile" 
-                  element={
-                    <ProtectedRoute>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/profile" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
                       <Profile />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/settings" 
-                  element={
-                    <ProtectedRoute>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/settings" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
                       <Settings />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                {/* Organization routes */}
-                <Route 
-                  path="/organization/dashboard" 
-                  element={
-                    <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Organization routes */}
+              <Route 
+                path="/organization/dashboard" 
+                element={
+                  <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    <Layout>
                       <OrganizationDashboard />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/organization/resume-parser" 
-                  element={
-                    <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/organization/resume-parser" 
+                element={
+                  <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    <Layout>
                       <ResumeParser />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/organization/document-generator" 
-                  element={
-                    <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/organization/document-generator" 
+                element={
+                  <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    <Layout>
                       <DocumentGenerator />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/organization/blockchain-verification" 
-                  element={
-                    <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/organization/blockchain-verification" 
+                element={
+                  <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    <Layout>
                       <BlockchainVerification />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/organization/ai-interviewer" 
-                  element={
-                    <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/organization/ai-interviewer" 
+                element={
+                  <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    <Layout>
                       <AIInterviewer />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                <Route 
-                  path="/organization/aptitude-exams" 
-                  element={
-                    <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/organization/aptitude-exams" 
+                element={
+                  <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    <Layout>
                       <AptitudeExams />
-                    </ProtectedRoute>
-                  } 
-                />
-                
-                {/* Default route - redirect to appropriate landing page based on role */}
-                <Route 
-                  path="/" 
-                  element={
-                    <ProtectedRoute>
-                      {({ user }) => (
-                        user?.role === 'organization' ? <OrganizationHome /> : <StudentHome />}
-                      </ProtectedRoute>
-                  } 
-                />
-                
-                {/* Public information pages */}
-                <Route path="/about" element={<div className="container mx-auto px-4 py-8">About Page</div>} />
-                <Route path="/contact" element={<div className="container mx-auto px-4 py-8">Contact Page</div>} />
-                
-                {/* Catch-all route for 404 */}
-                <Route path="*" element={<NotFound />} />
-              </Route>
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Default route - redirect to appropriate landing page based on role */}
+              <Route 
+                path="/" 
+                element={
+                  <ProtectedRoute>
+                    {({ user }) => (
+                      <Layout>
+                        {user?.role === 'organization' ? <OrganizationHome /> : <StudentHome />}
+                      </Layout>
+                    )}
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Public information pages */}
+              <Route path="/about" element={<Layout><div className="container mx-auto px-4 py-8">About Page</div></Layout>} />
+              <Route path="/contact" element={<Layout><div className="container mx-auto px-4 py-8">Contact Page</div></Layout>} />
+              
+              {/* Catch-all route for 404 */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />
           </BlockchainProvider>

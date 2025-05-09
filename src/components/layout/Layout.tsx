@@ -1,15 +1,13 @@
 
-import React from "react";
-import { Outlet } from "react-router-dom";
+import React, { ReactNode } from "react";
 import MainLayout from "./MainLayout";
 
-const Layout = () => {
-  // Use Outlet from react-router-dom to render nested routes
-  return (
-    <MainLayout>
-      <Outlet />
-    </MainLayout>
-  );
+interface LayoutProps {
+  children: ReactNode;
+}
+
+const Layout: React.FC<LayoutProps> = ({ children }) => {
+  return <MainLayout>{children}</MainLayout>;
 };
 
 export default Layout;
