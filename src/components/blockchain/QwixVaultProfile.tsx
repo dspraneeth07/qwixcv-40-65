@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -109,6 +108,7 @@ const QwixVaultProfile = () => {
           Your blockchain-secured document vault
         </CardDescription>
       </CardHeader>
+      
       <CardContent className="space-y-4">
         <div className="flex flex-col items-center justify-center p-4 bg-muted/50 rounded-lg">
           <div className="bg-white p-2 rounded-lg mb-3">

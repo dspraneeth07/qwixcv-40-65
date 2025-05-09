@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import MainLayout from '@/components/layout/MainLayout';
+import Layout from '@/components/layout/Layout';
 import { useBlockchain } from '@/context/BlockchainContext';
 import { VaultRoom } from '@/components/blockchain/VaultRoom';
 import { DocumentUploader } from '@/components/blockchain/DocumentUploader';
@@ -24,9 +24,9 @@ const BlockchainVault = () => {
   }, []);
 
   return (
-    <MainLayout>
+    <Layout>
       <div className="container py-10">
-        <h1 className="text-3xl font-bold mb-2">Qwixed360 Blockchain Vault</h1>
+        <h1 className="text-3xl font-bold mb-2">QwiXEd360°Suite Blockchain Vault</h1>
         <p className="text-muted-foreground mb-8">
           Securely store, manage, and verify your professional documents using blockchain technology
         </p>
@@ -103,7 +103,7 @@ const BlockchainVault = () => {
           </Tabs>
         )}
       </div>
-    </MainLayout>
+    </Layout>
   );
 };
 

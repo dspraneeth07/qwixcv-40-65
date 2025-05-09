@@ -42,6 +42,7 @@ import AICodingCoach from "./pages/AICodingCoach";
 import ResumeCompare from "./pages/ResumeCompare";
 import QwiXProBuilder from "./pages/QwiXProBuilder";
 import AuthLayout from "./pages/Auth/AuthLayout";
+import BlockchainVault from "./pages/BlockchainVault";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -112,6 +113,16 @@ function App() {
                     <Layout>
                       <Dashboard />
                     </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Blockchain Vault route */}
+              <Route 
+                path="/blockchain-vault" 
+                element={
+                  <ProtectedRoute>
+                    <BlockchainVault />
                   </ProtectedRoute>
                 } 
               />
