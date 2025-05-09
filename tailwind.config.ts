@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -18,8 +19,8 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				'playfair': ['"Playfair Display"', 'serif'],
 				'poppins': ['Poppins', 'sans-serif'],
+				'playfair': ['"Playfair Display"', 'serif'],
 				'montserrat': ['Montserrat', 'sans-serif'],
 				'inter': ['Inter', 'sans-serif'],
 				'sf-pro': ['"SF Pro Display"', 'sans-serif'],
