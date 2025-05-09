@@ -1,4 +1,3 @@
-
 import React, { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import MainLayout from "./MainLayout";
@@ -12,16 +11,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const authPaths = ["/login", "/register", "/forgot-password", "/reset-password"];
   const isAuthPage = authPaths.includes(location.pathname);
 
-  // For auth pages, don't wrap in MainLayout to avoid duplication
+  // For auth pages, don't wrap in MainLayout
   if (isAuthPage) {
     return <>{children}</>;
   }
 
-  // Direct child rendering to avoid nesting when pages already use MainLayout
+  // If the children is already wrapped in MainLayout, don't wrap it again
   if (React.isValidElement(children) && children.type === MainLayout) {
     return children;
   }
 
+  // Otherwise wrap in MainLayout
   return <MainLayout>{children}</MainLayout>;
 };
 

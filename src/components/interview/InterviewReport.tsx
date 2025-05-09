@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +19,7 @@ import {
   Legend 
 } from 'chart.js';
 import { Bar, Pie } from 'react-chartjs-2';
+
 // Register ChartJS components
 ChartJS.register(
   CategoryScale, 
