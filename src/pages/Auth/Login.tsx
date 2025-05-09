@@ -27,9 +27,22 @@ const Login: React.FC = () => {
   // If already authenticated, redirect to dashboard
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      // Redirect based on role
+      switch(activeTab) {
+        case 'student':
+          navigate('/student-home');
+          break;
+        case 'organization':
+          navigate('/organization-home');
+          break;
+        case 'admin':
+          navigate('/dashboard');
+          break;
+        default:
+          navigate('/dashboard');
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, activeTab]);
   
   const handleTabChange = (role: string) => {
     setActiveTab(role as UserRole);
@@ -84,7 +97,14 @@ const Login: React.FC = () => {
               description: "Welcome back! Using fast demo login.",
             });
             
-            navigate('/dashboard');
+            if (role === 'student') {
+              navigate('/student-home');
+            } else if (role === 'organization') {
+              navigate('/organization-home');
+            } else {
+              navigate('/dashboard');
+            }
+            
             setIsSubmitting(false);
           }, 500);
           return;
@@ -106,7 +126,16 @@ const Login: React.FC = () => {
         const success = await login(email, password, role);
         clearTimeout(timeoutId);
         
-        if (!success) {
+        if (success) {
+          // Navigate based on role
+          if (role === 'student') {
+            navigate('/student-home');
+          } else if (role === 'organization') {
+            navigate('/organization-home');
+          } else {
+            navigate('/dashboard');
+          }
+        } else {
           setIsSubmitting(false);
           setLoginAttempts(prev => prev + 1);
         }
