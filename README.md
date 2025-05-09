@@ -1,4 +1,3 @@
-
 <div align="center">
   
   # QwiXEd360°Suite
@@ -30,16 +29,97 @@ QwiXEd360°Suite is an intelligent career development platform that leverages AI
 
 ## 🌟 Key Features for Job Seekers
 
-- **AI-Powered Resume Generation** - Smart content suggestions with section-by-section guidance
-- **ATS Optimization** - Real-time scoring against job descriptions with improvement recommendations
-- **Resume Comparison** - Side-by-side visualization with job requirements
-- **Blockchain Certifications** - Verifiable credentials secured on blockchain
-- **Career Path Simulator** - Visualize potential career trajectories and skill development paths
-- **Job Board & Matching** - Personalized job recommendations based on your resume
-- **Interview Coach** - AI-powered interview practice with real-time feedback
-- **Skill Gap Analysis** - Identify needed skills for target positions
-- **QwiXPro Builder** - Create professional portfolios and project showcases
-- **Blockchain Document Vault** - Secure storage with tamper-proof verification
+### CV Tools: Craft Your Professional Image
+Our suite of CV and profile optimization tools designed to help you stand out in the job market with AI-powered assistance.
+
+- **Resume Builder** - Create ATS-optimized resumes with AI guidance
+  - AI-powered content suggestions
+  - Section-by-section guidance
+  - Multiple professional templates
+
+- **ATS Scanner** - Optimize your resume for job applications
+  - Real-time resume scoring
+  - Keyword optimization
+  - Side-by-side comparison with job descriptions
+
+- **LinkedIn Optimizer** - Enhance your LinkedIn profile visibility
+  - Profile optimization analysis
+  - Keyword recommendation engine
+  - Content suggestion for engagement
+
+- **Resume Compare** - Compare multiple resume versions
+  - Side-by-side visual comparison
+  - Impact analysis
+  - Industry benchmark against peers
+
+### QwiX Career Guide: Navigate Your Professional Journey
+Tools to help you plan, visualize, and optimize your career path with AI-driven insights and practical guidance.
+
+- **Career Path Simulator** - Visualize your future career trajectory
+  - Career growth visualization
+  - Skill development roadmaps
+  - Personalized advancement strategies
+
+- **Interview Coach** - Prepare for job interviews with AI
+  - Practice with AI interviewer
+  - Industry-specific question sets
+  - Performance feedback and analysis
+
+- **Job Board** - Find opportunities matched to your profile
+  - Resume-matched job recommendations
+  - Application tracking system
+  - Direct employer connections
+
+- **AI Job Switch Planner** - Plan your career transition effectively
+  - Switch feasibility calculation
+  - Learning paths identification
+  - Transition timeline planning
+
+- **AI Shadow Career Simulator** - Experience different career paths virtually
+  - Day-in-the-life simulations
+  - Career challenge scenarios
+  - Skill compatibility assessment
+
+- **AI Layoff Readiness Toolkit** - Prepare for career uncertainties
+  - Job stability assessment
+  - Emergency career planning
+  - Market transferable skills identification
+
+### QwiX Learn: Upskill with Intelligence
+Advanced learning tools that analyze your skill gaps and provide tailored learning paths to keep you competitive in your field.
+
+- **AI Coding Coach** - Improve your coding skills with AI guidance
+  - Real-time code feedback
+  - Algorithm optimization tips
+  - Interview preparation exercises
+
+- **QwiXPro Builder** - Create professional portfolios
+  - Dynamic project showcases
+  - Integrated GitHub projects
+  - Customizable design options
+
+- **Skill Gap Analysis** - Identify and bridge your skill gaps
+  - Current vs. required skills mapping
+  - Personalized learning recommendations
+  - Progress tracking dashboard
+
+- **Mindprint Assessment** - Discover your ideal career path
+  - Cognitive ability assessment
+  - Personal values alignment
+  - Career compatibility recommendations
+
+### Blockchain Security: Protect Your Professional Identity
+Leverage the power of blockchain to secure and verify your professional credentials and documents with tamper-proof technology.
+
+- **QwiXCert** - Blockchain-verified certifications
+  - Tamper-proof certification storage
+  - Verifiable credentials for employers
+  - Certification assessment exams
+
+- **Blockchain Vault** - Secure document storage using blockchain
+  - Tamper-proof document storage
+  - Universal verification system
+  - Decentralized security protocol
 
 ## 💼 Key Features for Organizations
 
@@ -58,7 +138,7 @@ QwiXEd360°Suite is an intelligent career development platform that leverages AI
     <tr>
       <td align="center" width="96">
         <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" width="48" height="48" alt="React" />
-        <br>React 18
+        <br>React 18.3.1
       </td>
       <td align="center" width="96">
         <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" width="48" height="48" alt="TypeScript" />
@@ -69,26 +149,18 @@ QwiXEd360°Suite is an intelligent career development platform that leverages AI
         <br>Tailwind CSS
       </td>
       <td align="center" width="96">
-        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/threejs/threejs-original.svg" width="48" height="48" alt="Three.js" />
-        <br>Three.js
-      </td>
-      <td align="center" width="96">
-        <img src="https://www.vectorlogo.zone/logos/ethereum/ethereum-icon.svg" width="48" height="48" alt="Ethereum" />
-        <br>Ethereum
-      </td>
-    </tr>
-    <tr>
-      <td align="center" width="96">
         <img src="https://cdn.worldvectorlogo.com/logos/vitejs.svg" width="48" height="48" alt="Vite" />
         <br>Vite
       </td>
       <td align="center" width="96">
-        <img src="https://www.vectorlogo.zone/logos/tanstack/tanstack-icon.svg" width="48" height="48" alt="TanStack" />
-        <br>React Query
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/threejs/threejs-original.svg" width="48" height="48" alt="Three.js" />
+        <br>Three.js
       </td>
+    </tr>
+    <tr>
       <td align="center" width="96">
-        <img src="https://cdn.worldvectorlogo.com/logos/recharts.svg" width="48" height="48" alt="Recharts" />
-        <br>Recharts
+        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" width="48" height="48" alt="React Router" />
+        <br>React Router 7
       </td>
       <td align="center" width="96">
         <img src="https://avatars.githubusercontent.com/u/75042455" width="48" height="48" alt="Radix UI" />
@@ -98,15 +170,49 @@ QwiXEd360°Suite is an intelligent career development platform that leverages AI
         <img src="https://avatars.githubusercontent.com/u/139895814" width="48" height="48" alt="shadcn/ui" />
         <br>shadcn/ui
       </td>
-    </tr>
-    <tr>
-      <td align="center" width="96">
-        <img src="https://www.vectorlogo.zone/logos/supabase/supabase-icon.svg" width="48" height="48" alt="Supabase" />
-        <br>Supabase
-      </td>
       <td align="center" width="96">
         <img src="https://www.vectorlogo.zone/logos/framer/framer-icon.svg" width="48" height="48" alt="Framer Motion" />
         <br>Framer Motion
+      </td>
+      <td align="center" width="96">
+        <img src="https://www.vectorlogo.zone/logos/tanstack/tanstack-icon.svg" width="48" height="48" alt="TanStack" />
+        <br>React Query
+      </td>
+    </tr>
+    <tr>
+      <td align="center" width="96">
+        <img src="https://www.vectorlogo.zone/logos/ethereum/ethereum-icon.svg" width="48" height="48" alt="Ethereum" />
+        <br>Ethers.js
+      </td>
+      <td align="center" width="96">
+        <img src="https://cdn.worldvectorlogo.com/logos/metamask.svg" width="48" height="48" alt="MetaMask" />
+        <br>MetaMask SDK
+      </td>
+      <td align="center" width="96">
+        <img src="https://www.vectorlogo.zone/logos/ipfs/ipfs-icon.svg" width="48" height="48" alt="IPFS" />
+        <br>NFT.Storage
+      </td>
+      <td align="center" width="96">
+        <img src="https://cdn.worldvectorlogo.com/logos/recharts.svg" width="48" height="48" alt="Recharts" />
+        <br>Recharts
+      </td>
+      <td align="center" width="96">
+        <img src="https://cdn.worldvectorlogo.com/logos/chart-js.svg" width="48" height="48" alt="Chart.js" />
+        <br>React-ChartJS-2
+      </td>
+    </tr>
+    <tr>
+      <td align="center" width="96">
+        <img src="https://cdn.worldvectorlogo.com/logos/react-hook-form.svg" width="48" height="48" alt="React Hook Form" />
+        <br>React Hook Form
+      </td>
+      <td align="center" width="96">
+        <img src="https://zod.dev/logo.svg" width="48" height="48" alt="Zod" />
+        <br>Zod
+      </td>
+      <td align="center" width="96">
+        <img src="https://www.vectorlogo.zone/logos/supabase/supabase-icon.svg" width="48" height="48" alt="Supabase" />
+        <br>Supabase
       </td>
       <td align="center" width="96">
         <img src="https://cdn.worldvectorlogo.com/logos/polygon-matic.svg" width="48" height="48" alt="Polygon" />
@@ -115,10 +221,6 @@ QwiXEd360°Suite is an intelligent career development platform that leverages AI
       <td align="center" width="96">
         <img src="https://www.vectorlogo.zone/logos/google_cloud/google_cloud-icon.svg" width="48" height="48" alt="Google Cloud" />
         <br>Gemini AI
-      </td>
-      <td align="center" width="96">
-        <img src="https://www.vectorlogo.zone/logos/ipfs/ipfs-icon.svg" width="48" height="48" alt="IPFS" />
-        <br>IPFS/NFT.Storage
       </td>
     </tr>
   </table>
@@ -263,7 +365,7 @@ Our platform not only helps job seekers create better resumes and prepare for in
 ## 👨‍💼 Designed and Developed By
 
 <div align="center">
-  <img src="/lovable-uploads/f5d06c81-a24b-4c51-8bf0-c6fd139438e3.png" alt="Dhadi Sai Praneeth Reddy" width="150" style="border-radius: 50%; border: 3px solid #6366f1;" />
+  <img src="/public/lovable-uploads/1a8652a9-7759-49ba-9f65-117e7abf91aa.png" alt="Dhadi Sai Praneeth Reddy" width="150" style="border-radius: 50%; border: 3px solid #6366f1;" />
   <h3>Dhadi Sai Praneeth Reddy</h3>
   <p><strong>Founder & CTO, QwikZen Group India</strong></p>
   
@@ -271,7 +373,7 @@ Our platform not only helps job seekers create better resumes and prepare for in
     <a href="https://github.com/dspraneethreddy" target="_blank">
       <img src="https://img.shields.io/badge/-GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" />
     </a>
-    <a href="https://linkedin.com/in/dspraneethreddy" target="_blank">
+    <a href="https://linkedin.com/in/dspraneeth07" target="_blank">
       <img src="https://img.shields.io/badge/-LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" />
     </a>
     <a href="mailto:dspraneeth07@gmail.com">
@@ -287,11 +389,14 @@ Our platform not only helps job seekers create better resumes and prepare for in
   <a href="https://www.qwikzen.com" target="_blank">
     <img src="https://img.shields.io/badge/-Website-4F46E5?style=for-the-badge&logo=internetexplorer&logoColor=white" alt="Website" />
   </a>
-  <a href="https://twitter.com/QwikZenGroup" target="_blank">
+  <a href="https://twitter.com/dspraneeth07" target="_blank">
     <img src="https://img.shields.io/badge/-Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" alt="Twitter" />
   </a>
   <a href="https://www.linkedin.com/company/qwikzen" target="_blank">
     <img src="https://img.shields.io/badge/-LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" />
+  </a>
+  <a href="https://www.instagram.com/praneethinspires" target="_blank">
+    <img src="https://img.shields.io/badge/-Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram" />
   </a>
 </div>
 
