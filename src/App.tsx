@@ -1,112 +1,209 @@
-
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "./context/ThemeContext";
-import { BlockchainProvider } from "./context/BlockchainContext";
-import { AuthProvider } from "./context/AuthContext";
-import { QueryClientProvider } from '@tanstack/react-query';
-import { createQueryClient } from "./utils/queryClient";
+import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
-import Index from "./pages/Index";
-import ResumeBuilder from "./pages/ResumeBuilder";
-import ResumePreview from "./pages/ResumePreview";
-import ShareToCompany from "./pages/ShareToCompany";
-import JobBoard from "./pages/JobBoard";
-import Contact from "./pages/Contact";
-import About from "./pages/About";
-import NotFound from "./pages/NotFound";
-import ATSScanner from "./pages/ATSScanner";
-import ResumeCompare from "./pages/ResumeCompare";
-import CareerPathSimulator from "./pages/CareerPathSimulator";
-import Dashboard from "./pages/Dashboard";
-import CertificationCenter from "./pages/CertificationCenter";
-import CertificationTest from "./pages/CertificationTest";
-import CertificateVerification from "./pages/CertificateVerification";
-import Login from "./pages/Auth/Login";
-import Register from "./pages/Auth/Register";
-import ForgotPassword from "./pages/Auth/ForgotPassword";
-import Unauthorized from "./pages/Auth/Unauthorized";
-import BlockchainVault from "./pages/BlockchainVault";
-import ProtectedRoute from "./components/ProtectedRoute";
-import { useEffect } from "react";
-import VerifyDocument from "./pages/VerifyDocument";
-import QwixVaultProfile from "./pages/QwixVaultProfile";
-import InterviewCoach from "./pages/InterviewCoach";
-import SkillGapAnalysis from "./pages/SkillGapAnalysis";
-import LinkedInOptimizer from "./pages/LinkedInOptimizer";
-import MindprintAssessment from "./pages/MindprintAssessment";
-import AICodingCoach from "./pages/AICodingCoach";
-import QwiXProBuilder from "./pages/QwiXProBuilder";
-import AIJobSwitchPlanner from "./pages/AIJobSwitchPlanner";
-import AIShadowCareerSimulator from "./pages/AIShadowCareerSimulator";
-import AILayoffReadinessToolkit from "./pages/AILayoffReadinessToolkit";
-
-const queryClient = createQueryClient();
+import { AuthProvider } from "@/context/AuthContext";
+import { BlockchainProvider } from "@/context/BlockchainContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Layout from "@/components/layout/Layout";
+import Dashboard from "@/pages/Dashboard";
+import Login from "@/pages/Auth/Login";
+import Register from "@/pages/Auth/Register";
+import ForgotPassword from "@/pages/Auth/ForgotPassword";
+import ResetPassword from "@/pages/Auth/ResetPassword";
+import NotFound from "@/pages/NotFound";
+import Unauthorized from "@/pages/Unauthorized";
+import Profile from "@/pages/Profile";
+import Settings from "@/pages/Settings";
+import CertificationCenter from "@/pages/CertificationCenter";
+import CertificateDetails from "@/pages/CertificateDetails";
+import VerifyCertificate from "@/pages/VerifyCertificate";
+import VerifyDocument from "@/pages/VerifyDocument";
+import OrganizationDashboard from "./pages/organization/OrganizationDashboard";
+import ResumeParser from "./pages/organization/ResumeParser";
+import DocumentGenerator from "./pages/organization/DocumentGenerator";
+import BlockchainVerification from "./pages/organization/BlockchainVerification";
+import AIInterviewer from "./pages/organization/AIInterviewer";
+import AptitudeExams from "./pages/organization/AptitudeExams";
 
 function App() {
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    const fontLink = document.createElement('link');
-    fontLink.rel = 'stylesheet';
-    fontLink.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap';
-    document.head.appendChild(fontLink);
+    // Simulate loading resources
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
 
-    const sfProLink = document.createElement('link');
-    sfProLink.rel = 'stylesheet';
-    sfProLink.href = 'https://fonts.cdnfonts.com/css/sf-pro-display';
-    document.head.appendChild(sfProLink);
-
-    return () => {
-      document.head.removeChild(fontLink);
-      document.head.removeChild(sfProLink);
-    };
+    return () => clearTimeout(timer);
   }, []);
 
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-b-transparent border-primary"></div>
+      </div>
+    );
+  }
+
   return (
-    <Router>
-      <ThemeProvider>
+    <div className="App">
+      <BrowserRouter>
         <AuthProvider>
           <BlockchainProvider>
-            <QueryClientProvider client={queryClient}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/verify-cert/:certHash?" element={<CertificateVerification />} />
-                <Route path="/unauthorized" element={<Unauthorized />} />
-                <Route path="/verify-document/:uniqueId" element={<VerifyDocument />} />
-                <Route path="/qwixvault/:address" element={<QwixVaultProfile />} />
-                <Route path="/interview-coach" element={<InterviewCoach />} />
-                <Route path="/skill-gap-analysis" element={<SkillGapAnalysis />} />
-                <Route path="/linkedin-optimizer" element={<LinkedInOptimizer />} />
-                <Route path="/mindprint-assessment" element={<MindprintAssessment />} />
-                <Route path="/ai-coding-coach" element={<AICodingCoach />} />
-                <Route path="/qwixpro-builder" element={<QwiXProBuilder />} />
-                <Route path="/ai-job-switch-planner" element={<AIJobSwitchPlanner />} />
-                <Route path="/ai-shadow-career-simulator" element={<AIShadowCareerSimulator />} />
-                <Route path="/ai-layoff-readiness-toolkit" element={<AILayoffReadinessToolkit />} />
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/verify-cert/:certHash" element={<VerifyCertificate />} />
+              <Route path="/verify-document/:documentId" element={<VerifyDocument />} />
+              <Route path="/unauthorized" element={<Unauthorized />} />
 
-                <Route path="/builder" element={<ProtectedRoute allowedRoles={['student']}><ResumeBuilder /></ProtectedRoute>} />
-                <Route path="/resume-preview" element={<ProtectedRoute allowedRoles={['student']}><ResumePreview /></ProtectedRoute>} />
-                <Route path="/share-to-company" element={<ProtectedRoute allowedRoles={['student']}><ShareToCompany /></ProtectedRoute>} />
-                <Route path="/job-board" element={<ProtectedRoute allowedRoles={['student']}><JobBoard /></ProtectedRoute>} />
-                <Route path="/ats-scanner" element={<ProtectedRoute allowedRoles={['student']}><ATSScanner /></ProtectedRoute>} />
-                <Route path="/resume-compare" element={<ProtectedRoute allowedRoles={['student']}><ResumeCompare /></ProtectedRoute>} />
-                <Route path="/career-path-simulator" element={<ProtectedRoute allowedRoles={['student']}><CareerPathSimulator /></ProtectedRoute>} />
-                <Route path="/blockchain-vault" element={<ProtectedRoute allowedRoles={['student']}><BlockchainVault /></ProtectedRoute>} />
-                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                <Route path="/certification-center" element={<ProtectedRoute><CertificationCenter /></ProtectedRoute>} />
-                <Route path="/certification/:testId" element={<ProtectedRoute><CertificationTest /></ProtectedRoute>} />
-                
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              <Toaster />
-            </QueryClientProvider>
+              {/* Protected user/student routes */}
+              <Route 
+                path="/dashboard" 
+                element={
+                  <ProtectedRoute allowedRoles={['student', 'admin']}>
+                    <Layout>
+                      <Dashboard />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Other protected routes that should only be accessible for students/freelancers */}
+              <Route 
+                path="/certification-center" 
+                element={
+                  <ProtectedRoute allowedRoles={['student', 'admin']}>
+                    <Layout>
+                      <CertificationCenter />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/certificate/:id" 
+                element={
+                  <ProtectedRoute allowedRoles={['student', 'admin']}>
+                    <Layout>
+                      <CertificateDetails />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/profile" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Profile />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/settings" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Settings />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Organization routes */}
+              <Route 
+                path="/organization/dashboard" 
+                element={
+                  <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    <Layout>
+                      <OrganizationDashboard />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/organization/resume-parser" 
+                element={
+                  <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    <Layout>
+                      <ResumeParser />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/organization/document-generator" 
+                element={
+                  <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    <Layout>
+                      <DocumentGenerator />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/organization/blockchain-verification" 
+                element={
+                  <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    <Layout>
+                      <BlockchainVerification />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/organization/ai-interviewer" 
+                element={
+                  <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    <Layout>
+                      <AIInterviewer />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/organization/aptitude-exams" 
+                element={
+                  <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    <Layout>
+                      <AptitudeExams />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Default route - redirect to login or dashboard */}
+              <Route 
+                path="/" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Dashboard />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Catch-all route for 404 */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
           </BlockchainProvider>
         </AuthProvider>
-      </ThemeProvider>
-    </Router>
+      </BrowserRouter>
+    </div>
   );
 }
 
