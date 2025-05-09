@@ -1,787 +1,303 @@
 
+import React from "react";
 import MainLayout from "@/components/layout/MainLayout";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
-  GraduationCap, Code, Cpu, Award, Briefcase, Star, GitBranch, Github, Linkedin, Mail, 
-  ArrowRight, Globe, Rocket, Lightbulb, Heart, Shield, Zap, BookOpen, Target, 
-  Sparkles, Users, Layers, MessageSquare, Coffee, Microscope, Brain
+  Award, BookOpen, Bot, Brain, Briefcase, Code, Cpu, Database, 
+  FileText, GraduationCap, Globe, HeartHandshake, Rocket, 
+  Server, Sparkles, User
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-
-interface TeamMember {
-  id: number;
-  name: string;
-  role: string;
-  education: string;
-  rollNo?: string;
-  bio: string;
-  expertise: string[];
-  achievements: string[];
-  image: string;
-  github?: string;
-  linkedin?: string;
-  email?: string;
-}
-
-interface ValueProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}
-
-const fadeInUp = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5 }
-};
-
-const fadeIn = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  transition: { duration: 0.6 }
-};
-
-const staggerContainer = {
-  animate: {
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
-
-const ValueCard: React.FC<ValueProps> = ({ icon, title, description }) => (
-  <Card className="border-l-4 border-l-modern-blue-500 hover:shadow-lg transition-all duration-300">
-    <CardContent className="p-6">
-      <div className="flex items-start gap-4">
-        <div className="bg-modern-blue-100 p-3 rounded-full text-modern-blue-600">
-          {icon}
-        </div>
-        <div>
-          <h3 className="text-lg font-medium mb-2">{title}</h3>
-          <p className="text-gray-600 text-sm">{description}</p>
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-);
 
 const About = () => {
-  const [activeTeamMember, setActiveTeamMember] = useState<number | null>(null);
-  const [activeSection, setActiveSection] = useState<string>("about");
-
-  const teamMembers: TeamMember[] = [
-    {
-      id: 1,
-      name: "Dhadi Sai Praneeth Reddy",
-      role: "Founder & CTO of QwikZen Group India",
-      education: "Student at Vasavi College of Engineering, CSE Department",
-      rollNo: "1602-23-733-038",
-      bio: "An emerging leader in India's deep-tech and innovation landscape. His work spans the convergence of Artificial Intelligence, Embedded IoT, Natural Language Processing (NLP), and Sacred Geography Research, reflecting a rare blend of technical depth, interdisciplinary curiosity, and visionary entrepreneurship.",
-      expertise: ["AI", "Machine Learning", "IoT", "NLP", "Generative AI", "Deep Tech", "Research"],
-      achievements: [
-        "QwiXSuite: A powerful suite of AI tools for code generation, real-time translation, and more",
-        "QwiXGenie: An independently developed AI coding assistant built using transformer-based models",
-        "QwikZen Store: Smart IoT hardware such as automatic water tank controllers with real-time monitoring",
-        "XpeditionR: Research exploring Indian sacred geography using GIS, NLP, and original fieldwork",
-        "QwiXEd: Educational initiative combining AI and pedagogy for real-time learning improvements",
-        "First place in the Gen AI Hackathon by SmartBridge, NASSCOM, and FutureSkills Prime",
-        "Published peer-reviewed research in multiple domains"
-      ],
-      image: "/placeholder.svg",
-      github: "github.com/dspraneeth07",
-      linkedin: "linkedin.com/in/dspraneeth07",
-      email: "spreddydhadi@gmail.com"
-    },
-    {
-      id: 2,
-      name: "Kasireddy Manideep Reddy",
-      role: "Co-Founder & CEO of QwikZen",
-      education: "Student at Vasavi College of Engineering, CSE Department",
-      rollNo: "1602-23-733-022",
-      bio: "Strategic leader driving QwikZen's growth, innovation, and AI-first approach.",
-      expertise: ["Software Engineering", "AI Technologies", "Business Strategy"],
-      achievements: [
-        "Oversees the development and expansion of QwiXSuite.",
-        "Leads AI-driven software development, ensuring scalability and real-world impact.",
-        "Works on future monetization strategies for QwikZen's AI projects."
-      ],
-      image: "/placeholder.svg",
-      linkedin: "linkedin.com/in/manideep-kasireddy-2ba51428a",
-      email: "kasireddymanideepreddy405@gmail.com"
-    },
-    {
-      id: 3,
-      name: "Pravalika Batchu",
-      role: "Full-Stack Developer, QwikZen Group India",
-      education: "Student at Vasavi College of Engineering, CSE Department",
-      rollNo: "1602-23-733-311",
-      bio: "Core developer specializing in front-end and back-end development for QwikZen's AI-driven products.",
-      expertise: ["Full-Stack Development", "UI/UX Design", "Scalable Web Architectures"],
-      achievements: [
-        "Developed QwiX CV's AI-powered resume scanner UI.",
-        "Works on QwikZen's AI-integrated applications, ensuring smooth user experiences."
-      ],
-      image: "/placeholder.svg"
-    }
-  ];
-
-  const toggleMemberDetails = (id: number) => {
-    setActiveTeamMember(activeTeamMember === id ? null : id);
+  // Animation variants
+  const fadeIn = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.6 }
   };
-
-  const coreValues = [
-    {
-      icon: <Rocket className="h-5 w-5" />,
-      title: "Innovation",
-      description: "Constantly pushing boundaries to create groundbreaking solutions."
-    },
-    {
-      icon: <Award className="h-5 w-5" />,
-      title: "Excellence",
-      description: "Delivering high-quality AI products that stand out in the industry."
-    },
-    {
-      icon: <Users className="h-5 w-5" />,
-      title: "Accessibility",
-      description: "Ensuring AI-driven tools are easy to use for everyone."
-    },
-    {
-      icon: <Target className="h-5 w-5" />,
-      title: "Impact",
-      description: "Solving real-world problems through AI and automation."
-    }
-  ];
-
-  const innovations = [
-    {
-      icon: <MessageSquare className="h-5 w-5" />,
-      title: "QwiX AI",
-      description: "A powerful AI chatbot built to enhance user experience and automation across platforms."
-    },
-    {
-      icon: <Layers className="h-5 w-5" />,
-      title: "QwiXSuite",
-      description: "A unified hub for AI-powered applications, including real-time translation and AI coding assistance."
-    },
-    {
-      icon: <BookOpen className="h-5 w-5" />,
-      title: "QwiXEd",
-      description: "A premium educational platform providing interactive e-books and AI-driven learning tools."
-    },
-    {
-      icon: <Cpu className="h-5 w-5" />,
-      title: "QwikZen Store",
-      description: "A marketplace for innovative hardware solutions, including IoT-powered automation devices."
-    },
-    {
-      icon: <Microscope className="h-5 w-5" />,
-      title: "XpeditionR",
-      description: "A research-driven initiative exploring ancient sciences and AI-powered historical studies."
-    },
-    {
-      icon: <Globe className="h-5 w-5" />,
-      title: "QOS",
-      description: "An ambitious project aimed at creating a next-generation AI-powered Operating System."
-    }
-  ];
 
   return (
     <MainLayout>
-      <div className="bg-gradient-to-b from-white to-gray-50">
-        {/* Hero Section */}
-        <section className="py-16 md:py-24 overflow-hidden">
-          <div className="container max-w-6xl">
-            <motion.div 
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="text-center mb-16"
-            >
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 font-playfair gradient-text leading-tight">
-                About QwikZen
-              </h1>
-              <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto font-light">
-                Empowering the Future with AI & Innovation
-              </p>
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: "160px" }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-                className="h-1 bg-gradient-to-r from-modern-blue-500 to-soft-purple mx-auto mt-10 rounded-full"
-              />
-            </motion.div>
+      {/* Hero Section */}
+      <section className="relative py-20 overflow-hidden bg-gradient-to-b from-modern-blue-600 to-soft-purple text-white">
+        <div className="absolute inset-0 z-0 opacity-30">
+          <div className="absolute w-20 h-20 rounded-full bg-white/30 blur-xl top-1/4 left-1/4 animate-pulse"></div>
+          <div className="absolute w-32 h-32 rounded-full bg-white/20 blur-xl top-2/3 left-2/3 animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute w-24 h-24 rounded-full bg-white/25 blur-xl top-1/3 left-3/4 animate-pulse" style={{ animationDelay: '2s' }}></div>
+        </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-              >
-                <h2 className="text-3xl font-bold mb-6 text-gray-800">Our Story</h2>
-                <h3 className="text-xl font-medium mb-4 text-modern-blue-600">The Birth of QwikZen</h3>
-                <p className="text-gray-600 mb-4">
+        <div className="container relative z-10">
+          <motion.div 
+            className="text-center max-w-3xl mx-auto"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <Badge className="mb-4 px-6 py-1 bg-white/20 text-white hover:bg-white/30">About QwikZen</Badge>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">Empowering the Future with AI & Innovation</h1>
+            <p className="text-lg text-white/90 mb-8">
+              QwikZen is a forward-thinking AI startup committed to developing intelligent solutions 
+              that transform how businesses operate and people interact with technology.
+            </p>
+            <div className="flex justify-center gap-4">
+              <Button asChild size="lg" variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+                <Link to="/contact">Contact Us</Link>
+              </Button>
+              <Button asChild size="lg" className="bg-white text-modern-blue-600 hover:bg-white/90">
+                <Link to="/">Explore Solutions</Link>
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Decorative elements */}
+        <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-white/10 to-transparent"></div>
+      </section>
+
+      {/* Our Story Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="container">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+              <Badge variant="outline" className="mb-4 px-4 py-1 text-modern-blue-600 border-modern-blue-200">Our Story</Badge>
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">The Birth of QwikZen</h2>
+              <div className="space-y-6 text-gray-700">
+                <p className="text-lg">
                   QwikZen emerged as a bold initiative to push the boundaries of AI, automation, and research. 
-                  Founded by a team of passionate technologists and researchers, we set out to create solutions 
-                  that harness the power of artificial intelligence to solve real-world problems.
+                  Founded by a team of passionate technologists and researchers led by Dhadi Sai Praneeth Reddy, 
+                  we set out to create solutions that harness the power of artificial intelligence to solve 
+                  real-world problems.
                 </p>
-                <p className="text-gray-600 mb-4">
+                <p className="text-lg">
                   What began as a small AI research project quickly evolved into a comprehensive technology 
                   company with ambitious goals. Our team's unwavering commitment to innovation and excellence 
                   has driven us to develop groundbreaking solutions across software, hardware, and education.
                 </p>
-                <p className="text-gray-600">
-                  Today, QwikZen stands at the forefront of AI innovation, constantly pushing the limits of 
-                  what's possible and reimagining how technology can enhance human capabilities and transform industries.
+                <p className="text-lg">
+                  Today, QwikZen stands at the forefront of AI innovation, constantly pushing the limits 
+                  of what's possible and reimagining how technology can enhance human capabilities and 
+                  transform industries.
                 </p>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-                className="relative"
-              >
-                <div className="relative z-10">
-                  <Card className="glassmorphism overflow-hidden border-none">
-                    <CardContent className="p-8">
-                      <div className="flex flex-col items-center text-center">
-                        <div className="mb-6">
-                          <div className="text-3xl font-bold gradient-text mb-2">Our Vision</div>
-                          <Separator className="w-24 mx-auto bg-modern-blue-300" />
-                        </div>
-                        <p className="text-xl italic text-gray-700">
-                          "To redefine AI-driven technology by developing innovative, intelligent, and accessible 
-                          solutions that transform industries and empower individuals."
-                        </p>
-                      </div>
+                <div className="py-2">
+                  <Card className="bg-gradient-to-r from-modern-blue-50 to-purple-50 border-0 shadow-md">
+                    <CardContent className="p-6">
+                      <p className="text-xl italic text-gray-800 font-medium">
+                        "To redefine AI-driven technology by developing innovative, intelligent, and accessible 
+                        solutions that transform industries and empower individuals."
+                      </p>
+                      <p className="mt-4 text-modern-blue-600 font-medium">— Our Vision</p>
                     </CardContent>
                   </Card>
                 </div>
-                <div className="absolute top-0 left-0 w-full h-full transform -translate-x-4 translate-y-4 rounded-xl bg-modern-blue-100 -z-10"></div>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
-        {/* Tab Navigation */}
-        <section className="py-8 bg-gray-50 border-y border-gray-200">
-          <div className="container">
-            <div className="flex flex-wrap justify-center gap-2 md:gap-8">
-              <Button 
-                variant={activeSection === "about" ? "default" : "ghost"} 
-                onClick={() => setActiveSection("about")}
-                className="rounded-full"
-              >
-                <Users className="w-4 h-4 mr-2" />
-                Who We Are
-              </Button>
-              <Button 
-                variant={activeSection === "what" ? "default" : "ghost"} 
-                onClick={() => setActiveSection("what")}
-                className="rounded-full"
-              >
-                <Lightbulb className="w-4 h-4 mr-2" />
-                What We Do
-              </Button>
-              <Button 
-                variant={activeSection === "values" ? "default" : "ghost"} 
-                onClick={() => setActiveSection("values")}
-                className="rounded-full"
-              >
-                <Heart className="w-4 h-4 mr-2" />
-                Our Values
-              </Button>
-              <Button 
-                variant={activeSection === "team" ? "default" : "ghost"} 
-                onClick={() => setActiveSection("team")}
-                className="rounded-full"
-              >
-                <Users className="w-4 h-4 mr-2" />
-                Our Team
-              </Button>
-              <Button 
-                variant={activeSection === "research" ? "default" : "ghost"} 
-                onClick={() => setActiveSection("research")}
-                className="rounded-full"
-              >
-                <Microscope className="w-4 h-4 mr-2" />
-                Research
-              </Button>
-            </div>
-          </div>
-        </section>
-
-        {/* About Us Section */}
-        {activeSection === "about" && (
-          <motion.section 
-            className="py-16"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4 }}
-          >
-            <div className="container max-w-6xl">
-              <div className="text-center mb-12">
-                <Badge variant="outline" className="mb-4 px-6 py-1 text-modern-blue-600 border-modern-blue-200">
-                  About Us
-                </Badge>
-                <h2 className="text-3xl font-bold mb-4">Our Mission and Values</h2>
-                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                  QwikZen was founded with a clear vision: to democratize AI and make cutting-edge technology 
-                  accessible to businesses of all sizes. We're passionate about innovation, excellence, and 
-                  creating solutions that drive real value.
-                </p>
               </div>
+            </motion.div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 mt-12">
-                <Card className="overflow-hidden border-t-4 border-t-modern-blue-600">
-                  <CardContent className="p-8">
-                    <h3 className="text-xl font-bold mb-6">Who We Are</h3>
-                    <p className="text-gray-600 mb-4">
-                      QwikZen is a forward-thinking AI startup based in Hyderabad, Telangana that specializes 
-                      in developing intelligent software solutions for businesses across various sectors. 
-                      Founded in 2022, we've quickly established ourselves as innovators in the AI space, 
-                      creating tools that drive efficiency, insights, and growth.
-                    </p>
-                    <p className="text-gray-600 mb-4">
-                      Our team consists of AI engineers, data scientists, software developers, and business 
-                      strategists who share a common passion for technology and its potential to transform 
-                      industries. We collaborate closely with our clients, understanding their unique challenges 
-                      and tailoring our solutions to meet their specific needs.
-                    </p>
-                    <p className="text-gray-600">
-                      At QwikZen, we believe in the democratization of AI technology. Our zero-investment, 
-                      high-impact philosophy guides our approach to product development, ensuring that businesses 
-                      of all sizes can leverage the power of artificial intelligence to stay competitive in an 
-                      increasingly digital world.
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <ValueCard 
-                    icon={<Brain className="h-5 w-5" />}
-                    title="AI-First Approach"
-                    description="We integrate artificial intelligence at the core of everything we build, creating intelligent systems that learn and evolve."
-                  />
-                  <ValueCard 
-                    icon={<Sparkles className="h-5 w-5" />}
-                    title="Innovation-Driven"
-                    description="Our team continuously explores new technologies and methodologies to deliver groundbreaking solutions."
-                  />
-                  <ValueCard 
-                    icon={<Shield className="h-5 w-5" />}
-                    title="Quality Excellence"
-                    description="We uphold the highest standards in our development process, ensuring reliable and secure products."
-                  />
-                  <ValueCard 
-                    icon={<Zap className="h-5 w-5" />}
-                    title="Rapid Delivery"
-                    description="Our streamlined processes allow us to move quickly from concept to implementation without compromising quality."
-                  />
-                </div>
-              </div>
-            </div>
-          </motion.section>
-        )}
-
-        {/* What We Do Section */}
-        {activeSection === "what" && (
-          <motion.section 
-            className="py-16"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4 }}
-          >
-            <div className="container max-w-6xl">
-              <div className="text-center mb-12">
-                <Badge variant="outline" className="mb-4 px-6 py-1 text-modern-blue-600 border-modern-blue-200">
-                  What We Do
-                </Badge>
-                <h2 className="text-3xl font-bold mb-4">Our Key Innovations</h2>
-                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                  At QwikZen, we develop cutting-edge AI solutions that span software, hardware, and education, 
-                  all designed to enhance productivity and transform industries.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
-                {innovations.map((innovation, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: index * 0.1 }}
-                  >
-                    <Card className="h-full hover:shadow-lg transition-all duration-300 overflow-hidden group">
-                      <CardContent className="p-6 flex flex-col h-full">
-                        <div className="bg-modern-blue-100 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4 text-modern-blue-600 group-hover:bg-modern-blue-600 group-hover:text-white transition-all duration-300">
-                          {innovation.icon}
-                        </div>
-                        <h3 className="text-xl font-bold mb-2">{innovation.title}</h3>
-                        <p className="text-gray-600 flex-grow">{innovation.description}</p>
-                        <Button variant="ghost" className="mt-4 self-start">Learn more <ArrowRight className="ml-2 w-4 h-4" /></Button>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-
-              <div className="mt-16">
-                <Card className="border-none bg-gradient-to-r from-modern-blue-600 to-soft-purple text-white">
-                  <CardContent className="p-8">
-                    <div className="flex flex-col md:flex-row items-center justify-between">
-                      <div className="mb-6 md:mb-0">
-                        <h3 className="text-2xl font-bold mb-2">Why Choose Us</h3>
-                        <p className="text-white/80">
-                          Our commitment to excellence and innovation sets us apart in the rapidly evolving technology landscape.
-                        </p>
+            <motion.div 
+              className="relative"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="w-full h-[500px] rounded-2xl overflow-hidden shadow-2xl relative bg-gradient-to-r from-modern-blue-500 to-soft-purple p-1">
+                <div className="bg-white h-full w-full rounded-xl p-6 flex flex-col justify-between">
+                  <div className="space-y-6">
+                    <div className="flex items-start">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-modern-blue-100 mr-4">
+                        <Bot className="h-6 w-6 text-modern-blue-600" />
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex items-center gap-3">
-                          <div className="bg-white/20 p-2 rounded-full">
-                            <Cpu className="h-4 w-4" />
-                          </div>
-                          <span>AI-Powered Innovation</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="bg-white/20 p-2 rounded-full">
-                            <Target className="h-4 w-4" />
-                          </div>
-                          <span>Real-World Impact</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="bg-white/20 p-2 rounded-full">
-                            <Layers className="h-4 w-4" />
-                          </div>
-                          <span>Seamless Integration</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="bg-white/20 p-2 rounded-full">
-                            <Rocket className="h-4 w-4" />
-                          </div>
-                          <span>Futuristic Vision</span>
-                        </div>
+                      <div>
+                        <h3 className="text-xl font-bold mb-2">AI-First Approach</h3>
+                        <p className="text-gray-600">We integrate artificial intelligence at the core of everything we build, creating intelligent systems that learn and evolve.</p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </motion.section>
-        )}
 
-        {/* Our Values Section */}
-        {activeSection === "values" && (
-          <motion.section 
-            className="py-16"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4 }}
-          >
-            <div className="container max-w-6xl">
-              <div className="text-center mb-12">
-                <Badge variant="outline" className="mb-4 px-6 py-1 text-modern-blue-600 border-modern-blue-200">
-                  Our Core Values
-                </Badge>
-                <h2 className="text-3xl font-bold mb-4">What Drives Us</h2>
-                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                  Our values are the foundation of everything we do at QwikZen, guiding our decisions
-                  and shaping our culture.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-12">
-                {coreValues.map((value, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: index * 0.1 }}
-                  >
-                    <Card className="h-full hover:shadow-lg transition-all duration-300 overflow-hidden text-center">
-                      <CardContent className="p-6">
-                        <div className="bg-modern-blue-100 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4 text-modern-blue-600 mx-auto">
-                          {value.icon}
-                        </div>
-                        <h3 className="text-xl font-bold mb-2">{value.title}</h3>
-                        <p className="text-gray-600">{value.description}</p>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-
-              <div className="mt-16 max-w-3xl mx-auto">
-                <Card className="border-none bg-gradient-to-r from-white to-gray-50 shadow-lg">
-                  <CardContent className="p-8">
-                    <blockquote className="text-center">
-                      <p className="text-xl italic text-gray-700 mb-6">
-                        "At QwikZen, we believe that meaningful innovation comes from a deep understanding of real-world problems. 
-                        That's why our research is focused on developing practical applications of advanced AI that can be 
-                        deployed to solve complex challenges across industries."
-                      </p>
-                      <footer className="text-gray-500">
-                        <strong>Dhadi Sai Praneeth Reddy</strong>, Founder & CTO
-                      </footer>
-                    </blockquote>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </motion.section>
-        )}
-
-        {/* Team Section */}
-        {activeSection === "team" && (
-          <motion.section 
-            className="py-16"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4 }}
-            variants={staggerContainer}
-          >
-            <div className="container max-w-6xl">
-              <div className="text-center mb-12">
-                <Badge variant="outline" className="mb-4 px-6 py-1 text-modern-blue-600 border-modern-blue-200">
-                  Team QwikZen
-                </Badge>
-                <h2 className="text-3xl font-bold mb-4">Meet Our Team</h2>
-                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                  A diverse team of AI specialists, developers, designers, and domain experts working together 
-                  to create exceptional AI solutions.
-                </p>
-              </div>
-
-              <motion.div 
-                className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"
-                variants={staggerContainer}
-                initial="initial"
-                animate="animate"
-              >
-                {teamMembers.map((member) => (
-                  <motion.div key={member.id} variants={fadeInUp}>
-                    <Card className={`overflow-hidden transition-all duration-300 hover:shadow-xl card-3d
-                                    ${activeTeamMember === member.id ? 'scale-105 shadow-2xl' : ''}`}>
-                      <div 
-                        className="h-48 bg-gradient-to-r from-modern-blue-600 to-soft-purple flex items-center justify-center cursor-pointer"
-                        onClick={() => toggleMemberDetails(member.id)}
-                      >
-                        <h3 className="text-2xl font-bold text-white font-sf-pro">{member.name}</h3>
+                    <div className="flex items-start">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 mr-4">
+                        <Sparkles className="h-6 w-6 text-purple-600" />
                       </div>
-                      
-                      <div className="p-6">
-                        <h4 className="font-bold text-lg mb-1 text-gray-800">{member.role}</h4>
-                        <p className="text-sm text-gray-600 mb-3 flex items-center">
-                          <GraduationCap className="w-4 h-4 mr-2 text-modern-blue-500" />
-                          {member.education}
-                        </p>
-                        {member.rollNo && (
-                          <p className="text-sm text-gray-600 mb-3">Roll No: {member.rollNo}</p>
-                        )}
-                        
-                        <p className="text-sm text-gray-700 mb-4">{member.bio}</p>
-                        
-                        {activeTeamMember === member.id && (
-                          <div className="space-y-4 mt-4">
-                            <div>
-                              <h5 className="text-sm font-semibold mb-2 flex items-center">
-                                <Code className="w-4 h-4 mr-2 text-modern-blue-500" />
-                                Expertise
-                              </h5>
-                              <div className="flex flex-wrap gap-2">
-                                {member.expertise.map((skill, index) => (
-                                  <span 
-                                    key={index}
-                                    className="text-xs bg-modern-blue-100 text-modern-blue-800 px-2 py-1 rounded-full"
-                                  >
-                                    {skill}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                            
-                            <div>
-                              <h5 className="text-sm font-semibold mb-2 flex items-center">
-                                <Award className="w-4 h-4 mr-2 text-modern-blue-500" />
-                                Achievements
-                              </h5>
-                              <ul className="text-sm space-y-1 list-disc pl-5">
-                                {member.achievements.map((achievement, index) => (
-                                  <li key={index}>{achievement}</li>
-                                ))}
-                              </ul>
-                            </div>
-                            
-                            <div className="pt-3 flex gap-2">
-                              {member.github && (
-                                <Button size="sm" variant="outline" asChild className="text-xs">
-                                  <a href={`https://${member.github}`} target="_blank" rel="noopener noreferrer">
-                                    <Github className="w-3 h-3 mr-1" />
-                                    GitHub
-                                  </a>
-                                </Button>
-                              )}
-                              
-                              {member.linkedin && (
-                                <Button size="sm" variant="outline" asChild className="text-xs">
-                                  <a href={`https://${member.linkedin}`} target="_blank" rel="noopener noreferrer">
-                                    <Linkedin className="w-3 h-3 mr-1" />
-                                    LinkedIn
-                                  </a>
-                                </Button>
-                              )}
-                              
-                              {member.email && (
-                                <Button size="sm" variant="outline" asChild className="text-xs">
-                                  <a href={`mailto:${member.email}`}>
-                                    <Mail className="w-3 h-3 mr-1" />
-                                    Email
-                                  </a>
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {activeTeamMember !== member.id && (
-                          <Button 
-                            variant="outline"
-                            size="sm"
-                            onClick={() => toggleMemberDetails(member.id)}
-                            className="mt-2"
-                          >
-                            View Details
-                          </Button>
-                        )}
+                      <div>
+                        <h3 className="text-xl font-bold mb-2">Innovation-Driven</h3>
+                        <p className="text-gray-600">Our team continuously explores new technologies and methodologies to deliver groundbreaking solutions.</p>
                       </div>
-                    </Card>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </div>
-          </motion.section>
-        )}
-
-        {/* Research Section */}
-        {activeSection === "research" && (
-          <motion.section 
-            className="py-16"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4 }}
-          >
-            <div className="container max-w-6xl">
-              <div className="text-center mb-12">
-                <Badge variant="outline" className="mb-4 px-6 py-1 text-modern-blue-600 border-modern-blue-200">
-                  Research & Innovation
-                </Badge>
-                <h2 className="text-3xl font-bold mb-4">Xpeditionr Research Group</h2>
-                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                  Our dedicated research division is pushing the boundaries of what's possible with AI and emerging technologies.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
-                <div>
-                  <h3 className="text-xl font-bold mb-4">Research Focus Areas</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-modern-blue-100 p-2 rounded-full text-modern-blue-600">
-                        <Brain className="h-5 w-5" />
-                      </div>
-                      <span className="font-medium">Advanced Machine Learning Algorithms</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="bg-modern-blue-100 p-2 rounded-full text-modern-blue-600">
-                        <MessageSquare className="h-5 w-5" />
+
+                    <div className="flex items-start">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mr-4">
+                        <Award className="h-6 w-6 text-green-600" />
                       </div>
-                      <span className="font-medium">Natural Language Processing & Generation</span>
+                      <div>
+                        <h3 className="text-xl font-bold mb-2">Quality Excellence</h3>
+                        <p className="text-gray-600">We uphold the highest standards in our development process, ensuring reliable and secure products.</p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="bg-modern-blue-100 p-2 rounded-full text-modern-blue-600">
-                        <Cpu className="h-5 w-5" />
+
+                    <div className="flex items-start">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 mr-4">
+                        <Rocket className="h-6 w-6 text-amber-600" />
                       </div>
-                      <span className="font-medium">Quantum Computing Applications</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="bg-modern-blue-100 p-2 rounded-full text-modern-blue-600">
-                        <Users className="h-5 w-5" />
+                      <div>
+                        <h3 className="text-xl font-bold mb-2">Rapid Delivery</h3>
+                        <p className="text-gray-600">Our streamlined processes allow us to move quickly from concept to implementation without compromising quality.</p>
                       </div>
-                      <span className="font-medium">Human-AI Collaboration Models</span>
                     </div>
                   </div>
                 </div>
-
-                <Card className="bg-gradient-to-r from-modern-blue-600 to-soft-purple text-white">
-                  <CardContent className="p-8">
-                    <h3 className="text-xl font-bold mb-4">Join Our Research Team</h3>
-                    <p className="mb-4">
-                      We're looking for passionate researchers and engineers to join our team and help push the boundaries 
-                      of AI innovation. If you're interested in working on cutting-edge technology, we'd love to hear from you.
-                    </p>
-                    <Button variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
-                      Apply Now
-                    </Button>
-                  </CardContent>
-                </Card>
               </div>
-
-              <div className="max-w-3xl mx-auto">
-                <h3 className="text-2xl font-bold mb-4 text-center">Driving Innovation Through Research</h3>
-                <p className="text-gray-600 mb-4">
-                  Xpeditionr Research Group is QwikZen's innovation engine, dedicated to exploring cutting-edge 
-                  technologies and developing breakthrough solutions. Our team of researchers, engineers, and domain 
-                  experts collaborates with academic institutions and industry partners to push the boundaries of 
-                  artificial intelligence.
-                </p>
-                <p className="text-gray-600 mb-4">
-                  We believe that meaningful innovation comes from a deep understanding of real-world problems. 
-                  That's why our research is focused on developing practical applications of advanced AI that can 
-                  be deployed to solve complex challenges across industries.
-                </p>
-                <p className="text-gray-600">
-                  Our research group regularly publishes papers, participates in industry conferences, and hosts 
-                  workshops to share knowledge and foster collaboration within the AI community.
-                </p>
+              
+              <div className="absolute top-4 right-4 bg-white p-4 rounded-full shadow-lg border-2 border-modern-blue-100 w-20 h-20 flex items-center justify-center">
+                <div className="text-2xl font-bold text-modern-blue-600">2022</div>
               </div>
-            </div>
-          </motion.section>
-        )}
+            </motion.div>
+          </div>
+        </div>
+      </section>
 
-        {/* Join Us Section */}
-        <motion.section 
-          className="py-16 bg-gradient-to-r from-modern-blue-600 to-soft-purple text-white"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <div className="container max-w-6xl">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold mb-6">Join the QwikZen Revolution</h2>
-              <p className="text-xl opacity-90 max-w-2xl mx-auto mb-8">
-                Be part of our mission to redefine the future with AI-powered innovation. Explore our products, 
-                research, and educational resources to start your journey.
+      {/* Our Team Section */}
+      <section className="py-20">
+        <div className="container">
+          <div className="text-center mb-16">
+            <Badge variant="outline" className="mb-4 px-4 py-1">Our Leadership</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Meet the Visionaries</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              The talented minds behind QwikZen's innovative solutions and forward-thinking strategy.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <motion.div 
+              className="flex flex-col items-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="w-40 h-40 bg-gradient-to-r from-modern-blue-500 to-soft-purple rounded-full mb-6 flex items-center justify-center text-white text-4xl font-bold">
+                DSP
+              </div>
+              <h3 className="text-xl font-bold">Dhadi Sai Praneeth Reddy</h3>
+              <p className="text-modern-blue-600 mb-3">Founder & CTO</p>
+              <p className="text-center text-gray-600 mb-4 max-w-sm">
+                Visionary technologist combining AI expertise with a passion for creating solutions that address real-world challenges.
               </p>
+              <div className="flex space-x-3">
+                <a href="#" className="bg-gray-200 p-2 rounded-full hover:bg-gray-300">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465.668.25 1.234.585 1.8 1.15.566.566.902 1.132 1.152 1.8.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.8c-.566.566-1.132.902-1.8 1.152-.636.247-1.363.416-2.427.465-1.1.048-1.417.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.8-1.153 4.902 4.902 0 01-1.152-1.8c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.8A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clipRule="evenodd" />
+                  </svg>
+                </a>
+                <a href="#" className="bg-gray-200 p-2 rounded-full hover:bg-gray-300">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
+                  </svg>
+                </a>
+                <a href="#" className="bg-gray-200 p-2 rounded-full hover:bg-gray-300">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
+                  </svg>
+                </a>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Core Values Section */}
+      <section className="py-20 bg-modern-blue-600 text-white">
+        <div className="container">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 px-4 py-1 bg-white/20 text-white hover:bg-white/30">Our Values</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">What Drives Us Forward</h2>
+            <p className="text-lg text-white/80 max-w-2xl mx-auto">
+              The core principles that guide everything we do at QwikZen.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <motion.div 
+              className="bg-white/10 p-8 rounded-xl border border-white/10 backdrop-blur-sm"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 mb-6">
+                <Brain className="h-7 w-7 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Innovation First</h3>
+              <p className="text-white/80">
+                We continuously push boundaries, embrace challenges, and create solutions that redefine what's possible in AI and technology.
+              </p>
+            </motion.div>
+            
+            <motion.div 
+              className="bg-white/10 p-8 rounded-xl border border-white/10 backdrop-blur-sm"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 mb-6">
+                <HeartHandshake className="h-7 w-7 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">User-Centric Design</h3>
+              <p className="text-white/80">
+                We place users at the center of everything we create, ensuring our solutions are intuitive, accessible, and truly beneficial.
+              </p>
+            </motion.div>
+            
+            <motion.div 
+              className="bg-white/10 p-8 rounded-xl border border-white/10 backdrop-blur-sm"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 mb-6">
+                <Globe className="h-7 w-7 text-white" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Global Impact</h3>
+              <p className="text-white/80">
+                We strive to create solutions that have a positive impact on people's lives worldwide, regardless of their background or location.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
 
+      {/* CTA Section */}
+      <section className="py-20">
+        <div className="container">
+          <div className="bg-gradient-to-r from-modern-blue-50 to-purple-50 rounded-2xl p-12 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-modern-blue-200/40 to-purple-200/40 rounded-full -translate-y-1/2 translate-x-1/3"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-modern-blue-200/40 to-purple-200/40 rounded-full translate-y-1/2 -translate-x-1/3"></div>
+            
+            <div className="relative z-10 max-w-3xl mx-auto text-center">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Transform Your Ideas into Reality?</h2>
+              <p className="text-lg text-gray-700 mb-8">
+                Let's work together to create innovative AI solutions that drive growth and efficiency for your business.
+              </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <Button className="bg-white text-modern-blue-600 hover:bg-white/90">
-                  Explore QwiXSuite
+                <Button asChild size="lg" className="bg-modern-blue-600 hover:bg-modern-blue-700">
+                  <Link to="/contact">Contact Us</Link>
                 </Button>
-                <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white/10">
-                  Discover AI Education
-                </Button>
-                <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white/10">
-                  Contact Us
+                <Button asChild size="lg" variant="outline">
+                  <Link to="/pricing">View Solutions</Link>
                 </Button>
               </div>
             </div>
           </div>
-        </motion.section>
-      </div>
+        </div>
+      </section>
     </MainLayout>
   );
 };

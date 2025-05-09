@@ -1,391 +1,103 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, LogIn, UserPlus, GraduationCap, ChevronDown, Briefcase, Route } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useState } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/context/AuthContext";
+import { 
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle
+} from "@/components/ui/navigation-menu";
+import Logo from "@/components/ui/Logo";
+import QwikZenLogo from "@/components/ui/QwikZenLogo";
 
 const PublicNavbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const navigation = [
-    { name: "Features", href: "#features" },
-    { name: "How It Works", href: "#how-it-works" },
-    { name: "QwiXCert", href: "#certification" },
-    { name: "About", href: "/about" },
-    { name: "Contact", href: "/contact" },
-  ];
+  const { isAuthenticated } = useAuth();
 
   return (
-    <header className="border-b bg-gradient-to-r from-modern-blue-600 to-soft-purple text-white sticky top-0 z-50">
-      <div className="container flex h-16 items-center justify-between py-4">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
-          <Link 
-            to="/" 
-            className="flex items-center gap-2 text-xl font-bold text-white"
-          >
-            <GraduationCap className="h-6 w-6" />
-            <span className="font-sf-pro tracking-tight">QwiXEd360°</span>
-          </Link>
+          <QwikZenLogo />
+          <Logo />
         </div>
         
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-4">
-          {/* CV Tools Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                className="text-white/90 hover:text-white hover:bg-white/10 p-1.5 h-auto px-2"
-              >
-                <div className="flex items-center gap-1.5">
-                  <span className="font-medium text-sm">CV Tools</span>
-                  <ChevronDown className="h-4 w-4" />
-                </div>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48">
-              <DropdownMenuGroup>
-                <DropdownMenuItem asChild>
-                  <Link to="/login" className="cursor-pointer">
-                    <span>Resume Builder</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/login" className="cursor-pointer">
-                    <span>ATS Scanner</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/login" className="cursor-pointer">
-                    <span>LinkedIn Optimizer</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/login" className="cursor-pointer">
-                    <span>Resume Compare</span>
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          {/* QwiX Career Guide Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                className="text-white/90 hover:text-white hover:bg-white/10 p-1.5 h-auto px-2"
-              >
-                <div className="flex items-center gap-1.5">
-                  <span className="font-medium text-sm">QwiX Career Guide</span>
-                  <ChevronDown className="h-4 w-4" />
-                </div>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48">
-              <DropdownMenuGroup>
-                <DropdownMenuItem asChild>
-                  <Link to="/login" className="cursor-pointer">
-                    <span>Career Path Simulator</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/login" className="cursor-pointer">
-                    <span>Interview Coach</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/login" className="cursor-pointer">
-                    <span>AI Job Switch Planner</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/login" className="cursor-pointer">
-                    <span>AI Shadow Career Simulator</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/login" className="cursor-pointer">
-                    <span>Skill Gap Analysis</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/login" className="cursor-pointer">
-                    <span>AI Layoff Readiness Toolkit</span>
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          {/* QwiX Learn Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                className="text-white/90 hover:text-white hover:bg-white/10 p-1.5 h-auto px-2"
-              >
-                <div className="flex items-center gap-1.5">
-                  <span className="font-medium text-sm">QwiX Learn</span>
-                  <ChevronDown className="h-4 w-4" />
-                </div>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48">
-              <DropdownMenuGroup>
-                <DropdownMenuItem asChild>
-                  <Link to="/login" className="cursor-pointer">
-                    <span>AI Coding Coach</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/login" className="cursor-pointer">
-                    <span>QwiXPro Builder</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/login" className="cursor-pointer">
-                    <span>Skill Gap Analysis</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/login" className="cursor-pointer">
-                    <span>Mindprint Assessment</span>
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          
-          <Button asChild variant="ghost" className="text-white hover:bg-white/10">
-            <Link to="/login">
-              QwiXCert
-            </Link>
-          </Button>
-          
-          <Button asChild variant="ghost" className="text-white hover:bg-white/10">
-            <Link to="/login">
-              Job Board
-            </Link>
-          </Button>
-          
-          <Button asChild variant="ghost" className="text-white hover:bg-white/10">
-            <Link to="/about">
-              About
-            </Link>
-          </Button>
-          
-          <Button asChild variant="ghost" className="text-white hover:bg-white/10">
-            <Link to="/contact">
-              Contact
-            </Link>
-          </Button>
-        </div>
-        
-        {/* Auth Buttons */}
-        <div className="hidden md:flex items-center gap-2">
-          <Button asChild variant="ghost" className="text-white hover:bg-white/10">
-            <Link to="/login">
-              <LogIn className="h-4 w-4 mr-2" />
-              Log in
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link to="/register">
-              <UserPlus className="h-4 w-4 mr-2" />
-              Sign up
-            </Link>
-          </Button>
-        </div>
-        
-        {/* Mobile Navigation */}
-        <div className="flex md:hidden items-center gap-2">
-          <Button asChild size="sm" variant="ghost" className="text-white">
-            <Link to="/login">Log in</Link>
-          </Button>
-          
-          <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-white">
-                <Menu className="h-6 w-6" />
-                <span className="sr-only">Toggle menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[80%] sm:w-[385px] bg-gradient-to-b from-modern-blue-600 to-soft-purple text-white">
-              <div className="flex flex-col gap-6 pt-10">
-                <div className="space-y-1 px-2">
-                  <p className="text-sm font-semibold text-white/70 mb-2">CV TOOLS</p>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Resume Builder
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    ATS Scanner
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    LinkedIn Optimizer
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Resume Compare
-                  </Link>
-                </div>
-                
-                <div className="space-y-1 px-2">
-                  <p className="text-sm font-semibold text-white/70 mb-2">QWIX CAREER GUIDE</p>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Career Path Simulator
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Interview Coach
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    AI Job Switch Planner
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    AI Shadow Career Simulator
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Skill Gap Analysis
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    AI Layoff Readiness Toolkit
-                  </Link>
-                </div>
-
-                <div className="space-y-1 px-2">
-                  <p className="text-sm font-semibold text-white/70 mb-2">QWIX LEARN</p>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    AI Coding Coach
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    QwiXPro Builder
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Skill Gap Analysis
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Mindprint Assessment
-                  </Link>
-                </div>
-                
-                <div className="space-y-1 px-2">
-                  <p className="text-sm font-semibold text-white/70 mb-2">NAVIGATION</p>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    QwiXCert
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Job Board
-                  </Link>
-                  <Link
-                    to="/about"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    About Us
-                  </Link>
-                  <Link
-                    to="/contact"
-                    className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Contact Us
-                  </Link>
-                </div>
-                
-                <div className="pt-6 mt-6 border-t border-white/20">
-                  <Button asChild className="w-full">
-                    <Link 
-                      to="/register" 
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Sign up
+        <div className="flex items-center gap-4">
+          <NavigationMenu>
+            <NavigationMenuList>
+              <NavigationMenuItem>
+                <Link to="/" className={navigationMenuTriggerStyle()}>
+                  Home
+                </Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link to="/about" className={navigationMenuTriggerStyle()}>
+                  About
+                </Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuTrigger>Features</NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <div className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
+                    <Link to="/builder" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground">
+                      <div className="text-sm font-medium leading-none">Resume Builder</div>
+                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                        Create professional, ATS-optimized resumes
+                      </p>
                     </Link>
-                  </Button>
-                  <Button asChild variant="outline" className="w-full mt-2 bg-transparent border-white text-white">
-                    <Link 
-                      to="/login" 
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <LogIn className="h-4 w-4 mr-2" />
-                      Log in
+                    <Link to="/ats-scanner" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground">
+                      <div className="text-sm font-medium leading-none">ATS Scanner</div>
+                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                        Analyze your resume for ATS compatibility
+                      </p>
                     </Link>
-                  </Button>
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+                    <Link to="/blockchain-vault" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground">
+                      <div className="text-sm font-medium leading-none">Blockchain Vault</div>
+                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                        Secure your documents on blockchain
+                      </p>
+                    </Link>
+                    <Link to="/interview-coach" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground">
+                      <div className="text-sm font-medium leading-none">Interview Coach</div>
+                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                        Practice interviews with AI assistance
+                      </p>
+                    </Link>
+                  </div>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link to="/pricing" className={navigationMenuTriggerStyle()}>
+                  Pricing
+                </Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link to="/contact" className={navigationMenuTriggerStyle()}>
+                  Contact
+                </Link>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
+          
+          <div className="flex items-center gap-2">
+            {isAuthenticated ? (
+              <Button asChild>
+                <Link to="/dashboard">Dashboard</Link>
+              </Button>
+            ) : (
+              <>
+                <Button asChild variant="ghost">
+                  <Link to="/login">Log in</Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/register">Sign up</Link>
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </header>
