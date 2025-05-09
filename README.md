@@ -1,8 +1,8 @@
 
 <div align="center">
   
-  # QWIK CV
-  ### AI-Powered Resume Builder
+  # QwiXEd360°Suite
+  ### AI-Powered Career Development Suite
   
   [![React](https://img.shields.io/badge/-React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
   [![TypeScript](https://img.shields.io/badge/-TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -12,9 +12,9 @@
   **🏆 HackIndia 2025 Hackathon Submission by Team QwikZen**
 </div>
 
-## 🚀 About QWIK CV
+## 🚀 About QwiXEd360°Suite
 
-QWIK CV is an intelligent resume builder that leverages AI to create ATS-optimized resumes tailored to specific job descriptions. Our platform helps job seekers stand out in competitive markets by providing real-time optimization, blockchain-verified credentials, and career planning tools.
+QwiXEd360°Suite is an intelligent resume builder that leverages AI to create ATS-optimized resumes tailored to specific job descriptions. Our platform helps job seekers stand out in competitive markets by providing real-time optimization, blockchain-verified credentials, and career planning tools.
 
 ## 👥 Team QwikZen
 
@@ -151,7 +151,7 @@ npm run dev
 ## 📱 Screenshots
 
 <div align="center">
-  <img src="public/placeholder.svg" alt="QWIK CV Interface" width="400px" />
+  <img src="public/placeholder.svg" alt="QwiXEd360°Suite Interface" width="400px" />
 </div>
 
 ## 🔗 Links
