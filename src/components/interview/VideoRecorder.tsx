@@ -28,14 +28,19 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
   const [isVideoReady, setIsVideoReady] = useState(false);
   const { toast } = useToast();
   const [hasUserMedia, setHasUserMedia] = useState(false);
+  const [cameraPermissionRequested, setCameraPermissionRequested] = useState(false);
 
   // Initialize camera or set playback video
   useEffect(() => {
     if (isPlaybackOnly && videoURL) {
+      console.log("Setting up playback with URL:", videoURL);
       // In playback mode, just set the video source
       if (videoRef.current) {
         videoRef.current.src = videoURL;
-        setIsVideoReady(true);
+        videoRef.current.onloadeddata = () => {
+          console.log("Video loaded for playback");
+          setIsVideoReady(true);
+        };
       }
       return;
     }
@@ -52,6 +57,8 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
   const startCamera = async () => {
     try {
       setError(null);
+      setCameraPermissionRequested(true);
+      
       // Stop any existing stream first to prevent multiple instances
       stopCamera();
       
@@ -64,52 +71,44 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
         video: { 
           width: { ideal: 640 },
           height: { ideal: 480 },
-          frameRate: { max: 30 } // Increased frame rate for smoother video
+          frameRate: { max: 30 }, // Increased frame rate for smoother video
+          facingMode: 'user' // Explicitly request front camera
         },
         audio: true // Always include audio to ensure it's available for recording
       };
       
-      console.log("Requesting camera access...");
+      console.log("Requesting camera access with constraints:", constraints);
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      console.log("Camera access granted!", stream);
+      console.log("Camera access granted!", stream.getTracks().map(t => t.kind).join(", ") + " tracks available");
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
         setCameraEnabled(true);
-        setHasUserMedia(true);
         
-        // Double-check that video is actually showing
-        videoRef.current.onloadedmetadata = () => {
-          console.log("Video metadata loaded");
+        // Force video to start playing immediately
+        try {
+          await videoRef.current.play();
+          console.log("Video playback started successfully");
+          setHasUserMedia(true);
           setIsVideoReady(true);
-          if (videoRef.current) {
-            videoRef.current.play()
-              .then(() => {
-                console.log("Video playback started");
-                // Force browser to show the video
-                setTimeout(() => {
-                  if (videoRef.current) {
-                    const currentDisplay = videoRef.current.style.display;
-                    videoRef.current.style.display = 'none';
-                    // Force a reflow
-                    void videoRef.current.offsetHeight;
-                    videoRef.current.style.display = currentDisplay;
-                  }
-                }, 100);
-              })
-              .catch(e => {
-                console.error("Error playing video:", e);
-                setError("Error starting video playback. Please try reloading the page.");
-              });
-          }
-        };
-        
-        // Add error handler for video element
+        } catch (playError) {
+          console.error("Error during video.play():", playError);
+          // Try alternative approach
+          videoRef.current.oncanplay = () => {
+            videoRef.current?.play()
+              .catch(e => console.error("Second attempt to play failed:", e));
+          };
+        }
+
+        // Additional error handling for video element
         videoRef.current.onerror = (e) => {
           console.error("Video element error:", e);
-          setError("Error with video display. Please check your camera permissions.");
+          setError(`Video display error: ${videoRef.current?.error?.message || "Unknown error"}`);
         };
+      } else {
+        console.error("Video reference is null");
+        throw new Error("Video element not available");
       }
     } catch (err: any) {
       console.error("Error accessing camera:", err);
@@ -117,7 +116,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
         ? "Camera access denied. Please allow camera access in your browser settings."
         : err.name === 'NotFoundError'
           ? "No camera found. Please connect a camera and try again."
-          : "Unable to access camera. Please check your permissions and make sure no other app is using your camera.";
+          : `Unable to access camera: ${err.message}. Please check your permissions and make sure no other app is using your camera.`;
       
       setError(errorMessage);
       setCameraEnabled(false);
@@ -169,28 +168,40 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
         'video/webm;codecs=vp9,opus',
         'video/webm;codecs=vp8,opus',
         'video/webm',
-        'video/mp4'
+        'video/mp4',
+        'video/x-matroska;codecs=avc1'
       ];
+      
+      let selectedMimeType: string | undefined;
       
       for (const mimeType of mimeTypes) {
         if (MediaRecorder.isTypeSupported(mimeType)) {
-          options = { mimeType };
+          selectedMimeType = mimeType;
           console.log(`Using supported MIME type: ${mimeType}`);
           break;
         }
       }
       
+      if (!selectedMimeType) {
+        console.warn("No preferred MIME types supported, using default");
+      } else {
+        options = { mimeType: selectedMimeType };
+      }
+      
+      console.log("Creating MediaRecorder with stream tracks:", 
+                  streamRef.current.getTracks().map(t => `${t.kind}:${t.enabled?'enabled':'disabled'}`).join(', '));
+      
       const mediaRecorder = new MediaRecorder(streamRef.current, options);
       
       mediaRecorder.ondataavailable = (e) => {
-        console.log("Data available from recorder", e.data.size);
-        if (e.data.size > 0) {
+        console.log(`Data available from recorder: ${e.data.size} bytes`);
+        if (e.data && e.data.size > 0) {
           chunksRef.current.push(e.data);
         }
       };
       
       mediaRecorder.onstop = () => {
-        console.log("Recording stopped, processing video...");
+        console.log("Recording stopped, processing video... Chunks:", chunksRef.current.length);
         if (chunksRef.current.length === 0) {
           console.error("No data recorded");
           toast({
@@ -202,12 +213,37 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
         }
         
         const videoBlob = new Blob(chunksRef.current, { type: options?.mimeType || 'video/webm' });
-        console.log("Video blob created:", videoBlob);
+        console.log("Video blob created:", videoBlob.size, "bytes,", videoBlob.type);
         
         // Create a URL for the blob to verify it's valid
         try {
-          const testURL = URL.createObjectURL(videoBlob);
-          URL.revokeObjectURL(testURL); // Clean up
+          const blobUrl = URL.createObjectURL(videoBlob);
+          console.log("Successfully created blob URL:", blobUrl);
+          
+          // Test if the blob is valid by creating a temporary video element
+          const testVideo = document.createElement('video');
+          testVideo.src = blobUrl;
+          testVideo.onloadedmetadata = () => {
+            console.log("Test loaded blob successfully, duration:", testVideo.duration, "seconds");
+            URL.revokeObjectURL(blobUrl); // Clean up test URL
+            
+            // Now we can pass the valid blob to the parent
+            onVideoRecorded(videoBlob);
+            toast({
+              title: "Recording Complete",
+              description: "Your video has been successfully recorded.",
+            });
+          };
+          
+          testVideo.onerror = () => {
+            console.error("Error testing blob playback");
+            URL.revokeObjectURL(blobUrl);
+            toast({
+              title: "Recording Error",
+              description: "The recorded video appears to be corrupt. Please try again with a different browser.",
+              variant: "destructive",
+            });
+          };
         } catch (e) {
           console.error("Failed to create blob URL:", e);
           toast({
@@ -215,15 +251,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
             description: "Failed to process recorded video. Please try again.",
             variant: "destructive",
           });
-          return;
         }
-        
-        onVideoRecorded(videoBlob);
-        toast({
-          title: "Recording Complete",
-          description: "Your video has been successfully recorded.",
-        });
-        console.log("Video blob created and passed to parent component", videoBlob);
       };
       
       mediaRecorderRef.current = mediaRecorder;
@@ -279,8 +307,15 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
     document.body.removeChild(a);
   };
 
+  const retryCamera = () => {
+    stopCamera();
+    setTimeout(() => {
+      startCamera();
+    }, 500);
+  };
+
   return (
-    <div className="relative rounded-md overflow-hidden bg-gray-100 w-full h-full min-h-[240px] flex items-center justify-center">
+    <div className="relative rounded-md overflow-hidden bg-gray-900 w-full h-full min-h-[240px] flex items-center justify-center">
       {error && (
         <Alert variant="destructive" className="absolute top-2 left-2 right-2 z-50">
           <AlertCircle className="h-4 w-4" />
@@ -289,19 +324,39 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
         </Alert>
       )}
       
-      {!isVideoReady && !isPlaybackOnly && (
+      {(!isVideoReady && !isPlaybackOnly) && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-800 text-white z-10">
-          <div className="text-center">
+          <div className="text-center p-4">
             <Camera className="h-12 w-12 mx-auto mb-2 animate-pulse" />
-            <p>Initializing camera...</p>
-            <Button
-              className="mt-4"
-              size="sm"
-              variant="outline"
-              onClick={() => startCamera()}
-            >
-              Retry Camera Access
-            </Button>
+            <p className="mb-2">Initializing camera...</p>
+            {cameraPermissionRequested && (
+              <div className="text-sm text-amber-300 mb-3">
+                Please make sure you've allowed camera access when prompted
+              </div>
+            )}
+            <div className="flex gap-2 justify-center">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={retryCamera}
+              >
+                Retry Camera Access
+              </Button>
+              <Button
+                size="sm" 
+                variant="destructive"
+                onClick={() => {
+                  toast({
+                    title: "Camera disabled",
+                    description: "You've chosen to proceed without camera access.",
+                  });
+                  setCameraEnabled(false);
+                  setError(null);
+                }}
+              >
+                Skip Camera
+              </Button>
+            </div>
           </div>
         </div>
       )}
@@ -312,7 +367,7 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
         playsInline
         muted={!isPlaybackOnly}
         controls={isPlaybackOnly}
-        className={`w-full h-full object-cover ${isVideoReady ? 'opacity-100' : 'opacity-0'} ${isPlaybackOnly ? 'bg-black' : ''}`}
+        className={`w-full h-full object-cover ${isVideoReady ? 'opacity-100' : 'opacity-0'}`}
         style={{ backgroundColor: '#000' }} // Ensure black background for better visibility
       />
       
@@ -370,11 +425,17 @@ const VideoRecorder: React.FC<VideoRecorderProps> = ({
           className="absolute top-3 right-3 z-20"
           size="sm"
           variant="outline"
-          onClick={() => startCamera()}
+          onClick={retryCamera}
         >
           <Play className="mr-1 h-4 w-4" /> Enable Camera
         </Button>
       )}
+
+      {/* Debug info for developers - you can remove this in production */}
+      {/* <div className="absolute top-3 left-3 text-xs text-white/70 bg-black/50 px-2 py-1 rounded">
+        {hasUserMedia ? 'Camera: Active' : 'Camera: Inactive'} | 
+        {isRecording ? 'Recording' : 'Not Recording'}
+      </div> */}
     </div>
   );
 };

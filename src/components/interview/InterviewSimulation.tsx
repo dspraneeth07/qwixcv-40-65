@@ -27,7 +27,7 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
   const [isRecording, setIsRecording] = useState(false);
   const [userResponse, setUserResponse] = useState("");
   const [interviewTime, setInterviewTime] = useState(0);
-  const [recordedVideoBlobs, setRecordedVideoBlobs] = useState<{index: number, blob: Blob}[]>([]);
+  const [recordedVideoBlobs, setRecordedVideoBlobs] = useState<{index: number, blob: Blob, url: string}[]>([]);
   const { toast } = useToast();
   const timerRef = useRef<number | null>(null);
   
@@ -172,17 +172,36 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
     }
   };
   
-  // Handle video recording completion
+  // Handle video recording completion with improved URL handling
   const handleVideoRecorded = (videoBlob: Blob) => {
-    setRecordedVideoBlobs(prev => [
-      ...prev,
-      { index: questionIndex, blob: videoBlob }
-    ]);
-    
-    toast({
-      title: "Video recorded",
-      description: "Your response has been recorded successfully.",
-    });
+    try {
+      // Create a persistent URL that won't be revoked
+      const videoUrl = URL.createObjectURL(videoBlob);
+      
+      console.log(`Video recorded for question ${questionIndex}, blob size: ${videoBlob.size} bytes, URL: ${videoUrl}`);
+      
+      // Store both the blob and URL
+      setRecordedVideoBlobs(prev => [
+        ...prev,
+        { 
+          index: questionIndex, 
+          blob: videoBlob,
+          url: videoUrl
+        }
+      ]);
+      
+      toast({
+        title: "Video recorded",
+        description: "Your response has been recorded successfully.",
+      });
+    } catch (err) {
+      console.error("Error handling recorded video:", err);
+      toast({
+        title: "Recording Error",
+        description: "Failed to process your video recording.",
+        variant: "destructive"
+      });
+    }
   };
   
   // Handle user's response submission with performance optimizations
@@ -283,7 +302,7 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
   
-  // Complete the interview with comprehensive results
+  // Complete the interview with comprehensive results and ensure videos are included
   const completeInterview = () => {
     // Generate detailed results with professional assessment
     const results = {
@@ -298,7 +317,9 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
       duration: interviewTime,
       recordedVideos: recordedVideoBlobs.map(item => ({
         questionIndex: item.index,
-        videoUrl: URL.createObjectURL(item.blob)
+        videoUrl: item.url,
+        questionText: (interviewQuestions as any)[interviewData?.jobCategory || "default"]?.[item.index] || 
+                      interviewQuestions.default[item.index]
       })),
       feedback: [
         "Demonstrated appropriate professional communication throughout the interview.",
@@ -308,6 +329,10 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
         "Body language was generally professional with room for improvement in maintaining consistent eye contact."
       ]
     };
+    
+    // Log the results to ensure videos are included
+    console.log("Interview complete, recorded videos:", recordedVideoBlobs.length);
+    console.log("Video URLs being passed to results:", results.recordedVideos.map(v => v.videoUrl));
     
     onComplete(results);
   };
@@ -336,8 +361,8 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
             {/* Interview Environment */}
             <InterviewAvatar isActive={isInterviewActive} />
             
-            {/* User video feed */}
-            <div className="absolute bottom-4 right-4 w-32 h-24 bg-gray-200 rounded-md overflow-hidden border-2 border-gray-300">
+            {/* User video feed - now with better visibility */}
+            <div className="absolute bottom-4 right-4 w-36 h-28 bg-black rounded-md overflow-hidden border-2 border-gray-300 shadow-lg">
               <VideoRecorder 
                 isActive={isInterviewActive} 
                 onVideoRecorded={handleVideoRecorded} 
@@ -345,7 +370,7 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
             </div>
             
             {/* Interview controls with more professional styling */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white shadow-md rounded-full px-4 py-2 flex space-x-4">
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 bg-white shadow-md rounded-full px-4 py-2 z-20">
               <Button 
                 variant="ghost" 
                 size="icon" 
