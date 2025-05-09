@@ -15,7 +15,7 @@ import AuthLayout from './AuthLayout';
 
 const Register: React.FC = () => {
   const [activeTab, setActiveTab] = useState<UserRole>('student');
-  const { register, isLoading } = useAuth();
+  const { register } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -77,13 +77,20 @@ const Register: React.FC = () => {
       }
       
       setIsSubmitting(true);
-      const success = await register(formData, 'student');
-      
-      if (success) {
+      try {
+        // Using name, email, password, and role as per the AuthContext type definition
+        await register(formData.fullName, formData.email, formData.password, 'student');
         navigate('/dashboard');
+      } catch (error) {
+        console.error("Registration failed:", error);
+        toast({
+          title: "Registration failed",
+          description: "Could not create your account",
+          variant: "destructive",
+        });
+      } finally {  
+        setIsSubmitting(false);
       }
-      
-      setIsSubmitting(false);
     };
 
     return (
@@ -365,13 +372,20 @@ const Register: React.FC = () => {
       }
       
       setIsSubmitting(true);
-      const success = await register(formData, 'organization');
-      
-      if (success) {
+      try {
+        // Using name, email, password, and role as per the AuthContext type definition
+        await register(formData.organizationName, formData.email, formData.password, 'organization');
         navigate('/dashboard');
+      } catch (error) {
+        console.error("Registration failed:", error);
+        toast({
+          title: "Registration failed",
+          description: "Could not create your account",
+          variant: "destructive",
+        });
+      } finally {
+        setIsSubmitting(false);
       }
-      
-      setIsSubmitting(false);
     };
 
     return (

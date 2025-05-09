@@ -21,13 +21,15 @@ const ForgotPassword: React.FC = () => {
     if (!email) return;
     
     setIsSubmitting(true);
-    const success = await forgotPassword(email);
-    
-    if (success) {
+    try {
+      await forgotPassword(email);
       setIsSuccess(true);
+    } catch (error) {
+      console.error("Error during password reset request:", error);
+      // Handle error case if needed
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
 
   return (
