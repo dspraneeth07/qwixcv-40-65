@@ -26,6 +26,19 @@ import DocumentGenerator from "./pages/organization/DocumentGenerator";
 import BlockchainVerification from "./pages/organization/BlockchainVerification";
 import AIInterviewer from "./pages/organization/AIInterviewer";
 import AptitudeExams from "./pages/organization/AptitudeExams";
+import ResumeBuilder from "./pages/ResumeBuilder";
+import LinkedInOptimizer from "./pages/LinkedInOptimizer";
+import ATSScanner from "./pages/ATSScanner";
+import InterviewCoach from "./pages/InterviewCoach";
+import JobBoard from "./pages/JobBoard";
+import CareerPathSimulator from "./pages/CareerPathSimulator";
+import AIJobSwitchPlanner from "./pages/AIJobSwitchPlanner";
+import AIShadowCareerSimulator from "./pages/AIShadowCareerSimulator";
+import SkillGapAnalysis from "./pages/SkillGapAnalysis";
+import AILayoffReadinessToolkit from "./pages/AILayoffReadinessToolkit";
+import MindprintAssessment from "./pages/MindprintAssessment";
+import AICodingCoach from "./pages/AICodingCoach";
+import ResumeCompare from "./pages/ResumeCompare";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -89,6 +102,152 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <Dashboard />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* CV Tools Routes */}
+              <Route 
+                path="/builder" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <ResumeBuilder />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/linkedin-optimizer" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <LinkedInOptimizer />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/ats-scanner" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <ATSScanner />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/resume-compare" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <ResumeCompare />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Career Guide Routes */}
+              <Route 
+                path="/career-path-simulator" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <CareerPathSimulator />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/interview-coach" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <InterviewCoach />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/ai-job-switch-planner" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <AIJobSwitchPlanner />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/ai-shadow-career-simulator" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <AIShadowCareerSimulator />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/skill-gap-analysis" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <SkillGapAnalysis />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/ai-layoff-readiness-toolkit" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <AILayoffReadinessToolkit />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* QwiX Learn Routes */}
+              <Route 
+                path="/mindprint-assessment" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <MindprintAssessment />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/ai-coding-coach" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <AICodingCoach />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/job-board" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <JobBoard />
                     </Layout>
                   </ProtectedRoute>
                 } 
@@ -221,6 +380,10 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
+              
+              {/* Public information pages */}
+              <Route path="/about" element={<Layout><div className="container mx-auto px-4 py-8">About Page</div></Layout>} />
+              <Route path="/contact" element={<Layout><div className="container mx-auto px-4 py-8">Contact Page</div></Layout>} />
               
               {/* Catch-all route for 404 */}
               <Route path="*" element={<NotFound />} />
