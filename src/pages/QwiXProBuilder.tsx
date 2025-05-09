@@ -1,1098 +1,1131 @@
-import React, { useState, useRef } from 'react';
-import Layout from "@/components/layout/Layout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/components/ui/use-toast";
-import { Sparkles, Code, FileText, Download, Copy, Github, ExternalLink, Verified, Terminal, Laptop } from "lucide-react";
-import JSZip from 'jszip';
-import { saveAs } from 'file-saver';
 
-// Framework templates
-const FRAMEWORK_TEMPLATES = {
-  "react": {
-    name: "React",
-    fileStructure: [
-      { path: "index.html", type: "file" },
-      { path: "package.json", type: "file" },
-      { path: "src/App.js", type: "file" },
-      { path: "src/index.js", type: "file" },
-      { path: "src/components", type: "directory" },
-      { path: "src/styles", type: "directory" },
-      { path: "README.md", type: "file" },
-    ],
+import React, { useState, useEffect, useRef } from 'react';
+import { Layout } from '@/components/Layout';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/components/ui/use-toast';
+import { generateQwiXProContent, generateProjectDescription } from '@/utils/qwixProApi';
+import {
+  Code,
+  FileText,
+  RefreshCw,
+  Download,
+  Eye,
+  ExternalLink,
+  Save,
+  Trash,
+  Edit,
+  Copy,
+  Settings,
+  Upload,
+  Search,
+  Plus
+} from 'lucide-react';
+
+const ProjectTemplates = [
+  {
+    id: 'react-tailwind',
+    name: 'React + Tailwind CSS',
+    description: 'Modern React app with Tailwind CSS styling',
+    icon: '⚛️',
+    dependencies: ['react', 'react-dom', 'tailwindcss', 'postcss', 'autoprefixer']
   },
-  "react-tailwind": {
-    name: "React + Tailwind",
-    fileStructure: [
-      { path: "index.html", type: "file" },
-      { path: "package.json", type: "file" },
-      { path: "tailwind.config.js", type: "file" },
-      { path: "src/App.js", type: "file" },
-      { path: "src/index.js", type: "file" },
-      { path: "src/components", type: "directory" },
-      { path: "README.md", type: "file" },
-    ],
+  {
+    id: 'nextjs-dashboard',
+    name: 'Next.js Dashboard',
+    description: 'Full-featured admin dashboard with Next.js',
+    icon: '📊',
+    dependencies: ['next', 'react', 'react-dom', 'chart.js', 'tailwindcss']
   },
-  "html-css-js": {
-    name: "HTML/CSS/JS",
-    fileStructure: [
-      { path: "index.html", type: "file" },
-      { path: "styles.css", type: "file" },
-      { path: "script.js", type: "file" },
-      { path: "README.md", type: "file" },
-    ],
+  {
+    id: 'mern-stack',
+    name: 'MERN Stack App',
+    description: 'MongoDB, Express, React, and Node.js full-stack app',
+    icon: '🔄',
+    dependencies: ['react', 'express', 'mongoose', 'axios', 'nodemon']
   },
-  "vue": {
-    name: "Vue.js",
-    fileStructure: [
-      { path: "index.html", type: "file" },
-      { path: "package.json", type: "file" },
-      { path: "src/App.vue", type: "file" },
-      { path: "src/main.js", type: "file" },
-      { path: "src/components", type: "directory" },
-      { path: "README.md", type: "file" },
-    ],
-  },
-  "next": {
-    name: "Next.js",
-    fileStructure: [
-      { path: "package.json", type: "file" },
-      { path: "next.config.js", type: "file" },
-      { path: "pages/index.js", type: "file" },
-      { path: "pages/_app.js", type: "file" },
-      { path: "components", type: "directory" },
-      { path: "styles", type: "directory" },
-      { path: "public", type: "directory" },
-      { path: "README.md", type: "file" },
-    ],
+  {
+    id: 'react-typescript',
+    name: 'React + TypeScript',
+    description: 'Type-safe React application with TypeScript',
+    icon: '📝',
+    dependencies: ['react', 'typescript', 'react-dom', '@types/react', '@types/react-dom']
   }
-};
+];
 
-// Project templates based on common user requests
-const PROJECT_TEMPLATES = {
-  "calculator": {
-    title: "Calculator App",
-    description: "A simple calculator application with basic arithmetic operations.",
-    framework: "react",
-    files: {
-      "src/App.js": `import React, { useState } from 'react';
-import './App.css';
+const QwiXProBuilder: React.FC = () => {
+  const { toast } = useToast();
+  const [projectName, setProjectName] = useState('');
+  const [projectDescription, setProjectDescription] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedProject, setGeneratedProject] = useState<any | null>(null);
+  const [activeTab, setActiveTab] = useState('code');
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [projectFiles, setProjectFiles] = useState<{path: string, content: string}[]>([]);
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [fileContent, setFileContent] = useState('');
+  const [apiKey, setApiKey] = useState('');
+  const [isApiKeyValid, setIsApiKeyValid] = useState(false);
+  const [projectSettings, setProjectSettings] = useState({
+    includeTests: true,
+    includeDocumentation: true,
+    createGitRepo: false,
+    deploymentReady: true,
+    privatePackages: false
+  });
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-function App() {
-  const [display, setDisplay] = useState('0');
-  const [firstOperand, setFirstOperand] = useState(null);
-  const [operator, setOperator] = useState(null);
-  const [waitingForSecondOperand, setWaitingForSecondOperand] = useState(false);
-
-  const inputDigit = (digit) => {
-    if (waitingForSecondOperand) {
-      setDisplay(digit);
-      setWaitingForSecondOperand(false);
-    } else {
-      setDisplay(display === '0' ? digit : display + digit);
-    }
-  };
-
-  const inputDecimal = () => {
-    if (waitingForSecondOperand) {
-      setDisplay('0.');
-      setWaitingForSecondOperand(false);
+  // Validate API key
+  const validateApiKey = () => {
+    if (!apiKey) {
+      toast({
+        title: "API Key Required",
+        description: "Please enter a valid API key.",
+        variant: "destructive"
+      });
       return;
     }
-    if (!display.includes('.')) {
-      setDisplay(display + '.');
+
+    setIsApiKeyValid(true);
+    toast({
+      title: "API Key Validated",
+      description: "Your API key has been validated successfully."
+    });
+  };
+
+  // Generate project based on specifications
+  const handleGenerateProject = async () => {
+    if (!projectName || !selectedTemplate) {
+      toast({
+        title: "Missing information",
+        description: "Please provide a project name and select a template.",
+        variant: "destructive"
+      });
+      return;
     }
-  };
-
-  const clearDisplay = () => {
-    setDisplay('0');
-    setFirstOperand(null);
-    setOperator(null);
-    setWaitingForSecondOperand(false);
-  };
-
-  const performOperation = (nextOperator) => {
-    const inputValue = parseFloat(display);
-
-    if (firstOperand === null) {
-      setFirstOperand(inputValue);
-    } else if (operator) {
-      const result = calculate(firstOperand, inputValue, operator);
-      setDisplay(String(result));
-      setFirstOperand(result);
-    }
-
-    setWaitingForSecondOperand(true);
-    setOperator(nextOperator);
-  };
-
-  const calculate = (firstOperand, secondOperand, operator) => {
-    switch (operator) {
-      case '+':
-        return firstOperand + secondOperand;
-      case '-':
-        return firstOperand - secondOperand;
-      case '*':
-        return firstOperand * secondOperand;
-      case '/':
-        return firstOperand / secondOperand;
-      default:
-        return secondOperand;
-    }
-  };
-
-  const handleEqual = () => {
-    if (firstOperand === null) return;
     
-    const inputValue = parseFloat(display);
-    const result = calculate(firstOperand, inputValue, operator);
-    setDisplay(String(result));
-    setFirstOperand(null);
-    setOperator(null);
-    setWaitingForSecondOperand(false);
-  };
-
-  return (
-    <div className="calculator">
-      <div className="calculator-display">{display}</div>
-      <div className="calculator-keypad">
-        <div className="input-keys">
-          <div className="function-keys">
-            <button className="key-clear" onClick={clearDisplay}>AC</button>
-          </div>
-          <div className="digit-keys">
-            <button onClick={() => inputDigit('7')}>7</button>
-            <button onClick={() => inputDigit('8')}>8</button>
-            <button onClick={() => inputDigit('9')}>9</button>
-            <button onClick={() => inputDigit('4')}>4</button>
-            <button onClick={() => inputDigit('5')}>5</button>
-            <button onClick={() => inputDigit('6')}>6</button>
-            <button onClick={() => inputDigit('1')}>1</button>
-            <button onClick={() => inputDigit('2')}>2</button>
-            <button onClick={() => inputDigit('3')}>3</button>
-            <button onClick={() => inputDigit('0')}>0</button>
-            <button onClick={inputDecimal}>.</button>
-          </div>
-        </div>
-        <div className="operator-keys">
-          <button onClick={() => performOperation('/')}>÷</button>
-          <button onClick={() => performOperation('*')}>×</button>
-          <button onClick={() => performOperation('-')}>−</button>
-          <button onClick={() => performOperation('+')}>+</button>
-          <button onClick={handleEqual}>=</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default App;`,
-      "src/App.css": `.calculator {
-  width: 320px;
-  margin: 100px auto;
-  background-color: #f8f8f8;
-  border-radius: 10px;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
-  overflow: hidden;
-}
-
-.calculator-display {
-  background-color: #222;
-  color: #fff;
-  text-align: right;
-  font-weight: 300;
-  font-size: 28px;
-  padding: 20px 10px;
-}
-
-.calculator-keypad {
-  display: flex;
-}
-
-.input-keys {
-  width: 75%;
-}
-
-.function-keys {
-  display: flex;
-  background-color: #eee;
-}
-
-.digit-keys {
-  display: flex;
-  flex-wrap: wrap;
-  background-color: #f8f8f8;
-}
-
-.digit-keys button {
-  width: 33.3%;
-  height: 65px;
-  border: none;
-  outline: none;
-  background-color: #f8f8f8;
-  font-size: 18px;
-  transition: background-color 0.2s;
-  cursor: pointer;
-}
-
-.digit-keys button:hover {
-  background-color: #e0e0e0;
-}
-
-.function-keys button {
-  width: 100%;
-  height: 65px;
-  border: none;
-  outline: none;
-  background-color: #eee;
-  font-size: 18px;
-  cursor: pointer;
-}
-
-.operator-keys {
-  width: 25%;
-  background-color: #ea9c24;
-}
-
-.operator-keys button {
-  width: 100%;
-  height: 65px;
-  border: none;
-  outline: none;
-  background-color: #ea9c24;
-  color: #fff;
-  font-size: 18px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.operator-keys button:hover {
-  background-color: #d48a1e;
-}`,
-      "src/index.js": `import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './App.css';
-import App from './App';
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);`,
-      "public/index.html": `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calculator App</title>
-</head>
-<body>
-  <div id="root"></div>
-</body>
-</html>`,
-      "package.json": `{
-  "name": "calculator-app",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  }
-}`,
-      "README.md": `# Calculator App
-
-A simple calculator application built with React.
-
-## Features
-
-- Basic arithmetic operations (addition, subtraction, multiplication, division)
-- Clear functionality
-- Decimal input
-- Responsive design
-
-## Installation
-
-1. Clone the repository
-2. Run \`npm install\` to install dependencies
-3. Run \`npm start\` to start the development server
-
-## Deployment
-
-Run \`npm run build\` to build the app for production.
-
-## Hosting
-
-You can deploy this app easily on:
-
-- Netlify
-- Vercel
-- GitHub Pages
-
-## Technologies Used
-
-- React
-- CSS
-
-## License
-
-MIT`
-    }
-  },
-  "todo-app": {
-    title: "Todo List App",
-    description: "A simple todo list application with CRUD operations.",
-    framework: "react",
-    files: {
-      "src/App.js": `import React, { useState } from 'react';
-import './App.css';
-
-function App() {
-  const [todos, setTodos] = useState([]);
-  const [inputValue, setInputValue] = useState('');
-
-  const handleInputChange = (e) => {
-    setInputValue(e.target.value);
-  };
-
-  const handleAddTodo = () => {
-    if (inputValue.trim() !== '') {
-      const newTodo = {
-        id: Date.now(),
-        text: inputValue,
-        completed: false
+    setIsGenerating(true);
+    
+    try {
+      // Get the selected template details
+      const template = ProjectTemplates.find(t => t.id === selectedTemplate);
+      
+      // Generate project description with Gemini API if not provided by user
+      let projectDesc = projectDescription;
+      if (!projectDesc && template) {
+        try {
+          projectDesc = await generateProjectDescription(
+            projectName, 
+            template.dependencies, 
+            "Developer"
+          );
+        } catch (error) {
+          console.error("Failed to generate project description:", error);
+          // Fall back to default description if API fails
+          projectDesc = `A ${template.name} project created with QwiXProBuilder.`;
+        }
+      }
+      
+      // Generate files based on template and AI
+      const generatedFiles = await generateProjectFiles(selectedTemplate || '', projectName, projectDesc);
+      
+      const mockProject = {
+        name: projectName,
+        description: projectDesc,
+        template: template?.name || "Custom Project",
+        createdAt: new Date().toISOString(),
+        dependencies: template?.dependencies || [],
+        files: generatedFiles
       };
-      setTodos([...todos, newTodo]);
-      setInputValue('');
+      
+      setGeneratedProject(mockProject);
+      setProjectFiles(mockProject.files);
+      setSelectedFile(mockProject.files[0].path);
+      setFileContent(mockProject.files[0].content);
+      
+      // Set mock preview URL
+      setPreviewUrl(`https://preview.qwixpro.dev/${projectName.toLowerCase().replace(/\s+/g, '-')}`);
+      
+      toast({
+        title: "Project generated successfully",
+        description: "Your project has been created and is ready for review.",
+      });
+      
+      // Switch to code tab to show the generated code
+      setActiveTab('code');
+    } catch (error) {
+      console.error("Error generating project:", error);
+      toast({
+        title: "Generation failed",
+        description: "There was a problem generating your project. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
     }
   };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      handleAddTodo();
+  
+  // Generate project files using Gemini API
+  const generateProjectFiles = async (templateId: string, name: string, description: string) => {
+    const sanitizedName = name.toLowerCase().replace(/\s+/g, '-');
+    
+    // Basic files every project will have
+    const commonFiles = [
+      {
+        path: 'README.md',
+        content: `# ${name}\n\n${description || 'A project generated with QwiXProBuilder.'}\n\n## Getting Started\n\nInstall dependencies:\n\n\`\`\`\nnpm install\n\`\`\`\n\nStart the development server:\n\n\`\`\`\nnpm run dev\n\`\`\`\n`
+      },
+      {
+        path: 'package.json',
+        content: `{\n  "name": "${sanitizedName}",\n  "version": "0.1.0",\n  "private": true,\n  "scripts": {\n    "dev": "next dev",\n    "build": "next build",\n    "start": "next start"\n  },\n  "dependencies": {\n    "react": "^18.2.0",\n    "react-dom": "^18.2.0"\n  }\n}`
+      }
+    ];
+    
+    // Generate template-specific files using AI
+    let templateFiles: {path: string, content: string}[] = [];
+    
+    try {
+      switch (templateId) {
+        case 'react-tailwind':
+          templateFiles = await generateReactTailwindFiles(name, description);
+          break;
+          
+        case 'nextjs-dashboard':
+          templateFiles = await generateNextJsDashboardFiles(name, description);
+          break;
+          
+        case 'mern-stack':
+          templateFiles = await generateMERNStackFiles(name, description, sanitizedName);
+          break;
+          
+        case 'react-typescript':
+          templateFiles = await generateReactTypeScriptFiles(name, description);
+          break;
+      }
+    } catch (error) {
+      console.error("Error generating template files:", error);
+      // Fall back to hardcoded files if API fails
+      templateFiles = generateFallbackTemplateFiles(templateId, name, description, sanitizedName);
+    }
+    
+    return [...commonFiles, ...templateFiles];
+  };
+  
+  // Generate React + Tailwind template files using Gemini API
+  const generateReactTailwindFiles = async (name: string, description: string) => {
+    try {
+      const appJsxPrompt = `
+        Generate a React functional component (App.jsx) for a project named "${name}" with this description: "${description}".
+        It should use Tailwind CSS classes for styling and have:
+        1. A responsive header with navigation
+        2. A hero section with a title and description
+        3. A features section with 3 feature cards
+        4. A responsive footer
+        
+        Return only the complete React component code, nothing else.
+      `;
+      
+      const appJsxContent = await generateQwiXProContent(appJsxPrompt);
+      
+      const tailwindConfigPrompt = `
+        Generate a complete tailwind.config.js file with customizations for a project named "${name}".
+        Include custom colors and font settings that would suit this project.
+        
+        Return only the configuration file code, nothing else.
+      `;
+      
+      const tailwindConfigContent = await generateQwiXProContent(tailwindConfigPrompt);
+      
+      return [
+        {
+          path: 'src/App.jsx',
+          content: appJsxContent
+        },
+        {
+          path: 'tailwind.config.js',
+          content: tailwindConfigContent
+        },
+        {
+          path: 'src/index.jsx',
+          content: `import React from 'react';\nimport ReactDOM from 'react-dom/client';\nimport './index.css';\nimport App from './App';\n\nconst root = ReactDOM.createRoot(document.getElementById('root'));\nroot.render(\n  <React.StrictMode>\n    <App />\n  </React.StrictMode>\n);\n`
+        }
+      ];
+    } catch (error) {
+      throw new Error(`Failed to generate React Tailwind files: ${error}`);
     }
   };
-
-  const handleToggleComplete = (id) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
+  
+  // Generate Next.js dashboard files using Gemini API
+  const generateNextJsDashboardFiles = async (name: string, description: string) => {
+    try {
+      const indexJsPrompt = `
+        Generate a Next.js page component (pages/index.js) for a dashboard project named "${name}" with this description: "${description}".
+        The page should import a Dashboard component and include proper Next.js Head component setup.
+        
+        Return only the complete Next.js page component code, nothing else.
+      `;
+      
+      const indexJsContent = await generateQwiXProContent(indexJsPrompt);
+      
+      const dashboardComponentPrompt = `
+        Generate a React functional component (Dashboard.jsx) for a dashboard project named "${name}".
+        It should use Tailwind CSS for styling and include:
+        1. A responsive navigation bar
+        2. A dashboard header with title and actions
+        3. A statistics summary section with 3-4 stat cards
+        4. A main content area with a placeholder
+        
+        Return only the complete React component code, nothing else.
+      `;
+      
+      const dashboardContent = await generateQwiXProContent(dashboardComponentPrompt);
+      
+      return [
+        {
+          path: 'pages/index.js',
+          content: indexJsContent
+        },
+        {
+          path: 'components/Dashboard.jsx',
+          content: dashboardContent
+        }
+      ];
+    } catch (error) {
+      throw new Error(`Failed to generate Next.js dashboard files: ${error}`);
+    }
+  };
+  
+  // Generate MERN stack files using Gemini API
+  const generateMERNStackFiles = async (name: string, description: string, sanitizedName: string) => {
+    try {
+      const serverJsPrompt = `
+        Generate a Node.js Express server file (server.js) for a MERN stack project named "${name}" with this description: "${description}".
+        Include:
+        1. Express setup with necessary middleware
+        2. MongoDB connection using mongoose
+        3. Basic API routes structure
+        4. Error handling
+        5. Server startup code
+        
+        The MongoDB database name should be "${sanitizedName}".
+        Return only the complete server.js code, nothing else.
+      `;
+      
+      const serverJsContent = await generateQwiXProContent(serverJsPrompt);
+      
+      const clientAppJsPrompt = `
+        Generate a React client-side App.js file for a MERN stack project named "${name}" with this description: "${description}".
+        Include:
+        1. State for storing data from the API
+        2. useEffect hook to fetch data from the backend API
+        3. Basic UI with React components
+        4. Error handling for API requests
+        
+        Return only the complete React App.js code, nothing else.
+      `;
+      
+      const clientAppJsContent = await generateQwiXProContent(clientAppJsPrompt);
+      
+      return [
+        {
+          path: 'server/server.js',
+          content: serverJsContent
+        },
+        {
+          path: 'client/src/App.js',
+          content: clientAppJsContent
+        }
+      ];
+    } catch (error) {
+      throw new Error(`Failed to generate MERN stack files: ${error}`);
+    }
+  };
+  
+  // Generate React + TypeScript files using Gemini API
+  const generateReactTypeScriptFiles = async (name: string, description: string) => {
+    try {
+      const appTsxPrompt = `
+        Generate a React TypeScript component (App.tsx) for a project named "${name}" with this description: "${description}".
+        Include:
+        1. Proper TypeScript interfaces/types
+        2. State management with useState and proper typing
+        3. Event handlers with TypeScript event types
+        4. A simple but functional UI
+        
+        Return only the complete TypeScript React component code, nothing else.
+      `;
+      
+      const appTsxContent = await generateQwiXProContent(appTsxPrompt);
+      
+      const tsconfigPrompt = `
+        Generate a complete tsconfig.json file for a React TypeScript project.
+        Include standard settings for a modern React application.
+        
+        Return only the complete tsconfig.json content, nothing else.
+      `;
+      
+      const tsconfigContent = await generateQwiXProContent(tsconfigPrompt);
+      
+      return [
+        {
+          path: 'src/App.tsx',
+          content: appTsxContent
+        },
+        {
+          path: 'tsconfig.json',
+          content: tsconfigContent
+        }
+      ];
+    } catch (error) {
+      throw new Error(`Failed to generate React TypeScript files: ${error}`);
+    }
+  };
+  
+  // Fallback file generation if API fails
+  const generateFallbackTemplateFiles = (
+    templateId: string, 
+    name: string, 
+    description: string, 
+    sanitizedName: string
+  ) => {
+    switch (templateId) {
+      case 'react-tailwind':
+        return [
+          {
+            path: 'src/App.jsx',
+            content: `import React from 'react';\nimport './App.css';\n\nfunction App() {\n  return (\n    <div className="min-h-screen bg-gray-100 flex items-center justify-center">\n      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">\n        <h1 className="text-3xl font-bold text-center mb-6">${name}</h1>\n        <p className="text-gray-600 text-center">\n          ${description || 'Edit src/App.jsx and save to reload.'}\n        </p>\n        <div className="mt-8 flex justify-center">\n          <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">\n            Get Started\n          </button>\n        </div>\n      </div>\n    </div>\n  );\n}\n\nexport default App;\n`
+          },
+          {
+            path: 'tailwind.config.js',
+            content: `/** @type {import('tailwindcss').Config} */\nmodule.exports = {\n  content: [\n    "./src/**/*.{js,jsx,ts,tsx}",\n  ],\n  theme: {\n    extend: {},\n  },\n  plugins: [],\n}\n`
+          },
+          {
+            path: 'src/index.jsx',
+            content: `import React from 'react';\nimport ReactDOM from 'react-dom/client';\nimport './index.css';\nimport App from './App';\n\nconst root = ReactDOM.createRoot(document.getElementById('root'));\nroot.render(\n  <React.StrictMode>\n    <App />\n  </React.StrictMode>\n);\n`
+          }
+        ];
+        
+      case 'nextjs-dashboard':
+        return [
+          {
+            path: 'pages/index.js',
+            content: `import Head from 'next/head';\nimport Dashboard from '../components/Dashboard';\n\nexport default function Home() {\n  return (\n    <div>\n      <Head>\n        <title>${name} - Dashboard</title>\n        <meta name="description" content="${description || 'Generated by QwiXProBuilder'}" />\n        <link rel="icon" href="/favicon.ico" />\n      </Head>\n\n      <main>\n        <Dashboard />\n      </main>\n    </div>\n  );\n}\n`
+          },
+          {
+            path: 'components/Dashboard.jsx',
+            content: `import React from 'react';\n\nexport default function Dashboard() {\n  return (\n    <div className="min-h-screen bg-gray-50">\n      <nav className="bg-white shadow-sm">\n        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">\n          <div className="flex justify-between h-16">\n            <div className="flex">\n              <div className="flex-shrink-0 flex items-center">\n                <h1 className="text-xl font-bold">${name}</h1>\n              </div>\n            </div>\n          </div>\n        </div>\n      </nav>\n\n      <div className="py-10">\n        <header>\n          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">\n            <h2 className="text-3xl font-bold leading-tight text-gray-900">Dashboard</h2>\n          </div>\n        </header>\n        <main>\n          <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">\n            <div className="px-4 py-8 sm:px-0">\n              <div className="border-4 border-dashed border-gray-200 rounded-lg h-96 flex items-center justify-center">\n                <p className="text-lg text-gray-500">Your dashboard content goes here</p>\n              </div>\n            </div>\n          </div>\n        </main>\n      </div>\n    </div>\n  );\n}\n`
+          }
+        ];
+        
+      case 'mern-stack':
+        return [
+          {
+            path: 'server/server.js',
+            content: `const express = require('express');\nconst mongoose = require('mongoose');\nconst cors = require('cors');\nrequire('dotenv').config();\n\nconst app = express();\nconst PORT = process.env.PORT || 5000;\n\n// Middleware\napp.use(cors());\napp.use(express.json());\n\n// Connect to MongoDB\nmongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/${sanitizedName}', {\n  useNewUrlParser: true,\n  useUnifiedTopology: true\n})\n  .then(() => console.log('Connected to MongoDB'))\n  .catch(err => console.error('Could not connect to MongoDB', err));\n\n// Routes\napp.get('/', (req, res) => {\n  res.send('API is running...');\n});\n\n// Start server\napp.listen(PORT, () => console.log(\`Server running on port \${PORT}\`));\n`
+          },
+          {
+            path: 'client/src/App.js',
+            content: `import React, { useState, useEffect } from 'react';\nimport axios from 'axios';\nimport './App.css';\n\nfunction App() {\n  const [message, setMessage] = useState('');\n\n  useEffect(() => {\n    // Fetch data from API\n    axios.get('http://localhost:5000/')\n      .then(res => setMessage(res.data))\n      .catch(err => console.error(err));\n  }, []);\n\n  return (\n    <div className="App">\n      <header className="App-header">\n        <h1>${name}</h1>\n        <p>${description || 'A MERN stack application'}</p>\n        <div className="message-box">\n          <p>Message from server: {message}</p>\n        </div>\n      </header>\n    </div>\n  );\n}\n\nexport default App;\n`
+          }
+        ];
+        
+      case 'react-typescript':
+        return [
+          {
+            path: 'src/App.tsx',
+            content: `import React, { useState } from 'react';\nimport './App.css';\n\ninterface Item {\n  id: number;\n  text: string;\n}\n\nfunction App(): JSX.Element {\n  const [items, setItems] = useState<Item[]>([]);\n  const [text, setText] = useState<string>('');\n\n  const handleSubmit = (e: React.FormEvent) => {\n    e.preventDefault();\n    if (!text.trim()) return;\n    \n    const newItem: Item = {\n      id: Date.now(),\n      text\n    };\n    \n    setItems([...items, newItem]);\n    setText('');\n  };\n\n  return (\n    <div className="App">\n      <header className="App-header">\n        <h1>${name}</h1>\n        <p>${description || 'A React TypeScript application'}</p>\n      </header>\n      \n      <main className="App-main">\n        <form onSubmit={handleSubmit} className="item-form">\n          <input \n            type="text" \n            value={text} \n            onChange={(e) => setText(e.target.value)} \n            placeholder="Add an item..." \n          />\n          <button type="submit">Add</button>\n        </form>\n        \n        <ul className="item-list">\n          {items.map((item) => (\n            <li key={item.id}>{item.text}</li>\n          ))}\n        </ul>\n      </main>\n    </div>\n  );\n}\n\nexport default App;\n`
+          },
+          {
+            path: 'tsconfig.json',
+            content: `{\n  "compilerOptions": {\n    "target": "es5",\n    "lib": [\n      "dom",\n      "dom.iterable",\n      "esnext"\n    ],\n    "allowJs": true,\n    "skipLibCheck": true,\n    "esModuleInterop": true,\n    "allowSyntheticDefaultImports": true,\n    "strict": true,\n    "forceConsistentCasingInFileNames": true,\n    "noFallthroughCasesInSwitch": true,\n    "module": "esnext",\n    "moduleResolution": "node",\n    "resolveJsonModule": true,\n    "isolatedModules": true,\n    "noEmit": true,\n    "jsx": "react-jsx"\n  },\n  "include": [\n    "src"\n  ]\n}\n`
+          }
+        ];
+        
+      default:
+        return [];
+    }
+  };
+  
+  // Update the selected file content
+  const updateFileContent = () => {
+    const updatedFiles = projectFiles.map(file => 
+      file.path === selectedFile ? { ...file, content: fileContent } : file
     );
+    setProjectFiles(updatedFiles);
+    
+    toast({
+      title: "File updated",
+      description: `${selectedFile} has been updated.`
+    });
   };
-
-  const handleDeleteTodo = (id) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
-  };
-
-  return (
-    <div className="todo-app">
-      <h1>Todo List</h1>
-      <div className="todo-input">
-        <input
-          type="text"
-          value={inputValue}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          placeholder="Add a new task..."
-        />
-        <button onClick={handleAddTodo}>Add</button>
-      </div>
-      <ul className="todo-list">
-        {todos.length === 0 ? (
-          <li className="todo-empty">No tasks yet. Add a new one!</li>
-        ) : (
-          todos.map((todo) => (
-            <li key={todo.id} className={todo.completed ? 'completed' : ''}>
-              <span
-                className="todo-text"
-                onClick={() => handleToggleComplete(todo.id)}
-              >
-                {todo.text}
-              </span>
-              <button
-                className="delete-btn"
-                onClick={() => handleDeleteTodo(todo.id)}
-              >
-                Delete
-              </button>
-            </li>
-          ))
-        )}
-      </ul>
-      <div className="todo-stats">
-        <span>{todos.filter(todo => !todo.completed).length} tasks left</span>
-      </div>
-    </div>
-  );
-}
-
-export default App;`,
-      "src/App.css": `body {
-  font-family: 'Arial', sans-serif;
-  background-color: #f5f5f5;
-  display: flex;
-  justify-content: center;
-  padding-top: 50px;
-}
-
-.todo-app {
-  width: 400px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 30px;
-}
-
-h1 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #333;
-}
-
-.todo-input {
-  display: flex;
-  margin-bottom: 20px;
-}
-
-input {
-  flex: 1;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px 0 0 4px;
-  font-size: 16px;
-}
-
-button {
-  padding: 10px 20px;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 0 4px 4px 0;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-button:hover {
-  background-color: #45a049;
-}
-
-.todo-list {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-
-.todo-list li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  background-color: #f9f9f9;
-  margin-bottom: 10px;
-  border-radius: 4px;
-}
-
-.todo-list li.completed .todo-text {
-  text-decoration: line-through;
-  color: #888;
-}
-
-.todo-text {
-  flex: 1;
-  cursor: pointer;
-}
-
-.delete-btn {
-  background-color: #f44336;
-  padding: 6px 10px;
-  border-radius: 4px;
-}
-
-.delete-btn:hover {
-  background-color: #d32f2f;
-}
-
-.todo-empty {
-  text-align: center;
-  color: #888;
-  padding: 20px 0;
-}
-
-.todo-stats {
-  margin-top: 20px;
-  text-align: center;
-  color: #666;
-  font-size: 14px;
-}`,
-      "src/index.js": `import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './App.css';
-import App from './App';
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);`,
-      "public/index.html": `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Todo List App</title>
-</head>
-<body>
-  <div id="root"></div>
-</body>
-</html>`,
-      "package.json": `{
-  "name": "todo-list-app",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  }
-}`,
-      "README.md": `# Todo List App
-
-A simple Todo List application built with React.
-
-## Features
-
-- Add new tasks
-- Mark tasks as complete
-- Delete tasks
-- Track remaining tasks
-
-## Installation
-
-1. Clone the repository
-2. Run \`npm install\` to install dependencies
-3. Run \`npm start\` to start the development server
-
-## Deployment
-
-Run \`npm run build\` to build the app for production.
-
-## Hosting
-
-You can deploy this app easily on:
-
-- Netlify
-- Vercel
-- GitHub Pages
-
-## Technologies Used
-
-- React
-- CSS
-
-## License
-
-MIT`
+  
+  // Handle file selection
+  const handleFileSelect = (filePath: string) => {
+    if (selectedFile === filePath) return;
+    
+    // Find the file in projectFiles
+    const file = projectFiles.find(f => f.path === filePath);
+    if (file) {
+      setSelectedFile(filePath);
+      setFileContent(file.content);
     }
-  },
-  "weather-app": {
-    title: "Weather Dashboard",
-    description: "A responsive weather dashboard with charts and current weather data.",
-    framework: "react",
-    files: {
-      "src/App.js": `import React, { useState, useEffect } from 'react';
-import './App.css';
-import WeatherChart from './components/WeatherChart';
-import WeatherInfo from './components/WeatherInfo';
-import SearchBar from './components/SearchBar';
-import { mockWeatherData, mockForecastData } from './mockData';
+  };
+  
+  // Add a new file to the project
+  const addNewFile = () => {
+    const fileName = prompt("Enter file name (including path):");
+    if (!fileName) return;
+    
+    // Check if file already exists
+    if (projectFiles.some(file => file.path === fileName)) {
+      toast({
+        title: "File exists",
+        description: "A file with this name already exists.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const newFile = {
+      path: fileName,
+      content: `// ${fileName}\n// Created with QwiXProBuilder\n\n`
+    };
+    
+    setProjectFiles([...projectFiles, newFile]);
+    setSelectedFile(fileName);
+    setFileContent(newFile.content);
+    
+    toast({
+      title: "File created",
+      description: `${fileName} has been added to the project.`
+    });
+  };
+  
+  // Delete the selected file
+  const deleteSelectedFile = () => {
+    if (!selectedFile) return;
+    
+    if (projectFiles.length <= 1) {
+      toast({
+        title: "Cannot delete file",
+        description: "Project must have at least one file.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const confirmed = window.confirm(`Are you sure you want to delete ${selectedFile}?`);
+    if (!confirmed) return;
+    
+    const filteredFiles = projectFiles.filter(file => file.path !== selectedFile);
+    setProjectFiles(filteredFiles);
+    setSelectedFile(filteredFiles[0].path);
+    setFileContent(filteredFiles[0].content);
+    
+    toast({
+      title: "File deleted",
+      description: `${selectedFile} has been deleted.`
+    });
+  };
+  
+  // Download project as ZIP
+  const downloadProject = () => {
+    toast({
+      title: "Download started",
+      description: `${projectName}.zip is being prepared for download.`
+    });
+    
+    // In a real app, this would create a ZIP file with all project files
+    setTimeout(() => {
+      // Simulate download
+      const element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent('Project ZIP file content'));
+      element.setAttribute('download', `${projectName}.zip`);
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    }, 1000);
+  };
 
-function App() {
-  const [weatherData, setWeatherData] = useState(null);
-  const [forecastData, setForecastData] = useState(null);
-  const [location, setLocation] = useState('New York');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // Handle file upload
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      
+      reader.onload = (event) => {
+        if (event.target && typeof event.target.result === 'string') {
+          // Create file path based on uploaded file name
+          const filePath = file.name;
+          
+          // Check if file already exists
+          if (projectFiles.some(f => f.path === filePath)) {
+            const confirmed = window.confirm(`${filePath} already exists. Do you want to override it?`);
+            if (!confirmed) return;
+            
+            // Update existing file
+            const updatedFiles = projectFiles.map(f => 
+              f.path === filePath ? { ...f, content: event.target.result as string } : f
+            );
+            setProjectFiles(updatedFiles);
+          } else {
+            // Add new file
+            const newFile = {
+              path: filePath,
+              content: event.target.result as string
+            };
+            setProjectFiles([...projectFiles, newFile]);
+          }
+          
+          setSelectedFile(filePath);
+          setFileContent(event.target.result as string);
+          
+          toast({
+            title: "File uploaded",
+            description: `${filePath} has been added to the project.`
+          });
+        }
+      };
+      
+      reader.readAsText(file);
+    }
+  };
 
   useEffect(() => {
-    // In a real app, this would fetch from a weather API
-    // For this demo, we're using mock data
-    setLoading(true);
-    setTimeout(() => {
-      try {
-        setWeatherData(mockWeatherData);
-        setForecastData(mockForecastData);
-        setLoading(false);
-        setError(null);
-      } catch (err) {
-        setError('Failed to fetch weather data');
-        setLoading(false);
+    // If we change the selected file, update the content
+    if (selectedFile) {
+      const file = projectFiles.find(f => f.path === selectedFile);
+      if (file) {
+        setFileContent(file.content);
       }
-    }, 1000);
-  }, [location]);
-
-  const handleSearch = (searchTerm) => {
-    setLocation(searchTerm);
-  };
-
-  if (loading) {
-    return <div className="loading">Loading weather data...</div>;
-  }
-
-  if (error) {
-    return <div className="error">{error}</div>;
-  }
-
-  return (
-    <div className="weather-app">
-      <header>
-        <h1>Weather Dashboard</h1>
-        <SearchBar onSearch={handleSearch} />
-      </header>
-      
-      <main>
-        <div className="current-weather">
-          {weatherData && <WeatherInfo data={weatherData} location={location} />}
-        </div>
-        
-        <div className="forecast">
-          <h2>5-Day Forecast</h2>
-          {forecastData && <WeatherChart data={forecastData} />}
-        </div>
-      </main>
-      
-      <footer>
-        <p>Weather Dashboard - Created with React</p>
-      </footer>
-    </div>
-  );
-}
-
-export default App;`,
-      "src/components/WeatherChart.js": `import React from 'react';
-
-const WeatherChart = ({ data }) => {
-  const maxTemp = Math.max(...data.map(day => day.temp));
-  const minTemp = Math.min(...data.map(day => day.temp));
-  const range = maxTemp - minTemp;
-  
-  return (
-    <div className="weather-chart">
-      <div className="chart">
-        {data.map((day, index) => {
-          const height = ((day.temp - minTemp) / range) * 100;
-          return (
-            <div key={index} className="chart-column">
-              <div className="chart-bar-container">
-                <div 
-                  className="chart-bar" 
-                  style={{height: \`\${height}%\`}}
-                  title={\`\${day.temp}°F\`}
-                ></div>
-              </div>
-              <div className="chart-day">{day.day}</div>
-              <div className="chart-temp">{day.temp}°</div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
-export default WeatherChart;`,
-      "src/components/WeatherInfo.js": `import React from 'react';
-
-const WeatherInfo = ({ data, location }) => {
-  return (
-    <div className="weather-info">
-      <h2>{location}</h2>
-      <div className="weather-details">
-        <div className="weather-icon">
-          {data.condition === 'Sunny' && '☀️'}
-          {data.condition === 'Cloudy' && '☁️'}
-          {data.condition === 'Rainy' && '🌧️'}
-          {data.condition === 'Snowy' && '❄️'}
-          {!['Sunny', 'Cloudy', 'Rainy', 'Snowy'].includes(data.condition) && '🌤️'}
-        </div>
-        <div className="weather-condition">
-          <div className="temperature">{data.temperature}°F</div>
-          <div className="condition">{data.condition}</div>
-        </div>
-      </div>
-      <div className="weather-metrics">
-        <div className="metric">
-          <span className="label">Humidity</span>
-          <span className="value">{data.humidity}%</span>
-        </div>
-        <div className="metric">
-          <span className="label">Wind</span>
-          <span className="value">{data.windSpeed} mph</span>
-        </div>
-        <div className="metric">
-          <span className="label">Pressure</span>
-          <span className="value">{data.pressure} hPa</span>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default WeatherInfo;`,
-      "src/components/SearchBar.js": `import React, { useState } from 'react';
-
-const SearchBar = ({ onSearch }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (searchTerm.trim()) {
-      onSearch(searchTerm);
     }
-  };
+  }, [selectedFile]);
 
   return (
-    <form className="search-bar" onSubmit={handleSubmit}>
-      <input
-        type="text"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        placeholder="Enter city name..."
-      />
-      <button type="submit">Search</button>
-    </form>
+    <Layout>
+      <div className="container max-w-7xl py-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">QwiX Pro Builder</h1>
+            <p className="text-muted-foreground">Generate and customize code projects using AI</p>
+          </div>
+          {generatedProject && (
+            <div className="flex gap-2 self-end md:self-auto">
+              <Button variant="outline" onClick={downloadProject}>
+                <Download className="mr-2 h-4 w-4" />
+                Download Project
+              </Button>
+              {previewUrl && (
+                <Button>
+                  <Eye className="mr-2 h-4 w-4" />
+                  Live Preview
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {!generatedProject ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Project Configuration */}
+            <div className="lg:col-span-1 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Project Details</CardTitle>
+                  <CardDescription>
+                    Configure your project settings and preferences
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="api-key">AI API Key</Label>
+                    <Input 
+                      id="api-key"
+                      type="password" 
+                      value={apiKey} 
+                      onChange={(e) => setApiKey(e.target.value)} 
+                      placeholder="Enter your AI API Key"
+                      className="mt-1.5"
+                    />
+                    <div className="flex justify-between mt-1">
+                      <p className="text-xs text-muted-foreground">
+                        Required for project generation
+                      </p>
+                      <Button 
+                        variant="link" 
+                        className="h-auto p-0 text-xs"
+                        onClick={validateApiKey}
+                      >
+                        Validate Key
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="project-name">Project Name</Label>
+                    <Input 
+                      id="project-name"
+                      value={projectName} 
+                      onChange={(e) => setProjectName(e.target.value)} 
+                      placeholder="e.g., My Awesome App"
+                      className="mt-1.5"
+                      disabled={!isApiKeyValid}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="project-description">Description (Optional)</Label>
+                    <Textarea 
+                      id="project-description"
+                      value={projectDescription} 
+                      onChange={(e) => setProjectDescription(e.target.value)} 
+                      placeholder="Describe your project in a few sentences"
+                      rows={3}
+                      className="mt-1.5 resize-none"
+                      disabled={!isApiKeyValid}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="project-template" className="block mb-1.5">Project Template</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {ProjectTemplates.map(template => (
+                        <Card 
+                          key={template.id}
+                          className={`cursor-pointer transition-all hover:border-primary ${selectedTemplate === template.id ? 'border-primary bg-primary/5' : ''}`}
+                          onClick={() => setSelectedTemplate(template.id)}
+                        >
+                          <CardContent className="p-3">
+                            <div className="text-2xl mb-1">{template.icon}</div>
+                            <h3 className="font-medium text-sm">{template.name}</h3>
+                            <p className="text-xs text-muted-foreground">{template.description}</p>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium mb-3">Additional Settings</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="include-tests" className="cursor-pointer">Include tests</Label>
+                        <Switch 
+                          id="include-tests" 
+                          checked={projectSettings.includeTests}
+                          onCheckedChange={(checked) => setProjectSettings({...projectSettings, includeTests: checked})}
+                          disabled={!isApiKeyValid}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="include-docs" className="cursor-pointer">Include documentation</Label>
+                        <Switch 
+                          id="include-docs" 
+                          checked={projectSettings.includeDocumentation}
+                          onCheckedChange={(checked) => setProjectSettings({...projectSettings, includeDocumentation: checked})}
+                          disabled={!isApiKeyValid}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="deployment-ready" className="cursor-pointer">Deployment ready</Label>
+                        <Switch 
+                          id="deployment-ready" 
+                          checked={projectSettings.deploymentReady}
+                          onCheckedChange={(checked) => setProjectSettings({...projectSettings, deploymentReady: checked})}
+                          disabled={!isApiKeyValid}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="create-git" className="cursor-pointer">Initialize Git repository</Label>
+                        <Switch 
+                          id="create-git" 
+                          checked={projectSettings.createGitRepo}
+                          onCheckedChange={(checked) => setProjectSettings({...projectSettings, createGitRepo: checked})}
+                          disabled={!isApiKeyValid}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="private-packages" className="cursor-pointer">Use private packages</Label>
+                        <Switch 
+                          id="private-packages" 
+                          checked={projectSettings.privatePackages}
+                          onCheckedChange={(checked) => setProjectSettings({...projectSettings, privatePackages: checked})}
+                          disabled={!isApiKeyValid}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button 
+                    onClick={handleGenerateProject} 
+                    disabled={!projectName || !selectedTemplate || !isApiKeyValid || isGenerating}
+                    className="w-full"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Code className="mr-2 h-4 w-4" />
+                        Generate Project
+                      </>
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
+            
+            {/* Examples and Templates */}
+            <div className="lg:col-span-2">
+              <Card className="h-full">
+                <CardHeader>
+                  <CardTitle>Project Templates</CardTitle>
+                  <CardDescription>
+                    Browse example projects to get inspired
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card>
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">React Dashboard</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          A modern React dashboard with charts, tables, and responsive UI.
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          <Badge variant="outline">React</Badge>
+                          <Badge variant="outline">Tailwind CSS</Badge>
+                          <Badge variant="outline">Charts</Badge>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="p-4">
+                        <Button variant="outline" className="w-full" disabled={!isApiKeyValid}>
+                          Use Template
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">E-Commerce Store</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          Full-featured online store with product listings and shopping cart.
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          <Badge variant="outline">Next.js</Badge>
+                          <Badge variant="outline">Stripe</Badge>
+                          <Badge variant="outline">MongoDB</Badge>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="p-4">
+                        <Button variant="outline" className="w-full" disabled={!isApiKeyValid}>
+                          Use Template
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">SaaS Starter</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          SaaS application template with authentication and subscription management.
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          <Badge variant="outline">React</Badge>
+                          <Badge variant="outline">Firebase</Badge>
+                          <Badge variant="outline">Stripe</Badge>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="p-4">
+                        <Button variant="outline" className="w-full" disabled={!isApiKeyValid}>
+                          Use Template
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader className="p-4">
+                        <CardTitle className="text-lg">Blog Platform</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <p className="text-sm text-muted-foreground">
+                          Modern blog platform with CMS integration and responsive design.
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          <Badge variant="outline">Next.js</Badge>
+                          <Badge variant="outline">MDX</Badge>
+                          <Badge variant="outline">Tailwind</Badge>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="p-4">
+                        <Button variant="outline" className="w-full" disabled={!isApiKeyValid}>
+                          Use Template
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <Tabs 
+              defaultValue="code" 
+              value={activeTab} 
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
+              <TabsList className="mb-4">
+                <TabsTrigger value="code">Code</TabsTrigger>
+                <TabsTrigger value="preview">Preview</TabsTrigger>
+                <TabsTrigger value="settings">Settings</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="code" className="mt-0">
+                <div className="grid grid-cols-12 gap-4">
+                  {/* File Explorer */}
+                  <div className="col-span-12 md:col-span-3">
+                    <Card>
+                      <CardHeader className="py-4">
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="text-lg">Files</CardTitle>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={addNewFile}>
+                              <Plus className="h-4 w-4" />
+                              <span className="sr-only">Add file</span>
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => fileInputRef.current?.click()}>
+                              <Upload className="h-4 w-4" />
+                              <span className="sr-only">Upload file</span>
+                            </Button>
+                            <input 
+                              type="file" 
+                              ref={fileInputRef}
+                              className="hidden"
+                              onChange={handleFileUpload}
+                            />
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        <div className="max-h-[500px] overflow-y-auto">
+                          <ul className="divide-y">
+                            {projectFiles.map((file, index) => (
+                              <li 
+                                key={index} 
+                                className={`px-4 py-2 cursor-pointer hover:bg-muted text-sm flex items-center justify-between ${selectedFile === file.path ? 'bg-muted' : ''}`}
+                                onClick={() => handleFileSelect(file.path)}
+                              >
+                                <div className="flex items-center">
+                                  <FileText className="h-4 w-4 mr-2 text-muted-foreground" />
+                                  <span className="truncate max-w-[180px]">{file.path}</span>
+                                </div>
+                                {selectedFile === file.path && (
+                                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={deleteSelectedFile}>
+                                    <Trash className="h-3 w-3" />
+                                    <span className="sr-only">Delete</span>
+                                  </Button>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  
+                  {/* Code Editor */}
+                  <div className="col-span-12 md:col-span-9">
+                    <Card>
+                      <CardHeader className="py-4 border-b">
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="text-lg truncate">
+                            {selectedFile || "No file selected"}
+                          </CardTitle>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="sm" className="h-8 px-2" onClick={updateFileContent}>
+                              <Save className="h-4 w-4 mr-1" />
+                              Save
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <Copy className="h-4 w-4" />
+                              <span className="sr-only">Copy</span>
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        <div className="min-h-[500px] relative">
+                          <Textarea 
+                            value={fileContent}
+                            onChange={(e) => setFileContent(e.target.value)}
+                            className="min-h-[500px] font-mono text-sm p-4 resize-none rounded-none border-0 focus-visible:ring-0"
+                            placeholder="// Select or create a file to begin coding"
+                            disabled={!selectedFile}
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="preview" className="mt-0">
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <CardTitle>Project Preview</CardTitle>
+                      {previewUrl && (
+                        <Button variant="outline" className="text-xs" asChild>
+                          <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="h-3 w-3 mr-1" />
+                            Open in new window
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="border-t h-[600px] w-full">
+                      <div className="w-full h-full flex items-center justify-center bg-slate-100">
+                        <div className="text-center">
+                          <p className="text-muted-foreground mb-2">Live preview will appear here after build</p>
+                          <Button variant="outline">Refresh Preview</Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="settings" className="mt-0">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Project Settings</CardTitle>
+                    <CardDescription>
+                      Configure build and deployment options
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-medium mb-2">General</h3>
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="project-name-settings">Project Name</Label>
+                            <Input 
+                              id="project-name-settings"
+                              value={projectName} 
+                              onChange={(e) => setProjectName(e.target.value)}
+                              className="mt-1" 
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="project-version">Version</Label>
+                            <Input 
+                              id="project-version"
+                              defaultValue="0.1.0"
+                              className="mt-1" 
+                            />
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="project-description-settings">Description</Label>
+                          <Textarea 
+                            id="project-description-settings"
+                            value={projectDescription} 
+                            onChange={(e) => setProjectDescription(e.target.value)}
+                            className="mt-1" 
+                            rows={2}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div>
+                      <h3 className="text-lg font-medium mb-2">Build Configuration</h3>
+                      <div className="space-y-3">
+                        <div>
+                          <Label htmlFor="build-command">Build Command</Label>
+                          <Input 
+                            id="build-command"
+                            defaultValue="npm run build" 
+                            className="mt-1"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="output-directory">Output Directory</Label>
+                          <Input 
+                            id="output-directory"
+                            defaultValue="dist" 
+                            className="mt-1"
+                          />
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="minify" className="cursor-pointer">Minify output</Label>
+                          <Switch id="minify" defaultChecked />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div>
+                      <h3 className="text-lg font-medium mb-2">Environment Variables</h3>
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input placeholder="KEY" />
+                          <Input placeholder="Value" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input placeholder="KEY" />
+                          <Input placeholder="Value" />
+                        </div>
+                        <Button variant="outline" className="w-full">
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add Environment Variable
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-between">
+                    <Button variant="outline">Reset Changes</Button>
+                    <Button>Save Settings</Button>
+                  </CardFooter>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
+      </div>
+    </Layout>
   );
 };
 
-export default SearchBar;`,
-      "src/mockData.js": `// Mock data for weather dashboard demo
-export const mockWeatherData = {
-  temperature: 72,
-  condition: 'Sunny',
-  humidity: 65,
-  windSpeed: 5,
-  pressure: 1013,
-};
-
-export const mockForecastData = [
-  { day: 'Mon', temp: 72, condition: 'Sunny' },
-  { day: 'Tue', temp: 68, condition: 'Partly Cloudy' },
-  { day: 'Wed', temp: 75, condition: 'Sunny' },
-  { day: 'Thu', temp: 65, condition: 'Rainy' },
-  { day: 'Fri', temp: 70, condition: 'Cloudy' }
-];`,
-      "src/App.css": `/* Weather Dashboard Styles */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.6;
-  color: #333;
-  background-color: #f5f7fa;
-}
-
-.weather-app {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #eaeaea;
-}
-
-header h1 {
-  margin-bottom: 20px;
-  color: #2c3e50;
-}
-
-.search-bar {
-  width: 100%;
-  max-width: 500px;
-  display: flex;
-}
-
-.search-bar input {
-  flex: 1;
-  padding: 10px 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px 0 0 4px;
-  font-size: 16px;
-}
-
-.search-bar button {
-  padding: 10px 20px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 0 4px 4px 0;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.search-bar button:hover {
-  background-color: #2980b9;
-}
-
-main {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-}
-
-@media (min-width: 768px) {
-  main {
-    grid-template-columns: 1fr 2fr;
-  }
-}
-
-.current-weather {
-  background-color: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.weather-info h2 {
-  font-size: 24px;
-  margin-bottom: 15px;
-  color: #2c3e50;
-}
-
-.weather-details {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.weather-icon {
-  font-size: 60px;
-  margin-right: 20px;
-}
-
-.temperature {
-  font-size: 36px;
-  font-weight: bold;
-}
-
-.condition {
-  font-size: 18px;
-  color: #7f8c8d;
-}
-
-.weather-metrics {
-  display: flex;
-  justify-content: space-between;
-  padding-top: 15px;
-  border-top: 1px solid #eaeaea;
-}
-
-.metric {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.label {
-  color: #7f8c8d;
-  font-size: 14px;
-}
-
-.value {
-  font-weight: bold;
-  font-size: 16px;
-}
-
-.forecast {
-  background-color: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.forecast h2 {
-  margin-bottom: 20px;
-  color: #2c3e50;
-}
-
-.weather-chart .chart {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  height: 200px;
-}
-
-.chart-column {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.chart-bar-container {
-  width: 30px;
-  height: 150px;
-  display: flex;
-  align-items: flex-end;
-}
-
-.chart-bar {
-  width: 100%;
-  background-color: #3498db;
-  border-radius: 4px 4px 0 0;
-  transition: height 0.5s ease;
-}
-
-.chart-day {
-  margin-top: 8px;
-  font-weight: bold;
-}
-
-.chart-temp {
-  color: #7f8c8d;
-}
-
-.loading, .error {
-  text-align: center;
-  padding: 50px 0;
-  font-size: 18px;
-}
-
-.error {
-  color: #e74c3c;
-}
-
-footer {
-  margin-top: 40px;
-  text-align: center;
-  color: #7f8c8d;
-  font-size: 14px;
-}`,
-      "src/index.js": `import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './App.css';
-import App from './App';
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);`,
-      "public/index.html": `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Weather Dashboard</title>
-</head>
-<body>
-  <div id="root"></div>
-</body>
-</html>`,
-      "package.json": `{
-  "name": "weather-dashboard",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  }
-}`,
-      "README.md": `# Weather Dashboard
-
-A responsive weather dashboard built with React.
-
-## Features
-
-- Current weather display
-- 5-day forecast with temperature chart
-- Search functionality for different locations
-- Responsive design for mobile and desktop
+export default QwiXProBuilder;

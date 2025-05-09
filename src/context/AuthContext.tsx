@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { User, UserRole } from '@/types/auth';
 
 interface AuthContextType {
@@ -130,29 +130,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string, role: UserRole): Promise<boolean> => {
     setIsLoading(true);
     
-    // Default organization login for demo purposes
-    if (role === 'organization' && email === 'spreddydhadi@gmail.com' && password === '1234567890') {
-      const orgUser = {
-        id: `org-demo-${Date.now()}`,
-        email: email,
-        name: 'QwiX Organization',
-        role: 'organization' as UserRole,
-        profilePicture: null
-      };
-      
-      setUser(orgUser);
-      localStorage.setItem('demo_user', JSON.stringify(orgUser));
-      
-      toast({
-        title: "Organization Login",
-        description: "Successfully logged in to organization account",
-      });
-      
-      navigate('/organization/dashboard');
-      setIsLoading(false);
-      return true;
-    }
-    
     const timeoutId = setTimeout(() => {
       setIsLoading(false);
       
@@ -172,12 +149,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "Logged in using prototype mode for faster demo",
       });
       
-      // Different navigation based on user role
-      if (role === 'organization') {
-        navigate('/organization/dashboard');
-      } else {
-        navigate('/dashboard');
-      }
+      navigate('/dashboard');
       return true;
     }, 5000);
     
@@ -264,12 +236,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "Welcome back!",
       });
       
-      // Different navigation based on user role
-      if (userData.role === 'organization') {
-        navigate('/organization/dashboard');
-      } else {
-        navigate('/dashboard');
-      }
+      navigate('/dashboard');
       return true;
     } catch (error: any) {
       clearTimeout(timeoutId);
