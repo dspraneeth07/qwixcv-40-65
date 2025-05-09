@@ -276,7 +276,7 @@ const Index = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="bg-sky-100 p-3 rounded-lg">
-                      <Link className="h-6 w-6 text-sky-600" />
+                      <User className="h-6 w-6 text-sky-600" />
                     </div>
                     <h3 className="font-semibold text-lg">LinkedIn Optimizer</h3>
                   </div>
