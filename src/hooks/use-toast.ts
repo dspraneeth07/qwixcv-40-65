@@ -1,4 +1,3 @@
-
 import * as React from "react"
 
 import type {
@@ -140,6 +139,7 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id"> & {
   id?: string
+  variant?: "default" | "destructive" | "warning"
 }
 
 // Return type for the toast function

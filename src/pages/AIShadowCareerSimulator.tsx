@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Layout } from "@/components/Layout";
 import { 
@@ -113,7 +114,7 @@ const AIShadowCareerSimulator = () => {
         toast({
           title: "Using simulation fallback",
           description: "We couldn't connect to our AI service, so we're showing you a simulated example.",
-          variant: "warning"
+          variant: "default"
         });
         
         // Get mock data and parse it

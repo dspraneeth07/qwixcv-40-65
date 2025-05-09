@@ -23,7 +23,8 @@ import {
   BriefcaseIcon,
   SaveIcon,
   ArrowRightIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  AlertTriangleIcon
 } from "lucide-react";
 import { generateQwiXProContent, getLayoffToolkitMockData } from "@/utils/qwixProApi";
 import { toast } from "@/components/ui/use-toast";
@@ -115,7 +116,7 @@ const AILayoffReadinessToolkit = () => {
         toast({
           title: "Using toolkit fallback",
           description: "We couldn't connect to our AI service, so we're showing you a simulated example.",
-          variant: "warning"
+          variant: "default"
         });
         
         // Get mock data and parse it
