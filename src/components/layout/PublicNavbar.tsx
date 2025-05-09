@@ -19,11 +19,11 @@ const PublicNavbar = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
-        <div className="flex items-center gap-2 mr-auto">
+        <div className="flex items-center">
           <QwikZenLogo size="md" showText={true} />
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 ml-auto">
           <NavigationMenu>
             <NavigationMenuList>
               <NavigationMenuItem>

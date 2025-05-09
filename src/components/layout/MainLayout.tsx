@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { 
@@ -20,7 +19,7 @@ import {
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import Logo from "../ui/Logo";
+import QwikZenLogo from "../ui/QwikZenLogo";
 import { useState } from "react";
 import WalletConnect from "@/components/blockchain/WalletConnect";
 
@@ -78,13 +77,13 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-gradient-to-r from-modern-blue-600 to-soft-purple text-white">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Logo variant="white" />
+        <div className="container flex h-16 items-center">
+          <div className="flex items-center">
+            <QwikZenLogo variant="white" size="md" showText={true} />
           </div>
           
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-4">
+          {/* Desktop Navigation - Right Aligned */}
+          <div className="hidden ml-auto md:flex items-center gap-4">
             {/* CV Tools Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -187,9 +186,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                 </Link>
               </Button>
             ))}
-          </div>
 
-          <div className="ml-auto flex items-center space-x-4">
             <WalletConnect />
 
             {isAuthenticated && user ? (
@@ -228,7 +225,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="hidden md:flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <Button asChild variant="ghost" className="text-white hover:bg-white/10">
                   <Link to="/login">
                     <LogIn className="h-4 w-4 mr-2" />
@@ -243,139 +240,139 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                 </Button>
               </div>
             )}
+          </div>
+          
+          {/* Mobile Navigation */}
+          <div className="ml-auto md:hidden flex items-center gap-2">
+            {!isAuthenticated && (
+              <Button asChild size="sm" variant="ghost" className="text-white">
+                <Link to="/login">Log in</Link>
+              </Button>
+            )}
             
-            {/* Mobile Navigation */}
-            <div className="flex md:hidden items-center gap-2">
-              {!isAuthenticated && (
-                <Button asChild size="sm" variant="ghost" className="text-white">
-                  <Link to="/login">Log in</Link>
+            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-white">
+                  <Menu className="h-6 w-6" />
+                  <span className="sr-only">Toggle menu</span>
                 </Button>
-              )}
-              
-              <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-white">
-                    <Menu className="h-6 w-6" />
-                    <span className="sr-only">Toggle menu</span>
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-[80%] sm:w-[385px] bg-gradient-to-b from-modern-blue-600 to-soft-purple text-white">
-                  <div className="flex flex-col gap-6 pt-10">
-                    {user && (
-                      <div className="flex items-center gap-3 mb-6 px-2">
-                        <Avatar className="h-10 w-10 border-2 border-white/20">
-                          <AvatarImage src={user.profilePicture} alt={user.name || ''} />
-                          <AvatarFallback className="bg-primary text-white">
-                            {user.name ? getInitials(user.name) : 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{user.name}</p>
-                          <p className="text-sm text-white/70">{user.email}</p>
-                        </div>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[80%] sm:w-[385px] bg-gradient-to-b from-modern-blue-600 to-soft-purple text-white">
+                <div className="flex flex-col gap-6 pt-10">
+                  {user && (
+                    <div className="flex items-center gap-3 mb-6 px-2">
+                      <Avatar className="h-10 w-10 border-2 border-white/20">
+                        <AvatarImage src={user.profilePicture} alt={user.name || ''} />
+                        <AvatarFallback className="bg-primary text-white">
+                          {user.name ? getInitials(user.name) : 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{user.name}</p>
+                        <p className="text-sm text-white/70">{user.email}</p>
                       </div>
-                    )}
-                    
-                    <div className="space-y-1 px-2">
-                      <p className="text-sm font-semibold text-white/70 mb-2">CV TOOLS</p>
-                      {productLinks.map((item) => (
-                        <Link
-                          key={item.name}
-                          to={item.href}
-                          className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          {item.icon && <item.icon className="h-5 w-5" />}
-                          {item.name}
-                        </Link>
-                      ))}
                     </div>
-                    
-                    <div className="space-y-1 px-2">
-                      <p className="text-sm font-semibold text-white/70 mb-2">QWIX CAREER GUIDE</p>
-                      {careerGuideLinks.map((item) => (
-                        <Link
-                          key={item.name}
-                          to={item.href}
-                          className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          {item.icon && <item.icon className="h-5 w-5" />}
-                          {item.name}
-                        </Link>
-                      ))}
-                    </div>
-
-                    <div className="space-y-1 px-2">
-                      <p className="text-sm font-semibold text-white/70 mb-2">QWIX LEARN</p>
-                      {learnLinks.map((item) => (
-                        <Link
-                          key={item.name}
-                          to={item.href}
-                          className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          {item.icon && <item.icon className="h-5 w-5" />}
-                          {item.name}
-                        </Link>
-                      ))}
-                    </div>
-                    
-                    <div className="space-y-1 px-2">
-                      <p className="text-sm font-semibold text-white/70 mb-2">COMPANY</p>
-                      {companyLinks.map((item) => (
-                        <Link
-                          key={item.name}
-                          to={item.href}
-                          className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          {item.icon && <item.icon className="h-5 w-5" />}
-                          {item.name}
-                        </Link>
-                      ))}
-                    </div>
-                    
-                    {isAuthenticated ? (
-                      <div className="border-t border-white/20 pt-4 px-2 mt-auto">
-                        <Button 
-                          variant="destructive" 
-                          className="w-full"
-                          onClick={() => {
-                            logout();
-                            setIsMenuOpen(false);
-                          }}
-                        >
-                          <LogOut className="h-4 w-4 mr-2" />
-                          Logout
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="pt-6 mt-6 border-t border-white/20">
-                        <Button asChild className="w-full">
-                          <Link 
-                            to="/register" 
-                            onClick={() => setIsMenuOpen(false)}
-                          >
-                            <UserPlus className="h-4 w-4 mr-2" />
-                            Sign up
-                          </Link>
-                        </Button>
-                        <Button asChild variant="outline" className="w-full mt-2 bg-transparent border-white text-white">
-                          <Link 
-                            to="/login" 
-                            onClick={() => setIsMenuOpen(false)}
-                          >
-                            <LogIn className="h-4 w-4 mr-2" />
-                            Log in
-                          </Link>
-                        </Button>
-                      </div>
-                    )}
+                  )}
+                  
+                  <div className="space-y-1 px-2">
+                    <p className="text-sm font-semibold text-white/70 mb-2">CV TOOLS</p>
+                    {productLinks.map((item) => (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        {item.icon && <item.icon className="h-5 w-5" />}
+                        {item.name}
+                      </Link>
+                    ))}
                   </div>
-                </SheetContent>
-              </Sheet>
-            </div>
+                  
+                  <div className="space-y-1 px-2">
+                    <p className="text-sm font-semibold text-white/70 mb-2">QWIX CAREER GUIDE</p>
+                    {careerGuideLinks.map((item) => (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        {item.icon && <item.icon className="h-5 w-5" />}
+                        {item.name}
+                      </Link>
+                    ))}
+                  </div>
+
+                  <div className="space-y-1 px-2">
+                    <p className="text-sm font-semibold text-white/70 mb-2">QWIX LEARN</p>
+                    {learnLinks.map((item) => (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        {item.icon && <item.icon className="h-5 w-5" />}
+                        {item.name}
+                      </Link>
+                    ))}
+                  </div>
+                  
+                  <div className="space-y-1 px-2">
+                    <p className="text-sm font-semibold text-white/70 mb-2">COMPANY</p>
+                    {companyLinks.map((item) => (
+                      <Link
+                        key={item.name}
+                        to={item.href}
+                        className="flex items-center gap-3 py-2 text-base font-medium text-white/90 hover:text-white"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        {item.icon && <item.icon className="h-5 w-5" />}
+                        {item.name}
+                      </Link>
+                    ))}
+                  </div>
+                  
+                  {isAuthenticated ? (
+                    <div className="border-t border-white/20 pt-4 px-2 mt-auto">
+                      <Button 
+                        variant="destructive" 
+                        className="w-full"
+                        onClick={() => {
+                          logout();
+                          setIsMenuOpen(false);
+                        }}
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Logout
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="pt-6 mt-6 border-t border-white/20">
+                      <Button asChild className="w-full">
+                        <Link 
+                          to="/register" 
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Sign up
+                        </Link>
+                      </Button>
+                      <Button asChild variant="outline" className="w-full mt-2 bg-transparent border-white text-white">
+                        <Link 
+                          to="/login" 
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <LogIn className="h-4 w-4 mr-2" />
+                          Log in
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>
