@@ -1,14 +1,9 @@
 
 import React from 'react';
-import Layout from '@/components/layout/Layout';
-import InterviewCoachComponent from "@/components/InterviewCoachComponent";
+import InterviewCoachNew from '@/components/interview/InterviewCoachNew';
 
-const InterviewCoach = () => {
-  return (
-    <Layout>
-      <InterviewCoachComponent />
-    </Layout>
-  );
+const InterviewCoach: React.FC = () => {
+  return <InterviewCoachNew />;
 };
 
 export default InterviewCoach;
