@@ -1,12 +1,12 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { Mic, MicOff, Pause, Play, Camera, CameraOff, Volume2, VolumeX, Download, Loader2, AlertTriangle, Clock } from "lucide-react";
+import { Mic, MicOff, Pause, Play, Volume2, VolumeX, Download, Loader2, AlertTriangle, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from '@/components/ui/use-toast';
 import InterviewAvatar from './InterviewAvatar';
+import VideoRecorder from './VideoRecorder';
 
 interface InterviewSimulationProps {
   interviewData: any;
@@ -16,7 +16,6 @@ interface InterviewSimulationProps {
 const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData, onComplete }) => {
   const [isInterviewActive, setIsInterviewActive] = useState(false);
   const [isMicMuted, setIsMicMuted] = useState(false);
-  const [isCameraOn, setIsCameraOn] = useState(true);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [transcript, setTranscript] = useState<{role: "interviewer" | "user", text: string}[]>([]);
@@ -28,10 +27,8 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
   const [isRecording, setIsRecording] = useState(false);
   const [userResponse, setUserResponse] = useState("");
   const [interviewTime, setInterviewTime] = useState(0);
+  const [recordedVideoBlobs, setRecordedVideoBlobs] = useState<{index: number, blob: Blob}[]>([]);
   const { toast } = useToast();
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<number | null>(null);
   
   // Sample interview questions based on job category, more professional now
@@ -123,43 +120,6 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
     };
   }, [isInterviewActive]);
   
-  // Initialize camera with performance optimizations
-  useEffect(() => {
-    if (isInterviewActive && videoRef.current && isCameraOn) {
-      navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          width: { ideal: 640 },  // Lower resolution for better performance
-          height: { ideal: 480 },
-          frameRate: { max: 24 }  // Lower framerate for better performance
-        } 
-      })
-        .then(stream => {
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-            // Apply hardware acceleration if available
-            videoRef.current.style.transform = 'translateZ(0)';
-          }
-        })
-        .catch(err => {
-          console.error("Error accessing webcam:", err);
-          toast({
-            title: "Camera Error",
-            description: "Unable to access your camera. Please check your permissions.",
-            variant: "destructive",
-          });
-          setIsCameraOn(false);
-        });
-    }
-    
-    return () => {
-      // Properly release camera resources when component unmounts or camera is turned off
-      if (videoRef.current && videoRef.current.srcObject) {
-        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-        tracks.forEach(track => track.stop());
-      }
-    };
-  }, [isInterviewActive, isCameraOn, toast]);
-  
   // Start the interview
   const startInterview = () => {
     setIsInterviewActive(true);
@@ -210,6 +170,19 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
     if (!isRecording) {
       setUserResponse("");
     }
+  };
+  
+  // Handle video recording completion
+  const handleVideoRecorded = (videoBlob: Blob) => {
+    setRecordedVideoBlobs(prev => [
+      ...prev,
+      { index: questionIndex, blob: videoBlob }
+    ]);
+    
+    toast({
+      title: "Video recorded",
+      description: "Your response has been recorded successfully.",
+    });
   };
   
   // Handle user's response submission with performance optimizations
@@ -323,6 +296,10 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
       interviewData: interviewData,
       timestamp: new Date().toISOString(),
       duration: interviewTime,
+      recordedVideos: recordedVideoBlobs.map(item => ({
+        questionIndex: item.index,
+        videoUrl: URL.createObjectURL(item.blob)
+      })),
       feedback: [
         "Demonstrated appropriate professional communication throughout the interview.",
         "Could improve responses by providing more concrete examples from past experiences.",
@@ -331,18 +308,6 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
         "Body language was generally professional with room for improvement in maintaining consistent eye contact."
       ]
     };
-    
-    // Stop the webcam
-    if (videoRef.current && videoRef.current.srcObject) {
-      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-      tracks.forEach(track => track.stop());
-    }
-    
-    // Stop the timer
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
     
     onComplete(results);
   };
@@ -373,18 +338,10 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
             
             {/* User video feed */}
             <div className="absolute bottom-4 right-4 w-32 h-24 bg-gray-200 rounded-md overflow-hidden border-2 border-gray-300">
-              {isCameraOn ? (
-                <video 
-                  ref={videoRef}
-                  autoPlay 
-                  muted 
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                  <CameraOff className="text-gray-500" />
-                </div>
-              )}
+              <VideoRecorder 
+                isActive={isInterviewActive} 
+                onVideoRecorded={handleVideoRecorded} 
+              />
             </div>
             
             {/* Interview controls with more professional styling */}
@@ -396,15 +353,6 @@ const InterviewSimulation: React.FC<InterviewSimulationProps> = ({ interviewData
                 onClick={() => setIsMicMuted(!isMicMuted)}
               >
                 {isMicMuted ? <MicOff className="h-5 w-5 text-gray-700" /> : <Mic className="h-5 w-5 text-gray-700" />}
-              </Button>
-              
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="hover:bg-gray-100 rounded-full"
-                onClick={() => setIsCameraOn(!isCameraOn)}
-              >
-                {isCameraOn ? <Camera className="h-5 w-5 text-gray-700" /> : <CameraOff className="h-5 w-5 text-gray-700" />}
               </Button>
               
               <Button 

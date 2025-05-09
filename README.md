@@ -124,30 +124,110 @@ QwiXEd360°Suite is an intelligent career development platform that leverages AI
   </table>
 </div>
 
-### Frontend Framework & UI
-- **React 18** with **TypeScript** for type-safe components
-- **Vite** for fast development and optimized production builds
-- **Tailwind CSS** for utility-first styling
-- **shadcn/ui** components built with Radix UI primitives
-- **Lucide Icons** for consistent UI iconography
-- **Three.js** for interactive 3D visualizations
-- **Framer Motion** for fluid animations and transitions
+### Complete Technology Stack
 
-### State Management & Data Handling
-- **TanStack Query** (React Query) for data fetching & caching
-- **React Hook Form** with **Zod** validation
-- **Context API** and **Zustand** for state management
-- **html2pdf.js** and **jsPDF** for document generation
+#### Frontend Core
+- **React 18.3.1** - JavaScript library for building user interfaces
+- **TypeScript** - Strongly typed programming language (built on JavaScript)
+- **Vite** - Build tool and development server
+- **Tailwind CSS 3.x** - Utility-first CSS framework
+- **React Router DOM 7.6.0** - Routing library for React
 
-### Blockchain Integration
-- **Ethers.js** for Ethereum wallet implementation
-- **IPFS/NFT.Storage** for decentralized storage of certificates
-- **Polygon** for fast, low-cost transactions
+#### UI Component Libraries
+- **shadcn/ui** - Component library built on Radix UI
+- **Radix UI** (various components, versions 1.1.x-2.2.x) - Unstyled, accessible UI primitives
+- **Lucide React 0.508.0** - Icon library
+- **Framer Motion 12.10.1** - Animation library
+- **cmdk 1.0.0** - Command palette component
+- **Vaul 0.9.3** - Drawer components
+- **Sonner 1.5.0** - Toast notification system
+- **Embla Carousel React 8.3.0** - Carousel components
+- **class-variance-authority 0.7.1** - Class name utility
+- **tailwind-merge 2.5.2** - Tailwind class merging utility
+- **tailwindcss-animate 1.0.7** - Animation utilities for Tailwind CSS
+- **clsx 2.1.1** - Class name construction utility
 
-### AI & Machine Learning
-- **Google Gemini API** for natural language processing
-- **Hugging Face Transformers** for text analysis and generation
-- **Custom AI models** for resume optimization and interview coaching
+#### Form Management
+- **React Hook Form 7.53.0** - Form state management
+- **@hookform/resolvers 3.9.0** - Form validation resolvers
+- **Zod 3.23.8** - Schema validation library
+- **input-otp 1.2.4** - One-time password input component
+
+#### Data Management & API Integration
+- **TanStack React Query 5.56.2** - Data fetching and state management
+- **Fetch API** - Browser API for making HTTP requests
+- **Arbeitnow API** - Job board API for job listings
+- **RapidAPI Services**:
+  - AI Resume Parser Extractor
+  - Open AI Text-to-Speech
+  - Speech-to-Text AI
+  - Facial AI Analyzer
+  - AI Grammar Checker
+
+#### AI & Machine Learning
+- **Google Gemini API** - AI text generation and analysis
+- **Hugging Face Transformers** - AI transformers for text processing
+- **AI transformer models**:
+  - Text generation models
+  - Text classification models
+  - Feature extraction models
+
+#### Blockchain Technology
+- **Ethers.js 6.9.2** - Ethereum blockchain interaction library
+- **MetaMask SDK React 0.14.2** - Wallet integration
+- **NFT.storage 7.2.0** - IPFS integration for decentralized storage
+- **Blockchain networks**:
+  - Ethereum Mainnet
+  - Goerli Testnet
+  - Polygon Mainnet
+  - Polygon Mumbai Testnet
+  - QwixChain (custom blockchain implementation)
+
+#### Document Processing
+- **html2pdf.js 0.10.1** - HTML to PDF conversion
+- **jsPDF 2.5.1** - PDF generation library
+- **html2canvas 1.4.1** - HTML to canvas conversion
+- **QRCode 1.5.4** - QR code generation library
+- **QRCode.react 3.1.0** - React component for QR codes
+
+#### Data Visualization
+- **Recharts 2.12.7** - Chart library for React
+- **Three.js 0.133.1** - 3D visualization library
+- **React-ChartJS-2 5.3.0** - React wrapper for Chart.js
+
+#### Date & Time Handling
+- **date-fns 4.1.0** - Date manipulation library
+- **React Day Picker 8.10.1** - Date picker component
+
+#### Authentication & Backend
+- **Supabase Client 2.49.4** - Backend-as-a-service client
+- **Supabase Authentication** - User authentication service
+- **Supabase Database** - PostgreSQL database service
+- **Supabase Storage** - File storage service
+
+#### Utilities
+- **UUID 9.0.1** - Unique identifier generation
+- **js-sha256 0.11.0** - SHA-256 hashing algorithm implementation
+- **esbuild 0.25.0** - JavaScript bundler used by Vite
+- **next-themes 0.3.0** - Theme management utility
+
+#### UI Panels & Layout
+- **react-resizable-panels 2.1.3** - Resizable panel components
+
+#### Security & Identity
+- **QwixMask** (custom implementation) - Blockchain wallet and identity service
+- **MetaMask integration** - External wallet service connection
+
+#### Custom Project Elements
+- **QwiXCert** - Blockchain certification system
+- **QwiX Career Guide** - Career planning tools
+- **QwiX Learn** - Learning and skill development system
+- **QwixVault** - Blockchain document storage system
+
+#### Development Tools
+- **ESLint** - Code quality tool
+- **TypeScript compiler** - Static type checking
+- **Vite dev server** - Development environment
 
 ## 🔄 Platform Architecture
 
@@ -218,4 +298,3 @@ Our platform not only helps job seekers create better resumes and prepare for in
 ## 📄 License
 
 Copyright © 2024 QwikZen Group India. All Rights Reserved.
-

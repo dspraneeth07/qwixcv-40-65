@@ -1,11 +1,13 @@
+
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, LineChart, PieChart } from "lucide-react";
+import { BarChart, LineChart, PieChart, Video, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import VideoRecorder from './VideoRecorder';
 import { 
   Chart as ChartJS, 
   CategoryScale, 
@@ -14,11 +16,11 @@ import {
   PointElement, 
   LineElement, 
   ArcElement,
-  Title, 
+  RadialLinearScale,
   Tooltip, 
   Legend 
 } from 'chart.js';
-import { Bar, Pie } from 'react-chartjs-2';
+import { Bar, Pie, Radar } from 'react-chartjs-2';
 
 // Register ChartJS components
 ChartJS.register(
@@ -28,7 +30,7 @@ ChartJS.register(
   PointElement, 
   LineElement,
   ArcElement,
-  Title, 
+  RadialLinearScale,
   Tooltip, 
   Legend
 );
@@ -41,11 +43,19 @@ interface InterviewReportProps {
     duration: number;
     questions: string[];
     answers: string[];
+    recordedVideos?: {
+      questionIndex: number;
+      videoUrl: string;
+    }[];
     scores: {
       confidence: number;
       eyeContact: number;
       voiceClarity: number;
       tonePacing: number;
+      contentRelevance: number;
+      bodyLanguage: number;
+      accent: number;
+      consistency: number;
       overall: number;
     };
     improvements: string[];
@@ -55,6 +65,7 @@ interface InterviewReportProps {
 
 const InterviewReport: React.FC<InterviewReportProps> = ({ data }) => {
   const [activeTab, setActiveTab] = useState("overview");
+  const [selectedVideoIndex, setSelectedVideoIndex] = useState<number | null>(null);
   
   // Format duration from seconds to minutes:seconds
   const formatDuration = (seconds: number) => {
@@ -66,7 +77,7 @@ const InterviewReport: React.FC<InterviewReportProps> = ({ data }) => {
   // Generate chart data for metrics
   const scoreChartData = useMemo(() => {
     return {
-      labels: ['Confidence', 'Eye Contact', 'Voice Clarity', 'Tone & Pacing', 'Overall'],
+      labels: ['Confidence', 'Eye Contact', 'Voice Clarity', 'Tone & Pacing', 'Content Relevance', 'Body Language', 'Accent', 'Consistency', 'Overall'],
       datasets: [
         {
           label: 'Your Performance',
@@ -75,6 +86,10 @@ const InterviewReport: React.FC<InterviewReportProps> = ({ data }) => {
             data.scores.eyeContact,
             data.scores.voiceClarity,
             data.scores.tonePacing,
+            data.scores.contentRelevance || 75,
+            data.scores.bodyLanguage || 70,
+            data.scores.accent || 80,
+            data.scores.consistency || 85,
             data.scores.overall
           ],
           backgroundColor: [
@@ -82,6 +97,10 @@ const InterviewReport: React.FC<InterviewReportProps> = ({ data }) => {
             'rgba(75, 192, 192, 0.6)',
             'rgba(153, 102, 255, 0.6)',
             'rgba(255, 159, 64, 0.6)',
+            'rgba(54, 205, 235, 0.6)',
+            'rgba(155, 99, 132, 0.6)',
+            'rgba(255, 99, 164, 0.6)',
+            'rgba(45, 210, 142, 0.6)',
             'rgba(255, 99, 132, 0.6)'
           ],
           borderColor: [
@@ -89,6 +108,10 @@ const InterviewReport: React.FC<InterviewReportProps> = ({ data }) => {
             'rgba(75, 192, 192, 1)',
             'rgba(153, 102, 255, 1)',
             'rgba(255, 159, 64, 1)',
+            'rgba(54, 205, 235, 1)',
+            'rgba(155, 99, 132, 1)',
+            'rgba(255, 99, 164, 1)',
+            'rgba(45, 210, 142, 1)',
             'rgba(255, 99, 132, 1)'
           ],
           borderWidth: 1
@@ -100,28 +123,63 @@ const InterviewReport: React.FC<InterviewReportProps> = ({ data }) => {
   // Generate pie chart data for overall skill breakdown
   const pieChartData = useMemo(() => {
     return {
-      labels: ['Confidence', 'Eye Contact', 'Voice Clarity', 'Tone & Pacing'],
+      labels: ['Confidence', 'Eye Contact', 'Voice Clarity', 'Tone & Pacing', 'Content Relevance', 'Body Language'],
       datasets: [
         {
           data: [
             data.scores.confidence,
             data.scores.eyeContact,
             data.scores.voiceClarity,
-            data.scores.tonePacing
+            data.scores.tonePacing,
+            data.scores.contentRelevance || 75,
+            data.scores.bodyLanguage || 70
           ],
           backgroundColor: [
             'rgba(54, 162, 235, 0.6)',
             'rgba(75, 192, 192, 0.6)',
             'rgba(153, 102, 255, 0.6)',
-            'rgba(255, 159, 64, 0.6)'
+            'rgba(255, 159, 64, 0.6)',
+            'rgba(54, 205, 235, 0.6)',
+            'rgba(155, 99, 132, 0.6)'
           ],
           borderColor: [
             'rgba(54, 162, 235, 1)',
             'rgba(75, 192, 192, 1)',
             'rgba(153, 102, 255, 1)',
-            'rgba(255, 159, 64, 1)'
+            'rgba(255, 159, 64, 1)',
+            'rgba(54, 205, 235, 1)',
+            'rgba(155, 99, 132, 1)'
           ],
           borderWidth: 1
+        }
+      ]
+    };
+  }, [data.scores]);
+  
+  // Generate radar chart data
+  const radarChartData = useMemo(() => {
+    return {
+      labels: ['Communication', 'Confidence', 'Body Language', 'Content Relevance', 'Voice Clarity', 'Consistency', 'Eye Contact', 'Overall Impression'],
+      datasets: [
+        {
+          label: 'Performance',
+          data: [
+            (data.scores.voiceClarity + data.scores.tonePacing) / 2,
+            data.scores.confidence,
+            data.scores.bodyLanguage || 70,
+            data.scores.contentRelevance || 75,
+            data.scores.voiceClarity,
+            data.scores.consistency || 85,
+            data.scores.eyeContact,
+            data.scores.overall
+          ],
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 2,
+          pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
         }
       ]
     };
@@ -151,6 +209,12 @@ const InterviewReport: React.FC<InterviewReportProps> = ({ data }) => {
   const generatePDF = () => {
     // In a real implementation, this would use a library like jsPDF to generate a PDF
     alert("In a real implementation, this would download a PDF report of your interview results");
+  };
+
+  // Get video for specific question
+  const getVideoForQuestion = (questionIndex: number) => {
+    if (!data.recordedVideos) return null;
+    return data.recordedVideos.find(v => v.questionIndex === questionIndex);
   };
   
   return (
@@ -193,9 +257,10 @@ const InterviewReport: React.FC<InterviewReportProps> = ({ data }) => {
       </Card>
       
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="metrics">Detailed Metrics</TabsTrigger>
+          <TabsTrigger value="recordings">Video Recordings</TabsTrigger>
           <TabsTrigger value="questions">Questions & Answers</TabsTrigger>
         </TabsList>
         
@@ -245,6 +310,26 @@ const InterviewReport: React.FC<InterviewReportProps> = ({ data }) => {
                   </div>
                   <Progress value={data.scores.tonePacing} className="h-2" />
                 </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span>Content Relevance</span>
+                    <span className={getScoreColorClass(data.scores.contentRelevance || 75)}>
+                      {data.scores.contentRelevance || 75}% ({getScoreRating(data.scores.contentRelevance || 75)})
+                    </span>
+                  </div>
+                  <Progress value={data.scores.contentRelevance || 75} className="h-2" />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span>Body Language</span>
+                    <span className={getScoreColorClass(data.scores.bodyLanguage || 70)}>
+                      {data.scores.bodyLanguage || 70}% ({getScoreRating(data.scores.bodyLanguage || 70)})
+                    </span>
+                  </div>
+                  <Progress value={data.scores.bodyLanguage || 70} className="h-2" />
+                </div>
               </CardContent>
             </Card>
             
@@ -265,6 +350,34 @@ const InterviewReport: React.FC<InterviewReportProps> = ({ data }) => {
               </CardContent>
             </Card>
           </div>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Performance Radar</CardTitle>
+              <CardDescription>Comprehensive view of your interview performance</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[400px] w-full">
+                <Radar 
+                  data={radarChartData}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                      r: {
+                        beginAtZero: true,
+                        min: 0,
+                        max: 100,
+                        ticks: {
+                          stepSize: 20
+                        }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </CardContent>
+          </Card>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
@@ -375,6 +488,91 @@ const InterviewReport: React.FC<InterviewReportProps> = ({ data }) => {
                   </ul>
                 </div>
               </div>
+
+              <div className="mt-6">
+                <h3 className="font-semibold mb-2">Content Relevance Analysis</h3>
+                <div className="space-y-2 text-sm">
+                  <p>Your content relevance score was {data.scores.contentRelevance || 75}%. This measures how well your answers addressed the specific questions asked and provided relevant examples.</p>
+                  
+                  <h4 className="font-medium mt-3">Tips to Improve:</h4>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Listen carefully to the full question before answering</li>
+                    <li>Structure answers using the STAR method (Situation, Task, Action, Result)</li>
+                    <li>Prepare examples that demonstrate relevant skills</li>
+                    <li>Connect your experiences directly to the job requirements</li>
+                    <li>Practice concise, focused responses that address the core question</li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="recordings" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Interview Video Recordings</CardTitle>
+              <CardDescription>
+                Review your recorded interview responses
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {data.recordedVideos && data.recordedVideos.length > 0 ? (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    {data.recordedVideos.map((recording, index) => (
+                      <div key={index} className="border rounded-lg overflow-hidden">
+                        <div className="p-3 bg-muted flex justify-between items-center">
+                          <h4 className="font-medium">Response {recording.questionIndex + 1}</h4>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => setSelectedVideoIndex(recording.questionIndex)}
+                          >
+                            <Video className="h-4 w-4 mr-2" />
+                            View
+                          </Button>
+                        </div>
+                        <div className="p-4">
+                          <p className="text-sm font-medium mb-2">Question:</p>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            {data.questions[recording.questionIndex]}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {selectedVideoIndex !== null && (
+                    <div className="mt-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg">
+                            Your Response to Question {selectedVideoIndex + 1}
+                          </CardTitle>
+                          <CardDescription>
+                            {data.questions[selectedVideoIndex]}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="h-[400px] bg-gray-100 rounded-md overflow-hidden">
+                            <VideoRecorder
+                              isActive={false}
+                              onVideoRecorded={() => {}}
+                              videoURL={getVideoForQuestion(selectedVideoIndex)?.videoUrl}
+                              isPlaybackOnly={true}
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="py-8 text-center">
+                  <p className="text-muted-foreground">No video recordings available for this interview session.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -416,6 +614,20 @@ const InterviewReport: React.FC<InterviewReportProps> = ({ data }) => {
                           }
                         </p>
                       </div>
+
+                      {getVideoForQuestion(index) && (
+                        <div className="mt-3">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex items-center"
+                            onClick={() => setSelectedVideoIndex(index)}
+                          >
+                            <Video className="h-4 w-4 mr-2" />
+                            View Video Response
+                          </Button>
+                        </div>
+                      )}
                     </div>
                     
                     {index < data.questions.length - 1 && (

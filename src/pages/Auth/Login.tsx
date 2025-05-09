@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { UserRole } from "@/types/auth";
 import { motion } from "framer-motion";
 import QwikZenLogo from "@/components/ui/QwikZenLogo";
+import { GraduationCap } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -77,13 +78,16 @@ const Login = () => {
       >
         <div className="flex flex-col items-center justify-center">
           <QwikZenLogo size="lg" showText={false} />
-          <h1 className="mt-4 text-3xl font-bold">
-            <span className="bg-gradient-to-r from-modern-blue-500 to-soft-purple bg-clip-text text-transparent">
-              QwiX CV
-            </span>
-          </h1>
-          <p className="text-muted-foreground">
-            Your AI-powered career development platform
+          <div className="flex items-center mt-4">
+            <GraduationCap className="h-8 w-8 text-modern-blue-600 mr-2" />
+            <h1 className="text-3xl font-bold">
+              <span className="bg-gradient-to-r from-modern-blue-500 to-soft-purple bg-clip-text text-transparent">
+                QwiXEd360°Suite
+              </span>
+            </h1>
+          </div>
+          <p className="text-muted-foreground mt-2">
+            QwikZen Group India
           </p>
         </div>
       </motion.div>

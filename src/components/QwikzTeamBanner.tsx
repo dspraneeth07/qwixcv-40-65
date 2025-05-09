@@ -17,18 +17,12 @@ const QwikzTeamBanner: React.FC = () => {
             />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-indigo-800 dark:text-indigo-300 mb-2">QwikZen Initiative</h3>
+            <h3 className="text-xl font-bold text-indigo-800 dark:text-indigo-300 mb-2">QwikZen Group India</h3>
             <p className="text-indigo-700 dark:text-indigo-400">
-              An AI-powered ecosystem built to transform career development with
-              innovative tools and blockchain security
+              Building innovative solutions for modern challenges
             </p>
           </div>
         </div>
-        <Button asChild className="whitespace-nowrap">
-          <Link to="/about">
-            Learn More About QwikZen <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-        </Button>
       </div>
     </div>
   );

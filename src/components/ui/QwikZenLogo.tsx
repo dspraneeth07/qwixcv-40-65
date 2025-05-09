@@ -45,8 +45,8 @@ const QwikZenLogo = ({ size = 'md', showText = true, variant = 'default' }: Qwik
         {showText && (
           <div className="flex items-center gap-1.5">
             <div className={`flex items-center ${variant === 'white' ? '' : 'pl-1'}`}>
-              <GraduationCap className={`${getIconSize()} ${variant === 'white' ? 'text-white' : 'text-modern-blue-600'}`} />
-              <span className={`${getTextSize()} font-bold ${textColor} font-sf-pro ml-1`}>
+              <GraduationCap className={`${getIconSize()} ${variant === 'white' ? 'text-white' : 'text-modern-blue-600'} mr-1`} />
+              <span className={`${getTextSize()} font-bold ${textColor} font-sf-pro`}>
                 QwiXEd360°Suite
               </span>
             </div>
