@@ -18,7 +18,7 @@ const QwiXProBuilder = () => {
     toast({
       title: "Profile updated",
       description: "Your professional profile has been successfully updated.",
-      variant: "success",
+      variant: "default", // Changed from "success" to "default"
     });
   };
 
