@@ -1,8 +1,7 @@
 
 import React, { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
-import Navbar from "./Navbar";
-import Footer from "./Footer";
+import MainLayout from "./MainLayout";
 
 interface LayoutProps {
   children: ReactNode;
@@ -18,13 +17,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return <>{children}</>;
   }
 
-  return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
-      <main className="flex-1">{children}</main>
-      <Footer />
-    </div>
-  );
+  return <MainLayout>{children}</MainLayout>;
 };
 
 export default Layout;
