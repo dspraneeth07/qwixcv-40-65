@@ -12,9 +12,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const authPaths = ["/login", "/register", "/forgot-password", "/reset-password"];
   const isAuthPage = authPaths.includes(location.pathname);
 
-  // Don't render header and footer for auth pages
+  // For auth pages, don't wrap in MainLayout to avoid duplication
   if (isAuthPage) {
     return <>{children}</>;
+  }
+
+  // Direct child rendering to avoid nesting when pages already use MainLayout
+  if (React.isValidElement(children) && children.type === MainLayout) {
+    return children;
   }
 
   return <MainLayout>{children}</MainLayout>;

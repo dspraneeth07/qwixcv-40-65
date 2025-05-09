@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
@@ -77,18 +76,16 @@ function App() {
               <Route path="/reset-password" element={<AuthLayout><ResetPassword /></AuthLayout>} />
               
               {/* Public verification routes */}
-              <Route path="/verify-cert/:certHash" element={<Layout><VerifyCertificate /></Layout>} />
-              <Route path="/verify-document/:documentId" element={<Layout><VerifyDocument /></Layout>} />
-              <Route path="/unauthorized" element={<Layout><Unauthorized /></Layout>} />
+              <Route path="/verify-cert/:certHash" element={<VerifyCertificate />} />
+              <Route path="/verify-document/:documentId" element={<VerifyDocument />} />
+              <Route path="/unauthorized" element={<Unauthorized />} />
 
               {/* Student landing page */}
               <Route 
                 path="/student-home" 
                 element={
                   <ProtectedRoute allowedRoles={['student', 'admin']}>
-                    <Layout>
-                      <StudentHome />
-                    </Layout>
+                    <StudentHome />
                   </ProtectedRoute>
                 } 
               />
@@ -98,9 +95,7 @@ function App() {
                 path="/organization-home" 
                 element={
                   <ProtectedRoute allowedRoles={['organization', 'admin']}>
-                    <Layout>
-                      <OrganizationHome />
-                    </Layout>
+                    <OrganizationHome />
                   </ProtectedRoute>
                 } 
               />
@@ -110,9 +105,7 @@ function App() {
                 path="/dashboard" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <Dashboard />
-                    </Layout>
+                    <Dashboard />
                   </ProtectedRoute>
                 } 
               />
@@ -132,9 +125,7 @@ function App() {
                 path="/builder" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <ResumeBuilder />
-                    </Layout>
+                    <ResumeBuilder />
                   </ProtectedRoute>
                 } 
               />
@@ -143,9 +134,7 @@ function App() {
                 path="/linkedin-optimizer" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <LinkedInOptimizer />
-                    </Layout>
+                    <LinkedInOptimizer />
                   </ProtectedRoute>
                 } 
               />
@@ -154,9 +143,7 @@ function App() {
                 path="/ats-scanner" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <ATSScanner />
-                    </Layout>
+                    <ATSScanner />
                   </ProtectedRoute>
                 } 
               />
@@ -165,9 +152,7 @@ function App() {
                 path="/resume-compare" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <ResumeCompare />
-                    </Layout>
+                    <ResumeCompare />
                   </ProtectedRoute>
                 } 
               />
@@ -177,9 +162,7 @@ function App() {
                 path="/career-path-simulator" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <CareerPathSimulator />
-                    </Layout>
+                    <CareerPathSimulator />
                   </ProtectedRoute>
                 } 
               />
@@ -188,9 +171,7 @@ function App() {
                 path="/interview-coach" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <InterviewCoach />
-                    </Layout>
+                    <InterviewCoach />
                   </ProtectedRoute>
                 } 
               />
@@ -199,9 +180,7 @@ function App() {
                 path="/ai-job-switch-planner" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <AIJobSwitchPlanner />
-                    </Layout>
+                    <AIJobSwitchPlanner />
                   </ProtectedRoute>
                 } 
               />
@@ -210,9 +189,7 @@ function App() {
                 path="/ai-shadow-career-simulator" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <AIShadowCareerSimulator />
-                    </Layout>
+                    <AIShadowCareerSimulator />
                   </ProtectedRoute>
                 } 
               />
@@ -221,9 +198,7 @@ function App() {
                 path="/skill-gap-analysis" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <SkillGapAnalysis />
-                    </Layout>
+                    <SkillGapAnalysis />
                   </ProtectedRoute>
                 } 
               />
@@ -232,9 +207,7 @@ function App() {
                 path="/ai-layoff-readiness-toolkit" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <AILayoffReadinessToolkit />
-                    </Layout>
+                    <AILayoffReadinessToolkit />
                   </ProtectedRoute>
                 } 
               />
@@ -244,9 +217,7 @@ function App() {
                 path="/mindprint-assessment" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <MindprintAssessment />
-                    </Layout>
+                    <MindprintAssessment />
                   </ProtectedRoute>
                 } 
               />
@@ -255,9 +226,7 @@ function App() {
                 path="/ai-coding-coach" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <AICodingCoach />
-                    </Layout>
+                    <AICodingCoach />
                   </ProtectedRoute>
                 } 
               />
@@ -266,9 +235,7 @@ function App() {
                 path="/qwixpro-builder" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <QwiXProBuilder />
-                    </Layout>
+                    <QwiXProBuilder />
                   </ProtectedRoute>
                 } 
               />
@@ -277,9 +244,7 @@ function App() {
                 path="/job-board" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <JobBoard />
-                    </Layout>
+                    <JobBoard />
                   </ProtectedRoute>
                 } 
               />
@@ -289,9 +254,7 @@ function App() {
                 path="/certification-center" 
                 element={
                   <ProtectedRoute allowedRoles={['student', 'admin']}>
-                    <Layout>
-                      <CertificationCenter />
-                    </Layout>
+                    <CertificationCenter />
                   </ProtectedRoute>
                 } 
               />
@@ -300,9 +263,7 @@ function App() {
                 path="/certificate/:id" 
                 element={
                   <ProtectedRoute allowedRoles={['student', 'admin']}>
-                    <Layout>
-                      <CertificateDetails />
-                    </Layout>
+                    <CertificateDetails />
                   </ProtectedRoute>
                 } 
               />
@@ -311,9 +272,7 @@ function App() {
                 path="/profile" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <Profile />
-                    </Layout>
+                    <Profile />
                   </ProtectedRoute>
                 } 
               />
@@ -322,9 +281,7 @@ function App() {
                 path="/settings" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <Settings />
-                    </Layout>
+                    <Settings />
                   </ProtectedRoute>
                 } 
               />
@@ -334,9 +291,7 @@ function App() {
                 path="/organization/dashboard" 
                 element={
                   <ProtectedRoute allowedRoles={['organization', 'admin']}>
-                    <Layout>
-                      <OrganizationDashboard />
-                    </Layout>
+                    <OrganizationDashboard />
                   </ProtectedRoute>
                 } 
               />
@@ -345,9 +300,7 @@ function App() {
                 path="/organization/resume-parser" 
                 element={
                   <ProtectedRoute allowedRoles={['organization', 'admin']}>
-                    <Layout>
-                      <ResumeParser />
-                    </Layout>
+                    <ResumeParser />
                   </ProtectedRoute>
                 } 
               />
@@ -356,9 +309,7 @@ function App() {
                 path="/organization/document-generator" 
                 element={
                   <ProtectedRoute allowedRoles={['organization', 'admin']}>
-                    <Layout>
-                      <DocumentGenerator />
-                    </Layout>
+                    <DocumentGenerator />
                   </ProtectedRoute>
                 } 
               />
@@ -367,9 +318,7 @@ function App() {
                 path="/organization/blockchain-verification" 
                 element={
                   <ProtectedRoute allowedRoles={['organization', 'admin']}>
-                    <Layout>
-                      <BlockchainVerification />
-                    </Layout>
+                    <BlockchainVerification />
                   </ProtectedRoute>
                 } 
               />
@@ -378,9 +327,7 @@ function App() {
                 path="/organization/ai-interviewer" 
                 element={
                   <ProtectedRoute allowedRoles={['organization', 'admin']}>
-                    <Layout>
-                      <AIInterviewer />
-                    </Layout>
+                    <AIInterviewer />
                   </ProtectedRoute>
                 } 
               />
@@ -389,9 +336,7 @@ function App() {
                 path="/organization/aptitude-exams" 
                 element={
                   <ProtectedRoute allowedRoles={['organization', 'admin']}>
-                    <Layout>
-                      <AptitudeExams />
-                    </Layout>
+                    <AptitudeExams />
                   </ProtectedRoute>
                 } 
               />
@@ -402,17 +347,15 @@ function App() {
                 element={
                   <ProtectedRoute>
                     {({ user }) => (
-                      <Layout>
-                        {user?.role === 'organization' ? <OrganizationHome /> : <StudentHome />}
-                      </Layout>
+                      user?.role === 'organization' ? <OrganizationHome /> : <StudentHome />
                     )}
                   </ProtectedRoute>
                 } 
               />
               
               {/* Public information pages */}
-              <Route path="/about" element={<Layout><div className="container mx-auto px-4 py-8">About Page</div></Layout>} />
-              <Route path="/contact" element={<Layout><div className="container mx-auto px-4 py-8">Contact Page</div></Layout>} />
+              <Route path="/about" element={<div className="container mx-auto px-4 py-8">About Page</div>} />
+              <Route path="/contact" element={<div className="container mx-auto px-4 py-8">Contact Page</div>} />
               
               {/* Catch-all route for 404 */}
               <Route path="*" element={<NotFound />} />
