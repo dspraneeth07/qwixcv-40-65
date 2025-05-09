@@ -42,6 +42,8 @@ import ResumeCompare from "./pages/ResumeCompare";
 import QwiXProBuilder from "./pages/QwiXProBuilder";
 import AuthLayout from "./pages/Auth/AuthLayout";
 import BlockchainVault from "./pages/BlockchainVault";
+import About from "@/pages/About";
+import Contact from "@/pages/Contact";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -80,6 +82,10 @@ function App() {
               <Route path="/verify-document/:documentId" element={<VerifyDocument />} />
               <Route path="/unauthorized" element={<Unauthorized />} />
 
+              {/* Public information pages */}
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              
               {/* Student landing page */}
               <Route 
                 path="/student-home" 
@@ -352,10 +358,6 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
-              
-              {/* Public information pages */}
-              <Route path="/about" element={<div className="container mx-auto px-4 py-8">About Page</div>} />
-              <Route path="/contact" element={<div className="container mx-auto px-4 py-8">Contact Page</div>} />
               
               {/* Catch-all route for 404 */}
               <Route path="*" element={<NotFound />} />

@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { UserRole } from "@/types/auth";
+import { motion } from "framer-motion";
+import QwikZenLogo from "@/components/ui/QwikZenLogo";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -59,19 +61,39 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
-      <div className="mb-8 text-center">
-        <h1 className="mb-1 text-3xl font-bold">
-          <span className="bg-gradient-to-r from-modern-blue-500 to-soft-purple bg-clip-text text-transparent">
-            QwiX CV
-          </span>
-        </h1>
-        <p className="text-muted-foreground">
-          Your AI-powered career development platform
-        </p>
+    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4 relative overflow-hidden">
+      {/* 3D Decorative Elements */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <div className="absolute w-64 h-64 rounded-full bg-modern-blue-100/30 blur-3xl top-1/4 left-1/4 animate-pulse"></div>
+        <div className="absolute w-96 h-96 rounded-full bg-soft-purple/20 blur-3xl bottom-1/3 right-1/4 animate-pulse" style={{ animationDelay: '1.5s' }}></div>
+        <div className="absolute w-80 h-80 rounded-full bg-modern-blue-200/20 blur-3xl top-1/2 right-1/3 animate-pulse" style={{ animationDelay: '2s' }}></div>
       </div>
       
-      <div className="max-w-md w-full">
+      <motion.div 
+        className="mb-8 text-center z-10"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="flex flex-col items-center justify-center">
+          <QwikZenLogo size="lg" showText={false} />
+          <h1 className="mt-4 text-3xl font-bold">
+            <span className="bg-gradient-to-r from-modern-blue-500 to-soft-purple bg-clip-text text-transparent">
+              QwiX CV
+            </span>
+          </h1>
+          <p className="text-muted-foreground">
+            Your AI-powered career development platform
+          </p>
+        </div>
+      </motion.div>
+      
+      <motion.div 
+        className="max-w-md w-full z-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
         <Tabs defaultValue="login" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-4">
             <TabsTrigger value="login">Login</TabsTrigger>
@@ -79,9 +101,9 @@ const Login = () => {
           </TabsList>
           
           <TabsContent value="login">
-            <Card>
+            <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-900/80 border border-slate-200/50 dark:border-slate-700/50 shadow-lg">
               <CardHeader>
-                <CardTitle>Login</CardTitle>
+                <CardTitle>Welcome Back</CardTitle>
                 <CardDescription>
                   Enter your credentials to access your account
                 </CardDescription>
@@ -97,6 +119,7 @@ const Login = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      className="border-slate-200 focus:border-modern-blue-400"
                     />
                   </div>
                   <div className="space-y-2">
@@ -104,7 +127,7 @@ const Login = () => {
                       <Label htmlFor="password">Password</Label>
                       <Link
                         to="/forgot-password"
-                        className="text-xs text-muted-foreground hover:underline"
+                        className="text-xs text-modern-blue-600 hover:text-modern-blue-800 hover:underline"
                       >
                         Forgot your password?
                       </Link>
@@ -116,18 +139,19 @@ const Login = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      className="border-slate-200 focus:border-modern-blue-400"
                     />
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full bg-gradient-to-r from-modern-blue-500 to-soft-purple hover:from-modern-blue-600 hover:to-soft-purple" disabled={isLoading}>
                     {isLoading ? "Logging in..." : "Login"}
                   </Button>
                 </CardFooter>
               </form>
             </Card>
             
-            <div className="mt-4">
+            <div className="mt-4 p-4 rounded-lg backdrop-blur-sm bg-white/40 dark:bg-slate-800/40 border border-slate-200/30 dark:border-slate-700/30">
               <p className="text-sm text-muted-foreground">
                 For demo purposes:
                 <br />
@@ -139,7 +163,7 @@ const Login = () => {
           </TabsContent>
           
           <TabsContent value="register">
-            <Card>
+            <Card className="backdrop-blur-sm bg-white/80 dark:bg-slate-900/80 border border-slate-200/50 dark:border-slate-700/50 shadow-lg">
               <CardHeader>
                 <CardTitle>Create an account</CardTitle>
                 <CardDescription>
@@ -156,6 +180,7 @@ const Login = () => {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
+                      className="border-slate-200 focus:border-modern-blue-400"
                     />
                   </div>
                   <div className="space-y-2">
@@ -167,6 +192,7 @@ const Login = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
+                      className="border-slate-200 focus:border-modern-blue-400"
                     />
                   </div>
                   <div className="space-y-2">
@@ -178,6 +204,7 @@ const Login = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      className="border-slate-200 focus:border-modern-blue-400"
                     />
                   </div>
                   <div className="space-y-2">
@@ -191,7 +218,7 @@ const Login = () => {
                           value="student"
                           checked={userRole === "student"}
                           onChange={() => setUserRole("student")}
-                          className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                          className="h-4 w-4 border-gray-300 text-modern-blue-600 focus:ring-modern-blue-500"
                         />
                         <Label htmlFor="student" className="text-sm font-normal">Student/Freelancer</Label>
                       </div>
@@ -203,7 +230,7 @@ const Login = () => {
                           value="organization"
                           checked={userRole === "organization"}
                           onChange={() => setUserRole("organization")}
-                          className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                          className="h-4 w-4 border-gray-300 text-modern-blue-600 focus:ring-modern-blue-500"
                         />
                         <Label htmlFor="organization" className="text-sm font-normal">Organization/HR</Label>
                       </div>
@@ -211,7 +238,7 @@ const Login = () => {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
+                  <Button type="submit" className="w-full bg-gradient-to-r from-modern-blue-500 to-soft-purple hover:from-modern-blue-600 hover:to-soft-purple" disabled={isLoading}>
                     {isLoading ? "Creating account..." : "Register"}
                   </Button>
                 </CardFooter>
@@ -219,7 +246,11 @@ const Login = () => {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
+        
+        <div className="mt-8 text-center text-sm text-muted-foreground">
+          <p>© 2025 QwikZen. All rights reserved.</p>
+        </div>
+      </motion.div>
     </div>
   );
 };

@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 
 interface QwikZenLogoProps {
   size?: 'sm' | 'md' | 'lg';
+  showText?: boolean;
 }
 
-const QwikZenLogo = ({ size = 'md' }: QwikZenLogoProps) => {
+const QwikZenLogo = ({ size = 'md', showText = true }: QwikZenLogoProps) => {
   const getLogoSize = () => {
     switch(size) {
       case 'sm': return 'h-6 w-6';
@@ -21,6 +22,11 @@ const QwikZenLogo = ({ size = 'md' }: QwikZenLogoProps) => {
         alt="QwikZen Logo" 
         className={`${getLogoSize()} mr-2`}
       />
+      {showText && (
+        <div className="font-bold text-lg bg-gradient-to-r from-modern-blue-500 to-soft-purple bg-clip-text text-transparent">
+          QwikZen
+        </div>
+      )}
     </Link>
   );
 };

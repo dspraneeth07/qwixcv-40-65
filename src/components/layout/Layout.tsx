@@ -1,6 +1,8 @@
+
 import React, { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import MainLayout from "./MainLayout";
+import PublicNavbar from "./PublicNavbar";
 
 interface LayoutProps {
   children: ReactNode;
