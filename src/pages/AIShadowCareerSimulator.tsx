@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Layout } from "@/components/Layout";
 import { 
@@ -23,7 +22,7 @@ import {
   AlertTriangleIcon,
   ArrowRightIcon
 } from "lucide-react";
-import { generateQwiXProContent } from "@/utils/qwixProApi";
+import { generateQwiXProContent, getCareerSimulatorMockData } from "@/utils/qwixProApi";
 import { toast } from "@/components/ui/use-toast";
 
 interface SimulationResult {
@@ -92,19 +91,35 @@ const AIShadowCareerSimulator = () => {
         Make it realistic, detailed and insightful to help someone understand what it's really like to work in this role.
       `;
 
-      // Use the career-specific API key
-      const response = await generateQwiXProContent(prompt, 'career');
-      
-      // Extract the JSON object from the response
-      const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/) || 
-                        response.match(/\{[\s\S]*\}/);
-      
-      if (jsonMatch) {
-        const cleanedJson = jsonMatch[0].replace(/```json|```/g, '').trim();
-        const parsedResult = JSON.parse(cleanedJson);
+      try {
+        // Try to use the API with the career-specific API key
+        const response = await generateQwiXProContent(prompt, 'career');
+        
+        // Extract the JSON object from the response
+        const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/) || 
+                          response.match(/\{[\s\S]*\}/);
+        
+        if (jsonMatch) {
+          const cleanedJson = jsonMatch[0].replace(/```json|```/g, '').trim();
+          const parsedResult = JSON.parse(cleanedJson);
+          setSimulationResult(parsedResult);
+        } else {
+          throw new Error("Could not parse the simulation result");
+        }
+      } catch (error) {
+        console.error("API call failed, using mock data instead:", error);
+        
+        // Use mock data as fallback
+        toast({
+          title: "Using simulation fallback",
+          description: "We couldn't connect to our AI service, so we're showing you a simulated example.",
+          variant: "warning"
+        });
+        
+        // Get mock data and parse it
+        const mockDataJson = getCareerSimulatorMockData(role, industry);
+        const parsedResult = JSON.parse(mockDataJson);
         setSimulationResult(parsedResult);
-      } else {
-        throw new Error("Could not parse the simulation result");
       }
     } catch (error) {
       console.error("Error generating simulation:", error);

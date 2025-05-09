@@ -25,7 +25,7 @@ import {
   ArrowRightIcon,
   CheckCircleIcon
 } from "lucide-react";
-import { generateQwiXProContent } from "@/utils/qwixProApi";
+import { generateQwiXProContent, getLayoffToolkitMockData } from "@/utils/qwixProApi";
 import { toast } from "@/components/ui/use-toast";
 
 interface ReadinessResult {
@@ -93,19 +93,35 @@ const AILayoffReadinessToolkit = () => {
         Make it practical, actionable, and genuinely helpful for someone who needs to quickly pivot after an unexpected layoff.
       `;
 
-      // Use the layoff-specific API key
-      const response = await generateQwiXProContent(prompt, 'layoff');
-      
-      // Extract the JSON object from the response
-      const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/) || 
-                        response.match(/\{[\s\S]*\}/);
-      
-      if (jsonMatch) {
-        const cleanedJson = jsonMatch[0].replace(/```json|```/g, '').trim();
-        const parsedResult = JSON.parse(cleanedJson);
+      try {
+        // Try to use the API with the layoff-specific API key
+        const response = await generateQwiXProContent(prompt, 'layoff');
+        
+        // Extract the JSON object from the response
+        const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/) || 
+                          response.match(/\{[\s\S]*\}/);
+        
+        if (jsonMatch) {
+          const cleanedJson = jsonMatch[0].replace(/```json|```/g, '').trim();
+          const parsedResult = JSON.parse(cleanedJson);
+          setResult(parsedResult);
+        } else {
+          throw new Error("Could not parse the response");
+        }
+      } catch (error) {
+        console.error("API call failed, using mock data instead:", error);
+        
+        // Use mock data as fallback
+        toast({
+          title: "Using toolkit fallback",
+          description: "We couldn't connect to our AI service, so we're showing you a simulated example.",
+          variant: "warning"
+        });
+        
+        // Get mock data and parse it
+        const mockDataJson = getLayoffToolkitMockData(currentRole, skills);
+        const parsedResult = JSON.parse(mockDataJson);
         setResult(parsedResult);
-      } else {
-        throw new Error("Could not parse the response");
       }
     } catch (error) {
       console.error("Error generating readiness toolkit:", error);
