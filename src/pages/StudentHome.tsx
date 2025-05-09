@@ -5,7 +5,7 @@ import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { FileText, BookOpen, User, ArrowRight, Book, LayoutDashboard, Users, Info, Route, Briefcase, Shield, MessageSquare, BarChart, Sparkles, Code, Rocket, TrendingUp, Star, Brain, Globe } from "lucide-react";
+import { FileText, BookOpen, ArrowRight, Book, Route, Briefcase, Shield, MessageSquare, BarChart, Sparkles, Code, Rocket, TrendingUp, Star, Brain, Linkedin } from "lucide-react";
 import QwikzTeamBanner from "@/components/QwikzTeamBanner";
 
 const FeatureCard = ({ title, description, icon: Icon, path, points }: { 
@@ -53,8 +53,45 @@ const FeatureCard = ({ title, description, icon: Icon, path, points }: {
   );
 };
 
+const FeatureSection = ({ title, description, features, bgClass }: { 
+  title: string; 
+  description: string;
+  features: any[];
+  bgClass: string;
+}) => {
+  return (
+    <section className={`py-16 ${bgClass}`}>
+      <div className="container mx-auto px-4">
+        <motion.div 
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <h2 className="text-3xl font-bold mb-3">{title}</h2>
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">{description}</p>
+        </motion.div>
+        
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {features.map((feature, index) => (
+            <FeatureCard 
+              key={index}
+              title={feature.title}
+              description={feature.description}
+              icon={feature.icon}
+              path={feature.path}
+              points={feature.points}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const StudentHome = () => {
-  const features = [
+  // CV Tools
+  const cvTools = [
     {
       title: "Resume Builder",
       description: "Create ATS-optimized resumes with AI guidance",
@@ -78,6 +115,32 @@ const StudentHome = () => {
       ]
     },
     {
+      title: "LinkedIn Optimizer",
+      description: "Enhance your LinkedIn profile visibility",
+      icon: Linkedin,
+      path: "/linkedin-optimizer",
+      points: [
+        "Profile optimization analysis",
+        "Keyword recommendation engine",
+        "Content suggestion for engagement"
+      ]
+    },
+    {
+      title: "Resume Compare",
+      description: "Compare multiple resume versions",
+      icon: FileText,
+      path: "/resume-compare",
+      points: [
+        "Side-by-side visual comparison",
+        "Impact analysis",
+        "Industry benchmark against peers"
+      ]
+    }
+  ];
+  
+  // Career Tools
+  const careerTools = [
+    {
       title: "Career Path Simulator",
       description: "Visualize your future career trajectory",
       icon: Route,
@@ -86,17 +149,6 @@ const StudentHome = () => {
         "Career growth visualization",
         "Skill development roadmaps",
         "Personalized advancement strategies"
-      ]
-    },
-    {
-      title: "Blockchain Certifications",
-      description: "Secure your credentials on blockchain",
-      icon: Shield,
-      path: "/certification-center",
-      points: [
-        "Tamper-proof certification storage",
-        "Verifiable credentials for employers",
-        "Certification assessment exams"
       ]
     },
     {
@@ -144,27 +196,20 @@ const StudentHome = () => {
       ]
     },
     {
-      title: "Skill Gap Analysis",
-      description: "Identify and bridge your skill gaps",
-      icon: TrendingUp,
-      path: "/skill-gap-analysis",
-      points: [
-        "Current vs. required skills mapping",
-        "Personalized learning recommendations",
-        "Progress tracking dashboard"
-      ]
-    },
-    {
       title: "AI Layoff Readiness Toolkit",
       description: "Prepare for career uncertainties",
-      icon: Sparkles,
+      icon: Shield,
       path: "/ai-layoff-readiness-toolkit",
       points: [
         "Job stability assessment",
         "Emergency career planning",
         "Market transferable skills identification"
       ]
-    },
+    }
+  ];
+
+  // QwiX Learn Tools
+  const learnTools = [
     {
       title: "AI Coding Coach",
       description: "Improve your coding skills with AI guidance",
@@ -188,25 +233,14 @@ const StudentHome = () => {
       ]
     },
     {
-      title: "LinkedIn Optimizer",
-      description: "Enhance your LinkedIn profile visibility",
-      icon: Briefcase,
-      path: "/linkedin-optimizer",
+      title: "Skill Gap Analysis",
+      description: "Identify and bridge your skill gaps",
+      icon: TrendingUp,
+      path: "/skill-gap-analysis",
       points: [
-        "Profile optimization analysis",
-        "Keyword recommendation engine",
-        "Content suggestion for engagement"
-      ]
-    },
-    {
-      title: "Resume Compare",
-      description: "Compare multiple resume versions",
-      icon: FileText,
-      path: "/resume-compare",
-      points: [
-        "Side-by-side visual comparison",
-        "Impact analysis",
-        "Industry benchmark against peers"
+        "Current vs. required skills mapping",
+        "Personalized learning recommendations",
+        "Progress tracking dashboard"
       ]
     },
     {
@@ -220,6 +254,21 @@ const StudentHome = () => {
         "Career compatibility recommendations"
       ]
     },
+  ];
+
+  // Blockchain Tools
+  const blockchainTools = [
+    {
+      title: "QwiXCert",
+      description: "Blockchain-verified certifications",
+      icon: Shield,
+      path: "/certification-center",
+      points: [
+        "Tamper-proof certification storage",
+        "Verifiable credentials for employers",
+        "Certification assessment exams"
+      ]
+    },
     {
       title: "Blockchain Vault",
       description: "Secure document storage using blockchain",
@@ -230,7 +279,7 @@ const StudentHome = () => {
         "Universal verification system",
         "Decentralized security protocol"
       ]
-    },
+    }
   ];
 
   return (
@@ -281,22 +330,37 @@ const StudentHome = () => {
         
         <QwikzTeamBanner />
         
-        <h2 className="text-3xl font-bold mt-16 mb-8 text-center">
-          Our Comprehensive Career Tools
-        </h2>
-
-        <div className="grid gap-6 mt-6 md:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature, index) => (
-            <FeatureCard 
-              key={index}
-              title={feature.title}
-              description={feature.description}
-              icon={feature.icon}
-              path={feature.path}
-              points={feature.points}
-            />
-          ))}
-        </div>
+        {/* CV Tools Section */}
+        <FeatureSection
+          title="CV Tools: Craft Your Professional Image"
+          description="Our suite of CV and profile optimization tools designed to help you stand out in the job market with AI-powered assistance."
+          features={cvTools}
+          bgClass="bg-gradient-to-b from-blue-50 to-white dark:from-blue-900/10 dark:to-transparent rounded-xl"
+        />
+        
+        {/* Career Tools Section */}
+        <FeatureSection
+          title="QwiX Career Guide: Navigate Your Professional Journey"
+          description="Tools to help you plan, visualize, and optimize your career path with AI-driven insights and practical guidance."
+          features={careerTools}
+          bgClass="bg-gradient-to-b from-purple-50 to-white dark:from-purple-900/10 dark:to-transparent rounded-xl"
+        />
+        
+        {/* QwiX Learn Section */}
+        <FeatureSection
+          title="QwiX Learn: Upskill with Intelligence"
+          description="Advanced learning tools that analyze your skill gaps and provide tailored learning paths to keep you competitive in your field."
+          features={learnTools}
+          bgClass="bg-gradient-to-b from-green-50 to-white dark:from-green-900/10 dark:to-transparent rounded-xl"
+        />
+        
+        {/* Blockchain Tools */}
+        <FeatureSection
+          title="Blockchain Security: Protect Your Professional Identity"
+          description="Leverage the power of blockchain to secure and verify your professional credentials and documents with tamper-proof technology."
+          features={blockchainTools}
+          bgClass="bg-gradient-to-b from-amber-50 to-white dark:from-amber-900/10 dark:to-transparent rounded-xl"
+        />
 
         <div className="mt-16 mb-8 bg-gray-50 p-8 rounded-2xl">
           <div className="text-center mb-8">
