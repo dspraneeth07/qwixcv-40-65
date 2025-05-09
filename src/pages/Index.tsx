@@ -241,32 +241,6 @@ const Index = () => {
       
       <TestimonialsSection />
       <CtaSection />
-      
-      {/* Team QwikZen Section */}
-      <section className="py-10 bg-gradient-to-r from-gray-50 to-gray-100">
-        <div className="container">
-          <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-3xl font-bold mb-4">Built with ❤️ by Team QwikZen</h2>
-            <p className="text-gray-600 mb-6">
-              QwiXEd360° is proudly designed and developed by QwikZen, 
-              a team passionate about leveraging AI to transform career development 
-              and education. Our mission is to make professional growth accessible to everyone.
-            </p>
-            <div className="flex items-center justify-center gap-4">
-              <Button asChild variant="outline">
-                <Link to="/about">
-                  About Us
-                </Link>
-              </Button>
-              <Button asChild>
-                <Link to="/contact">
-                  Contact Us
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
     </MainLayout>
   );
 };
