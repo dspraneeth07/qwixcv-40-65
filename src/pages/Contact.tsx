@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, Phone, MessageSquare, Send, Github, Linkedin, MapPin, User, ArrowRight, HelpCircle, Instagram, Globe, FileText, CalendarDays } from "lucide-react";
+import { Mail, Phone, MessageSquare, Send, Github, Linkedin, MapPin, User, ArrowRight, HelpCircle, Instagram, Globe, FileText, CalendarDays, Cpu, Award, Target } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
