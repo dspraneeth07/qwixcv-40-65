@@ -2,6 +2,10 @@
 # Netlify configuration for QwiXEd360°Suite
 # This file ensures proper routing for single page applications
 
+# Build settings to handle dependency conflicts
+[build]
+  command = "npm install --legacy-peer-deps && npm run build"
+
 # Handle single page application routing
 [[redirects]]
   from = "/*"
