@@ -1,140 +1,148 @@
-
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { FileText, Search, Link, QrCode, Shield, Database, Upload, CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react";
+import { 
+  FileText, Upload, X, Download, CheckCircle, File as FileIcon, Plus, Search,
+  Copy, Link, AlertTriangle, RefreshCcw, Check, X as XIcon
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import DocumentVerifier from "@/components/blockchain/DocumentVerifier";
+import { Filter } from "lucide-react";
 
-interface VerifiedDocument {
+interface Document {
   id: string;
-  type: string;
   name: string;
-  issuedBy: string;
-  issuedTo: string;
-  issuedDate: string;
-  expiryDate?: string;
-  status: 'verified' | 'pending' | 'rejected' | 'expired';
-  blockchainRef: string;
+  type: string;
+  size: string;
+  status: 'pending' | 'verified' | 'rejected';
+  hash?: string;
+  uploaded: string;
 }
 
 const BlockchainVerification = () => {
-  const [activeTab, setActiveTab] = useState('verify');
-  const [uniqueId, setUniqueId] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const { toast } = useToast();
+  
+  // Handle drag events
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
 
-  // Mock data for verified documents
-  const verifiedDocuments: VerifiedDocument[] = [
-    {
-      id: 'doc-1',
-      type: 'Education Certificate',
-      name: 'Bachelor of Technology',
-      issuedBy: 'University of Technology',
-      issuedTo: 'John Smith',
-      issuedDate: '2018-05-15',
-      status: 'verified',
-      blockchainRef: 'Qmx72bF9...'
-    },
-    {
-      id: 'doc-2',
-      type: 'Experience Letter',
-      name: 'Software Engineer - ABC Corp',
-      issuedBy: 'ABC Corporation',
-      issuedTo: 'John Smith',
-      issuedDate: '2022-02-10',
-      status: 'verified',
-      blockchainRef: 'QmUqzpR7...'
-    },
-    {
-      id: 'doc-3',
-      type: 'Certification',
-      name: 'AWS Solutions Architect',
-      issuedBy: 'Amazon Web Services',
-      issuedTo: 'Sarah Williams',
-      issuedDate: '2021-07-22',
-      expiryDate: '2024-07-22',
-      status: 'verified',
-      blockchainRef: 'QmaPhRwZ...'
-    },
-    {
-      id: 'doc-4',
-      type: 'Experience Letter',
-      name: 'Project Manager - XYZ Inc.',
-      issuedBy: 'XYZ Inc.',
-      issuedTo: 'Michael Johnson',
-      issuedDate: '2023-01-05',
-      status: 'pending',
-      blockchainRef: 'QmZpX9v4...'
-    },
-    {
-      id: 'doc-5',
-      type: 'Education Certificate',
-      name: 'Master of Business Administration',
-      issuedBy: 'Business School',
-      issuedTo: 'Emily Brown',
-      issuedDate: '2020-06-30',
-      status: 'verified',
-      blockchainRef: 'QmrT7nQ9...'
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    handleFiles(files);
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const files = Array.from(e.target.files);
+      handleFiles(files);
     }
-  ];
+  };
 
-  const handleVerify = () => {
-    if (!uniqueId.trim()) {
+  const handleFiles = (files: File[]) => {
+    // Filter for only PDF and Word documents
+    const validFiles = files.filter(file => 
+      file.type === 'application/pdf' || 
+      file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      file.type === 'application/msword'
+    );
+    
+    if (validFiles.length < files.length) {
       toast({
-        title: "Input Required",
-        description: "Please enter a document ID to verify",
-        variant: "destructive"
+        title: "Invalid files",
+        description: "Some files were skipped. Only PDF and Word documents are supported.",
+        variant: "warning"
       });
-      return;
     }
     
+    setUploadedFiles(prev => [...prev, ...validFiles]);
+  };
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const processFiles = () => {
+    if (uploadedFiles.length === 0) return;
+    
+    setIsUploading(true);
+    setUploadProgress(0);
+    
+    // Simulate upload progress
+    const interval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          simulateVerification();
+          return 100;
+        }
+        return prev + 5;
+      });
+    }, 100);
+  };
+
+  const simulateVerification = () => {
+    setIsUploading(false);
     setIsVerifying(true);
     
-    // Simulate verification process
+    // Mock document data after delay to simulate processing
     setTimeout(() => {
+      const mockDocuments: Document[] = uploadedFiles.map((file, index) => ({
+        id: `doc-${Date.now()}-${index}`,
+        name: file.name,
+        type: file.type,
+        size: (file.size / 1024).toFixed(0) + ' KB',
+        status: Math.random() > 0.8 ? 'rejected' : 'verified',
+        hash: '0x' + Math.random().toString(36).substring(2, 15),
+        uploaded: new Date().toLocaleDateString()
+      }));
+      
+      setDocuments(mockDocuments);
       setIsVerifying(false);
-      setActiveTab('results');
       
       toast({
-        title: "Document Found",
-        description: "Document has been successfully verified on blockchain",
+        title: "Verification complete",
+        description: `Successfully processed ${mockDocuments.length} documents`,
       });
-    }, 1500);
+    }, 2000);
+  };
+
+  const clearAll = () => {
+    setUploadedFiles([]);
+    setDocuments([]);
+    setUploadProgress(0);
   };
 
   const getStatusBadge = (status: string) => {
     switch(status) {
-      case 'verified':
-        return <Badge className="bg-green-500">Verified</Badge>;
       case 'pending':
         return <Badge variant="outline" className="text-amber-500 border-amber-500">Pending</Badge>;
+      case 'verified':
+        return <Badge className="bg-green-500">Verified</Badge>;
       case 'rejected':
-        return <Badge variant="destructive">Rejected</Badge>;
-      case 'expired':
-        return <Badge variant="outline" className="text-red-500 border-red-500">Expired</Badge>;
+        return <Badge variant="outline" className="text-red-500 border-red-500">Rejected</Badge>;
       default:
         return <Badge variant="outline">Unknown</Badge>;
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch(status) {
-      case 'verified':
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'pending':
-        return <Clock className="h-5 w-5 text-amber-500" />;
-      case 'rejected':
-        return <XCircle className="h-5 w-5 text-red-500" />;
-      case 'expired':
-        return <AlertCircle className="h-5 w-5 text-red-500" />;
-      default:
-        return null;
     }
   };
 
@@ -142,271 +150,194 @@ const BlockchainVerification = () => {
     <div className="container mx-auto py-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Blockchain Document Verification</h1>
-          <p className="text-muted-foreground">Verify and manage candidate documents using blockchain technology</p>
+          <h1 className="text-3xl font-bold tracking-tight">Blockchain Verification</h1>
+          <p className="text-muted-foreground">Upload and verify documents using blockchain technology</p>
         </div>
-        <Button variant="outline" onClick={() => window.history.back()}>
-          Back
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => window.history.back()}>
+            Back
+          </Button>
+        </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="verify">
-            <Shield className="h-4 w-4 mr-2" />
-            Verify Document
-          </TabsTrigger>
-          <TabsTrigger value="upload">
-            <Upload className="h-4 w-4 mr-2" />
-            Upload To Blockchain
-          </TabsTrigger>
-          <TabsTrigger value="dashboard">
-            <Database className="h-4 w-4 mr-2" />
-            Verification Dashboard
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="verify" className="space-y-4">
-          <DocumentVerifier />
-        </TabsContent>
-        
-        <TabsContent value="results" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="rounded-full bg-green-100 p-2 text-green-600">
-                  <CheckCircle className="h-6 w-6" />
+      {documents.length === 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Bulk Document Upload</CardTitle>
+            <CardDescription>Upload multiple documents for blockchain verification</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div 
+              className={`border-2 border-dashed rounded-lg p-8 text-center ${
+                isDragging ? 'border-primary bg-primary/5' : 'border-border'
+              }`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <div className="rounded-full bg-primary/10 p-4">
+                  <Upload className="h-8 w-8 text-primary" />
                 </div>
-                <div>
-                  <CardTitle>Document Verified</CardTitle>
-                  <CardDescription>This document is authentic and has been verified on the blockchain</CardDescription>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-medium">Drag and drop documents</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Drop your files here or click to browse
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Supports PDF and Word documents
+                  </p>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Document Type</h3>
-                    <p className="text-lg font-medium">Education Certificate</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Document Name</h3>
-                    <p className="text-lg font-medium">Bachelor of Technology in Computer Science</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Issued By</h3>
-                    <p className="text-lg font-medium">University of Technology</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Issued To</h3>
-                    <p className="text-lg font-medium">John Smith</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Issued Date</h3>
-                    <p className="text-lg font-medium">May 15, 2018</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Blockchain Reference</h3>
-                    <p className="text-sm font-mono bg-gray-100 p-2 rounded-md">
-                      Qmx72bF9HtK8LmRQcr6G5J2kNpLj8CcXm9N3XwEBp5HfGn
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Verification Status</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <CheckCircle className="h-5 w-5 text-green-500" />
-                      <span className="text-green-600 font-medium">Verified on Blockchain</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex gap-3">
-                  <Shield className="h-5 w-5 text-green-600 mt-1" />
-                  <div>
-                    <p className="font-medium text-green-800">Security Information</p>
-                    <p className="text-sm text-green-700 mt-1">
-                      This document was securely stored on the blockchain on May 15, 2018 at 10:23 AM GMT.
-                      The document's fingerprint (hash) was calculated using SHA-256 and stored immutably.
-                      Any tampering with the document would change its hash and invalidate verification.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex justify-between">
-                <div className="flex gap-2">
-                  <Button variant="outline">
-                    <QrCode className="h-4 w-4 mr-2" />
-                    Generate QR
-                  </Button>
-                  <Button variant="outline">
-                    <Link className="h-4 w-4 mr-2" />
-                    Copy Link
-                  </Button>
-                </div>
-                <Button>
-                  <FileText className="h-4 w-4 mr-2" />
-                  View Document
+                <Button variant="outline" onClick={() => document.getElementById('file-upload')?.click()}>
+                  Select Files
                 </Button>
+                <input 
+                  id="file-upload"
+                  type="file"
+                  multiple
+                  accept=".pdf,.doc,.docx"
+                  className="hidden"
+                  onChange={handleFileInput}
+                />
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="upload" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upload Document to Blockchain</CardTitle>
-              <CardDescription>
-                Securely store documents on the blockchain for immutable verification
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
+            </div>
+
+            {uploadedFiles.length > 0 && (
+              <div className="mt-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-medium">Selected Files ({uploadedFiles.length})</h3>
+                  <Button variant="ghost" size="sm" onClick={clearAll}>Clear All</Button>
+                </div>
                 <div className="space-y-2">
-                  <Label htmlFor="documentType">Document Type</Label>
-                  <select className="w-full rounded-md border border-input bg-transparent px-3 py-2">
-                    <option>Education Certificate</option>
-                    <option>Experience Letter</option>
-                    <option>ID Proof</option>
-                    <option>Certification</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="documentName">Document Name</Label>
-                  <Input id="documentName" placeholder="Enter document name" />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="issuedBy">Issued By</Label>
-                    <Input id="issuedBy" placeholder="Organization/Institute name" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="issuedTo">Issued To</Label>
-                    <Input id="issuedTo" placeholder="Recipient name" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="issuedDate">Issue Date</Label>
-                    <Input id="issuedDate" type="date" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="expiryDate">Expiry Date (optional)</Label>
-                    <Input id="expiryDate" type="date" />
-                  </div>
-                </div>
-                
-                <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                  <div className="flex flex-col items-center justify-center space-y-4">
-                    <div className="rounded-full bg-primary/10 p-4">
-                      <Upload className="h-8 w-8 text-primary" />
+                  {uploadedFiles.map((file, index) => (
+                    <div key={index} className="flex justify-between items-center p-2 bg-muted rounded-md">
+                      <div className="flex items-center space-x-2">
+                        <FileText className="h-4 w-4" />
+                        <span className="text-sm font-medium truncate max-w-[200px] md:max-w-md">
+                          {file.name}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {(file.size / 1024).toFixed(0)} KB
+                        </span>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6"
+                        onClick={() => removeFile(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-medium">Upload Document</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Drag and drop your file here or click to browse
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Supports PDF, JPG, PNG (Max size: 10MB)
-                      </p>
-                    </div>
-                    <Button variant="outline" onClick={() => document.getElementById('file-upload')?.click()}>
-                      Select File
-                    </Button>
-                    <input 
-                      id="file-upload"
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      className="hidden"
-                    />
-                  </div>
+                  ))}
                 </div>
               </div>
-            </CardContent>
-            <div className="p-6 pt-0 flex justify-end gap-2">
-              <Button variant="outline">Cancel</Button>
-              <Button onClick={() => {
-                toast({
-                  title: "Document uploaded",
-                  description: "Document has been successfully uploaded to the blockchain"
-                });
-              }}>
-                Upload to Blockchain
+            )}
+
+            {isUploading && (
+              <div className="mt-6">
+                <div className="flex justify-between items-center mb-2">
+                  <p className="text-sm font-medium">Uploading...</p>
+                  <p className="text-sm">{uploadProgress}%</p>
+                </div>
+                <Progress value={uploadProgress} className="w-full h-2" />
+              </div>
+            )}
+            
+            {isVerifying && (
+              <div className="mt-6">
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                  <p className="text-sm font-medium">Verifying documents on blockchain...</p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+          <CardFooter className="flex justify-end gap-2">
+            <Button variant="outline" onClick={clearAll} disabled={isUploading || isVerifying}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={processFiles} 
+              disabled={uploadedFiles.length === 0 || isUploading || isVerifying}
+            >
+              Process {uploadedFiles.length} {uploadedFiles.length === 1 ? 'Document' : 'Documents'}
+            </Button>
+          </CardFooter>
+        </Card>
+      ) : (
+        <div>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold tracking-tight">Verification Results</h2>
+            
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={clearAll}>
+                New Upload
+              </Button>
+              <Button variant="outline" size="sm">
+                <Filter className="h-4 w-4 mr-2" />
+                Filter
+              </Button>
+              <Button size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Export
               </Button>
             </div>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="dashboard" className="space-y-4">
+          </div>
+          
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>Verification Dashboard</CardTitle>
-                  <CardDescription>
-                    Manage and track all blockchain-verified documents
-                  </CardDescription>
-                </div>
-                <div className="flex gap-2">
-                  <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search documents..."
-                      className="pl-8 w-[200px] md:w-[300px]"
-                    />
-                  </div>
-                  <Button variant="outline">
-                    <Filter className="h-4 w-4 mr-2" />
-                    Filter
-                  </Button>
-                </div>
-              </div>
+              <CardTitle>Verified Documents</CardTitle>
+              <CardDescription>List of documents verified on the blockchain</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Document Name</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Size</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Document Type</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Issued By</TableHead>
-                    <TableHead>Issued To</TableHead>
-                    <TableHead>Issue Date</TableHead>
+                    <TableHead>Uploaded</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {verifiedDocuments.map((doc) => (
+                  {documents.map((doc) => (
                     <TableRow key={doc.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          {getStatusIcon(doc.status)}
-                          {getStatusBadge(doc.status)}
-                        </div>
-                      </TableCell>
+                      <TableCell className="font-medium">{doc.name}</TableCell>
                       <TableCell>{doc.type}</TableCell>
-                      <TableCell>{doc.name}</TableCell>
-                      <TableCell>{doc.issuedBy}</TableCell>
-                      <TableCell>{doc.issuedTo}</TableCell>
-                      <TableCell>{new Date(doc.issuedDate).toLocaleDateString()}</TableCell>
+                      <TableCell>{doc.size}</TableCell>
+                      <TableCell>
+                        {doc.status === 'verified' ? (
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <span className="text-green-500">Verified</span>
+                          </div>
+                        ) : doc.status === 'rejected' ? (
+                          <div className="flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4 text-red-500" />
+                            <span className="text-red-500">Rejected</span>
+                          </div>
+                        ) : (
+                          getStatusBadge(doc.status)
+                        )}
+                      </TableCell>
+                      <TableCell>{doc.uploaded}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
+                          {doc.status === 'verified' && (
+                            <>
+                              <Button size="icon" variant="ghost" className="h-8 w-8">
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                              <Button size="icon" variant="ghost" className="h-8 w-8">
+                                <Link className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
                           <Button size="icon" variant="ghost" className="h-8 w-8">
-                            <FileText className="h-4 w-4" />
-                          </Button>
-                          <Button size="icon" variant="ghost" className="h-8 w-8">
-                            <QrCode className="h-4 w-4" />
-                          </Button>
-                          <Button size="icon" variant="ghost" className="h-8 w-8">
-                            <Link className="h-4 w-4" />
+                            <Download className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -416,8 +347,8 @@ const BlockchainVerification = () => {
               </Table>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
     </div>
   );
 };

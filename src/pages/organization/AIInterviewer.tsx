@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { 
   Users, Settings, Play, Clipboard, MessageSquare, 
   UserPlus, Edit, Trash, Send, Download, List, Video, 
-  UserCheck, Mail, Calendar 
+  UserCheck, Mail, Calendar, BarChart2 as BarChart 
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
