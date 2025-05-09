@@ -4,12 +4,12 @@
 
 # Build settings to handle dependency conflicts
 [build]
-  command = "npm install --legacy-peer-deps && npm run build"
+  command = "npm install --force && npm run build"
   publish = "dist"
 
 # Cache control for dependencies
 [build.environment]
-  NPM_FLAGS = "--no-audit --legacy-peer-deps"
+  NPM_FLAGS = "--no-audit --force"
   NODE_VERSION = "20"
 
 # Handle single page application routing
