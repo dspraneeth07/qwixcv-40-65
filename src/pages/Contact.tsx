@@ -1,4 +1,3 @@
-
 import MainLayout from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -443,7 +442,7 @@ const Contact = () => {
 
                 <div className="flex">
                   <div className="mr-3 text-modern-blue-600">
-                    <Users className="h-5 w-5" />
+                    <User className="h-5 w-5" />
                   </div>
                   <div>
                     <h4 className="font-medium">Community Engagement</h4>
