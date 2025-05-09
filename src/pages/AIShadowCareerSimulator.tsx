@@ -154,192 +154,190 @@ const AIShadowCareerSimulator = () => {
   };
 
   return (
-    <Layout>
-      <div className="container max-w-6xl py-8">
-        <h1 className="text-3xl font-bold mb-2">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-modern-blue-500 to-soft-purple">
-            AI Shadow Career Simulator
-          </span>
-        </h1>
-        <p className="text-gray-600 mb-8">
-          Experience "a day in the life" of any job role before committing to a career path
-        </p>
+    <div className="container max-w-6xl py-8">
+      <h1 className="text-3xl font-bold mb-2">
+        <span className="bg-clip-text text-transparent bg-gradient-to-r from-modern-blue-500 to-soft-purple">
+          AI Shadow Career Simulator
+        </span>
+      </h1>
+      <p className="text-gray-600 mb-8">
+        Experience "a day in the life" of any job role before committing to a career path
+      </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Input Form */}
-          <Card className="md:col-span-1">
-            <CardHeader>
-              <CardTitle>Simulate a Career</CardTitle>
-              <CardDescription>
-                Enter a job role to experience what a typical day looks like
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-1 block">
-                  Job Role*
-                </label>
-                <Input 
-                  placeholder="e.g. Product Manager, Game Designer" 
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">
-                  Industry (Optional)
-                </label>
-                <Input 
-                  placeholder="e.g. Tech, Healthcare, Finance" 
-                  value={industry}
-                  onChange={(e) => setIndustry(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">
-                  Additional Context (Optional)
-                </label>
-                <Textarea 
-                  placeholder="Any specific aspects you're curious about?" 
-                  value={additionalInfo}
-                  onChange={(e) => setAdditionalInfo(e.target.value)}
-                  rows={3}
-                />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                className="w-full" 
-                onClick={generateSimulation}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <span className="animate-spin mr-2">○</span> 
-                    Simulating...
-                  </>
-                ) : (
-                  <>
-                    <SparklesIcon className="mr-2 h-4 w-4" /> 
-                    Generate Simulation
-                  </>
-                )}
-              </Button>
-            </CardFooter>
-          </Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Input Form */}
+        <Card className="md:col-span-1">
+          <CardHeader>
+            <CardTitle>Simulate a Career</CardTitle>
+            <CardDescription>
+              Enter a job role to experience what a typical day looks like
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">
+                Job Role*
+              </label>
+              <Input 
+                placeholder="e.g. Product Manager, Game Designer" 
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">
+                Industry (Optional)
+              </label>
+              <Input 
+                placeholder="e.g. Tech, Healthcare, Finance" 
+                value={industry}
+                onChange={(e) => setIndustry(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">
+                Additional Context (Optional)
+              </label>
+              <Textarea 
+                placeholder="Any specific aspects you're curious about?" 
+                value={additionalInfo}
+                onChange={(e) => setAdditionalInfo(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button 
+              className="w-full" 
+              onClick={generateSimulation}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <span className="animate-spin mr-2">○</span> 
+                  Simulating...
+                </>
+              ) : (
+                <>
+                  <SparklesIcon className="mr-2 h-4 w-4" /> 
+                  Generate Simulation
+                </>
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
 
-          {/* Simulation Results */}
-          <div className="md:col-span-2">
-            {simulationResult ? (
-              <Card className="h-full">
-                <CardHeader>
-                  <CardTitle>A Day as a {simulationResult.role}</CardTitle>
-                  <CardDescription>
-                    Here's what a typical day looks like in this role
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Tabs defaultValue="schedule">
-                    <TabsList className="grid grid-cols-4 mb-4">
-                      <TabsTrigger value="schedule">
-                        <ClockIcon className="h-4 w-4 mr-2" /> Daily Schedule
-                      </TabsTrigger>
-                      <TabsTrigger value="tasks">
-                        <ListTodoIcon className="h-4 w-4 mr-2" /> Tasks & Meetings
-                      </TabsTrigger>
-                      <TabsTrigger value="stress">
-                        <AlertTriangleIcon className="h-4 w-4 mr-2" /> Stress Factors
-                      </TabsTrigger>
-                      <TabsTrigger value="kpis">
-                        <TargetIcon className="h-4 w-4 mr-2" /> KPIs & Skills
-                      </TabsTrigger>
-                    </TabsList>
+        {/* Simulation Results */}
+        <div className="md:col-span-2">
+          {simulationResult ? (
+            <Card className="h-full">
+              <CardHeader>
+                <CardTitle>A Day as a {simulationResult.role}</CardTitle>
+                <CardDescription>
+                  Here's what a typical day looks like in this role
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="schedule">
+                  <TabsList className="grid grid-cols-4 mb-4">
+                    <TabsTrigger value="schedule">
+                      <ClockIcon className="h-4 w-4 mr-2" /> Daily Schedule
+                    </TabsTrigger>
+                    <TabsTrigger value="tasks">
+                      <ListTodoIcon className="h-4 w-4 mr-2" /> Tasks & Meetings
+                    </TabsTrigger>
+                    <TabsTrigger value="stress">
+                      <AlertTriangleIcon className="h-4 w-4 mr-2" /> Stress Factors
+                    </TabsTrigger>
+                    <TabsTrigger value="kpis">
+                      <TargetIcon className="h-4 w-4 mr-2" /> KPIs & Skills
+                    </TabsTrigger>
+                  </TabsList>
+                
+                  <TabsContent value="schedule" className="space-y-4">
+                    <div className="border rounded-md p-4">
+                      <div className="flex items-center text-modern-blue-600 mb-2">
+                        <CalendarIcon className="h-5 w-5 mr-2" />
+                        <h3 className="font-medium">Daily Schedule</h3>
+                      </div>
+                      
+                      <div className="space-y-4 mt-4">
+                        <div>
+                          <h4 className="font-medium text-sm">Morning</h4>
+                          <p className="text-gray-600 mt-1">{simulationResult.schedule.morning}</p>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-medium text-sm">Afternoon</h4>
+                          <p className="text-gray-600 mt-1">{simulationResult.schedule.afternoon}</p>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-medium text-sm">Evening</h4>
+                          <p className="text-gray-600 mt-1">{simulationResult.schedule.evening}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border rounded-md p-4">
+                      <div className="flex items-center text-modern-blue-600 mb-2">
+                        <TargetIcon className="h-5 w-5 mr-2" />
+                        <h3 className="font-medium">Key Challenges</h3>
+                      </div>
+                      
+                      <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
+                        {simulationResult.challenges.map((challenge, i) => (
+                          <li key={i}>{challenge}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </TabsContent>
                   
-                    <TabsContent value="schedule" className="space-y-4">
-                      <div className="border rounded-md p-4">
-                        <div className="flex items-center text-modern-blue-600 mb-2">
-                          <CalendarIcon className="h-5 w-5 mr-2" />
-                          <h3 className="font-medium">Daily Schedule</h3>
-                        </div>
-                        
-                        <div className="space-y-4 mt-4">
-                          <div>
-                            <h4 className="font-medium text-sm">Morning</h4>
-                            <p className="text-gray-600 mt-1">{simulationResult.schedule.morning}</p>
-                          </div>
-                          
-                          <div>
-                            <h4 className="font-medium text-sm">Afternoon</h4>
-                            <p className="text-gray-600 mt-1">{simulationResult.schedule.afternoon}</p>
-                          </div>
-                          
-                          <div>
-                            <h4 className="font-medium text-sm">Evening</h4>
-                            <p className="text-gray-600 mt-1">{simulationResult.schedule.evening}</p>
-                          </div>
-                        </div>
+                  <TabsContent value="tasks" className="space-y-4">
+                    <div className="border rounded-md p-4">
+                      <div className="flex items-center text-modern-blue-600 mb-2">
+                        <ListTodoIcon className="h-5 w-5 mr-2" />
+                        <h3 className="font-medium">Common Daily Tasks</h3>
                       </div>
                       
-                      <div className="border rounded-md p-4">
-                        <div className="flex items-center text-modern-blue-600 mb-2">
-                          <TargetIcon className="h-5 w-5 mr-2" />
-                          <h3 className="font-medium">Key Challenges</h3>
-                        </div>
-                        
-                        <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
-                          {simulationResult.challenges.map((challenge, i) => (
-                            <li key={i}>{challenge}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </TabsContent>
+                      <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
+                        {simulationResult.dailyTasks.map((task, i) => (
+                          <li key={i}>{task}</li>
+                        ))}
+                      </ul>
+                    </div>
                     
-                    <TabsContent value="tasks" className="space-y-4">
-                      <div className="border rounded-md p-4">
-                        <div className="flex items-center text-modern-blue-600 mb-2">
-                          <ListTodoIcon className="h-5 w-5 mr-2" />
-                          <h3 className="font-medium">Common Daily Tasks</h3>
-                        </div>
-                        
-                        <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
-                          {simulationResult.dailyTasks.map((task, i) => (
-                            <li key={i}>{task}</li>
-                          ))}
-                        </ul>
+                    <div className="border rounded-md p-4">
+                      <div className="flex items-center text-modern-blue-600 mb-2">
+                        <CalendarIcon className="h-5 w-5 mr-2" />
+                        <h3 className="font-medium">Typical Meetings</h3>
                       </div>
                       
-                      <div className="border rounded-md p-4">
-                        <div className="flex items-center text-modern-blue-600 mb-2">
-                          <CalendarIcon className="h-5 w-5 mr-2" />
-                          <h3 className="font-medium">Typical Meetings</h3>
-                        </div>
-                        
-                        <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
-                          {simulationResult.meetings.map((meeting, i) => (
-                            <li key={i}>{meeting}</li>
+                      <ul className="list-disc list-inside space-y-1 text-sm text-gray-600">
+                        {simulationResult.meetings.map((meeting, i) => (
+                          <li key={i}>{meeting}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="stress" className="space-y-4">
+                    <div className="border rounded-md p-4">
+                      <div className="flex items-center text-modern-blue-600 mb-2">
+                        <BarChart3Icon className="h-5 w-5 mr-2" />
+                        <h3 className="font-medium">Stress Level</h3>
+                      </div>
+                      
+                      <StressLevelIndicator level={simulationResult.stressFactors.level} />
+                      <p className="text-sm text-gray-600 mt-2">{simulationResult.stressFactors.description}</p>
+                      
+                      <div className="mt-4">
+                        <h4 className="font-medium text-sm">Common Stress Triggers</h4>
+                        <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 mt-1">
+                          {simulationResult.stressFactors.triggers.map((trigger, i) => (
+                            <li key={i}>{trigger}</li>
                           ))}
                         </ul>
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="stress" className="space-y-4">
-                      <div className="border rounded-md p-4">
-                        <div className="flex items-center text-modern-blue-600 mb-2">
-                          <BarChart3Icon className="h-5 w-5 mr-2" />
-                          <h3 className="font-medium">Stress Level</h3>
-                        </div>
-                        
-                        <StressLevelIndicator level={simulationResult.stressFactors.level} />
-                        <p className="text-sm text-gray-600 mt-2">{simulationResult.stressFactors.description}</p>
-                        
-                        <div className="mt-4">
-                          <h4 className="font-medium text-sm">Common Stress Triggers</h4>
-                          <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 mt-1">
-                            {simulationResult.stressFactors.triggers.map((trigger, i) => (
-                              <li key={i}>{trigger}</li>
-                            ))}
-                          </ul>
-                        </div>
                       </div>
                     </TabsContent>
                     
@@ -402,7 +400,7 @@ const AIShadowCareerSimulator = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </div>
   );
 };
 
