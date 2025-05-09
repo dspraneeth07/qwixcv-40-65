@@ -1,10 +1,11 @@
 
+import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { UserRole } from "@/types/auth";
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+  children: React.ReactNode | ((props: { user: any }) => React.ReactNode);
   allowedRoles?: UserRole[];
 }
 
@@ -35,6 +36,11 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   }
   
   // If authenticated and authorized, render the protected content
+  // If children is a function, call it with the user
+  if (typeof children === 'function') {
+    return <>{children({ user })}</>;
+  }
+  
   return <>{children}</>;
 };
 

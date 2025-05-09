@@ -6,6 +6,8 @@ import { BlockchainProvider } from "@/context/BlockchainContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/layout/Layout";
 import Dashboard from "@/pages/Dashboard";
+import StudentHome from "@/pages/StudentHome";
+import OrganizationHome from "@/pages/OrganizationHome";
 import Login from "@/pages/Auth/Login";
 import Register from "@/pages/Auth/Register";
 import ForgotPassword from "@/pages/Auth/ForgotPassword";
@@ -60,11 +62,31 @@ function App() {
               <Route path="/verify-document/:documentId" element={<VerifyDocument />} />
               <Route path="/unauthorized" element={<Unauthorized />} />
 
+              {/* Student landing page */}
+              <Route 
+                path="/student-home" 
+                element={
+                  <ProtectedRoute allowedRoles={['student', 'admin']}>
+                    <StudentHome />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Organization landing page */}
+              <Route 
+                path="/organization-home" 
+                element={
+                  <ProtectedRoute allowedRoles={['organization', 'admin']}>
+                    <OrganizationHome />
+                  </ProtectedRoute>
+                } 
+              />
+
               {/* Protected user/student routes */}
               <Route 
                 path="/dashboard" 
                 element={
-                  <ProtectedRoute allowedRoles={['student', 'admin']}>
+                  <ProtectedRoute>
                     <Layout>
                       <Dashboard />
                     </Layout>
@@ -184,14 +206,18 @@ function App() {
                 } 
               />
               
-              {/* Default route - redirect to login or dashboard */}
+              {/* Default route - redirect to appropriate landing page based on role */}
               <Route 
                 path="/" 
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <Dashboard />
-                    </Layout>
+                    {({ user }) => {
+                      if (user?.role === 'organization') {
+                        return <OrganizationHome />;
+                      } else {
+                        return <StudentHome />;
+                      }
+                    }}
                   </ProtectedRoute>
                 } 
               />

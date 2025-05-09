@@ -1,380 +1,216 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { User, UserRole } from '@/types/auth';
+
+import React, { createContext, useState, useContext, useEffect, ReactNode } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { User, UserRole } from "@/types/auth";
+import { useToast } from "@/components/ui/use-toast";
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string, role: UserRole) => Promise<boolean>;
-  register: (userData: any, role: UserRole) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, role: UserRole) => Promise<void>;
   logout: () => void;
-  forgotPassword: (email: string) => Promise<boolean>;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (token: string, password: string) => Promise<void>;
 }
 
+// Create the auth context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
 
-const getCachedUser = (): User | null => {
-  try {
-    const cachedUser = localStorage.getItem('cached_user');
-    if (cachedUser) {
-      return JSON.parse(cachedUser);
-    }
-    
-    const demoUser = localStorage.getItem('demo_user');
-    if (demoUser) {
-      return JSON.parse(demoUser);
-    }
-    
-    return null;
-  } catch (e) {
-    console.error('Error retrieving cached user:', e);
-    return null;
-  }
-};
+interface AuthProviderProps {
+  children: ReactNode;
+}
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(getCachedUser());
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
+  // Check if user is already logged in
   useEffect(() => {
-    const cachedUser = getCachedUser();
-    if (cachedUser) {
-      setUser(cachedUser);
+    const checkAuth = () => {
+      const storedUser = localStorage.getItem("qwixUserData");
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          setUser(userData);
+        } catch (error) {
+          console.error("Failed to parse user data:", error);
+          localStorage.removeItem("qwixUserData");
+        }
+      }
       setIsLoading(false);
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          try {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .maybeSingle();
-
-            if (profile) {
-              const userData = {
-                id: session.user.id,
-                email: session.user.email!,
-                name: profile.full_name,
-                role: profile.role as UserRole,
-                profilePicture: profile.profile_picture,
-              };
-              
-              setUser(userData);
-              
-              localStorage.setItem('cached_user', JSON.stringify(userData));
-            }
-          } catch (error) {
-            console.error('Error fetching user profile:', error);
-          }
-        } else {
-          setUser(null);
-          localStorage.removeItem('cached_user');
-          localStorage.removeItem('demo_user');
-        }
-        setIsLoading(false);
-      }
-    );
-
-    const initializeAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          setIsLoading(false);
-          return;
-        }
-        
-        // Intentionally not setting user here to avoid double-setting
-        // The onAuthStateChange listener will handle it
-      } catch (error) {
-        console.error('Error checking session:', error);
-      } finally {
-        setIsLoading(false);
-      }
     };
 
-    const timeoutId = setTimeout(() => {
-      if (isLoading) {
-        console.warn('Auth initialization timeout, using fallback');
-        setIsLoading(false);
-      }
-    }, 3000);
-
-    initializeAuth();
-
-    return () => {
-      clearTimeout(timeoutId);
-      subscription.unsubscribe();
-    };
+    checkAuth();
   }, []);
 
-  const login = async (email: string, password: string, role: UserRole): Promise<boolean> => {
-    setIsLoading(true);
-    
-    // Default organization login for demo purposes
-    if (role === 'organization' && email === 'spreddydhadi@gmail.com' && password === '1234567890') {
-      const orgUser = {
-        id: `org-demo-${Date.now()}`,
-        email: email,
-        name: 'QwiX Organization',
-        role: 'organization' as UserRole,
-        profilePicture: null
-      };
-      
-      setUser(orgUser);
-      localStorage.setItem('demo_user', JSON.stringify(orgUser));
-      
-      toast({
-        title: "Organization Login",
-        description: "Successfully logged in to organization account",
-      });
-      
-      navigate('/organization/dashboard');
-      setIsLoading(false);
-      return true;
-    }
-    
-    const timeoutId = setTimeout(() => {
-      setIsLoading(false);
-      
-      const demoUser = {
-        id: `demo-${Date.now()}`,
-        email,
-        name: email.split('@')[0],
-        role,
-        profilePicture: null
-      };
-      
-      setUser(demoUser);
-      localStorage.setItem('demo_user', JSON.stringify(demoUser));
-      
-      toast({
-        title: "Fast Login Mode",
-        description: "Logged in using prototype mode for faster demo",
-      });
-      
-      // Different navigation based on user role
-      if (role === 'organization') {
-        navigate('/organization/dashboard');
-      } else {
-        navigate('/dashboard');
-      }
-      return true;
-    }, 5000);
-    
+  // Login function
+  const login = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (error) {
-        setIsLoading(false);
-        toast({
-          title: "Login failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      if (!data.user) {
-        setIsLoading(false);
-        toast({
-          title: "Login failed",
-          description: "User not found",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role, full_name')
-        .eq('id', data.user.id)
-        .maybeSingle();
-
-      if (profileError) {
-        setIsLoading(false);
-        toast({
-          title: "Login failed",
-          description: "Error fetching profile: " + profileError.message,
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      if (!profile) {
-        await supabase.auth.signOut();
-        setIsLoading(false);
-        toast({
-          title: "Access Denied",
-          description: "User profile not found",
-          variant: "destructive",
-        });
-        return false;
+      setIsLoading(true);
+      
+      // This is a mock login - in a real app this would be an API call
+      // For demo purposes, we create different users based on the email domain
+      let role: UserRole = "student";
+      if (email.endsWith("@org.com") || email.includes("organization") || email.includes("employer")) {
+        role = "organization";
+      } else if (email.endsWith("@admin.com") || email.includes("admin")) {
+        role = "admin";
       }
       
-      if (profile.role !== role) {
-        await supabase.auth.signOut();
-        setIsLoading(false);
-        toast({
-          title: "Access Denied",
-          description: "Invalid role for this login type",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      const userData = {
-        id: data.user.id,
-        email: data.user.email!,
-        name: profile.full_name,
-        role: profile.role as UserRole,
+      const userData: User = {
+        id: `user_${Date.now()}`,
+        name: email.split("@")[0],
+        email,
+        role,
         profilePicture: null,
+        createdAt: new Date().toISOString(),
       };
       
+      // Save to local storage
+      localStorage.setItem("qwixUserData", JSON.stringify(userData));
       setUser(userData);
       
-      localStorage.setItem('cached_user', JSON.stringify(userData));
-
+      // Show success message
       toast({
-        title: "Login successful",
-        description: "Welcome back!",
+        title: "Login successful!",
+        description: "Welcome back to QwiX CV",
       });
       
-      // Different navigation based on user role
-      if (userData.role === 'organization') {
-        navigate('/organization/dashboard');
-      } else {
-        navigate('/dashboard');
-      }
-      return true;
-    } catch (error: any) {
-      clearTimeout(timeoutId);
-      console.error('Login error:', error);
+      // Redirect based on role
+      const from = location.state?.from?.pathname || 
+                  (role === "organization" ? "/organization-home" : "/student-home");
+      navigate(from, { replace: true });
+    } catch (error) {
+      console.error("Login failed:", error);
       toast({
         title: "Login failed",
-        description: error.message || "An error occurred during login",
+        description: "Invalid email or password",
         variant: "destructive",
       });
-      return false;
     } finally {
-      clearTimeout(timeoutId);
       setIsLoading(false);
     }
   };
 
-  const register = async (userData: any, role: UserRole): Promise<boolean> => {
-    setIsLoading(true);
-    
+  // Register function
+  const register = async (name: string, email: string, password: string, role: UserRole) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: userData.email,
-        password: userData.password,
-        options: {
-          data: {
-            full_name: userData.fullName,
-            role: role,
-          },
-        },
+      setIsLoading(true);
+      
+      // This is a mock registration - in a real app this would be an API call
+      const userData: User = {
+        id: `user_${Date.now()}`,
+        name,
+        email,
+        role,
+        profilePicture: null,
+        createdAt: new Date().toISOString(),
+      };
+      
+      // Save to local storage
+      localStorage.setItem("qwixUserData", JSON.stringify(userData));
+      setUser(userData);
+      
+      // Show success message
+      toast({
+        title: "Registration successful!",
+        description: "Welcome to QwiX CV",
       });
-
-      if (error) throw error;
-
-      if (data.user) {
-        toast({
-          title: "Registration successful",
-          description: "Please check your email to verify your account",
-        });
-        return true;
-      }
-      return false;
-    } catch (error: any) {
-      console.error('Registration error:', error);
+      
+      // Redirect based on role
+      const from = location.state?.from?.pathname || 
+                  (role === "organization" ? "/organization-home" : "/student-home");
+      navigate(from, { replace: true });
+    } catch (error) {
+      console.error("Registration failed:", error);
       toast({
         title: "Registration failed",
-        description: error.message || "An error occurred during registration",
+        description: "Could not create your account",
         variant: "destructive",
       });
-      return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('Logout error:', error);
+  // Logout function
+  const logout = () => {
+    localStorage.removeItem("qwixUserData");
+    setUser(null);
+    
+    // Show success message
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out",
+    });
+    
+    // Redirect to login page
+    navigate("/login", { replace: true });
+  };
+
+  // Forgot password
+  const forgotPassword = async (email: string) => {
+    try {
+      // This is a mock function - in a real app this would be an API call
       toast({
-        title: "Logout failed",
-        description: error.message,
-        variant: "destructive",
+        title: "Password reset email sent",
+        description: `Instructions have been sent to ${email}`,
       });
-    } else {
-      setUser(null);
-      navigate('/login');
+    } catch (error) {
+      console.error("Forgot password failed:", error);
       toast({
-        title: "Logged out",
-        description: "You have been successfully logged out",
+        title: "Failed to send reset email",
+        description: "Please try again later",
+        variant: "destructive",
       });
     }
   };
 
-  const forgotPassword = async (email: string): Promise<boolean> => {
+  // Reset password
+  const resetPassword = async (token: string, password: string) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
-      
-      if (error) throw error;
-      
+      // This is a mock function - in a real app this would be an API call
       toast({
-        title: "Password reset email sent",
-        description: "Please check your email for password reset instructions",
+        title: "Password reset successful",
+        description: "You can now login with your new password",
       });
-      return true;
-    } catch (error: any) {
-      console.error('Password reset error:', error);
+      navigate("/login");
+    } catch (error) {
+      console.error("Reset password failed:", error);
       toast({
         title: "Password reset failed",
-        description: error.message || "Failed to send password reset email",
+        description: "Invalid or expired token",
         variant: "destructive",
       });
-      return false;
     }
+  };
+
+  const value = {
+    user,
+    isAuthenticated: !!user,
+    isLoading,
+    login,
+    register,
+    logout,
+    forgotPassword,
+    resetPassword,
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAuthenticated: !!user,
-      isLoading,
-      login,
-      register,
-      logout,
-      forgotPassword
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
