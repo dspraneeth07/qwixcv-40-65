@@ -14,7 +14,7 @@ import {
   FileCheck, Award, BookOpen, Cpu, User, Globe, Code,
   Briefcase, Brain, FileArchive, Monitor, Rocket
 } from "lucide-react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
@@ -61,13 +61,13 @@ const Index = () => {
             )}
             <Button asChild variant="default" size="sm" className="bg-indigo-600 hover:bg-indigo-700 ml-4">
               {isAuthenticated ? (
-                <RouterLink to="/dashboard">
+                <Link to="/dashboard">
                   Go to Dashboard <ArrowRight className="ml-1 h-4 w-4" />
-                </RouterLink>
+                </Link>
               ) : (
-                <RouterLink to="/login">
+                <Link to="/login">
                   <LogIn className="mr-1 h-4 w-4" /> Log In
-                </RouterLink>
+                </Link>
               )}
             </Button>
           </p>
@@ -150,9 +150,9 @@ const Index = () => {
                 
                 <div className="mt-8">
                   <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
-                    <RouterLink to="/blockchain-vault">
+                    <Link to="/blockchain-vault">
                       Access Your Vault <ArrowRight className="ml-2 h-4 w-4" />
-                    </RouterLink>
+                    </Link>
                   </Button>
                 </div>
               </div>
@@ -241,9 +241,9 @@ const Index = () => {
                   <p className="text-gray-600 mb-4">
                     Create stunning, ATS-friendly resumes with real-time optimization tips and templates for every career stage.
                   </p>
-                  <RouterLink to="/builder" className="inline-flex items-center text-blue-600 font-medium hover:underline">
+                  <Link to="/builder" className="inline-flex items-center text-blue-600 font-medium hover:underline">
                     Build Your Resume <ArrowRight className="ml-1 h-4 w-4" />
-                  </RouterLink>
+                  </Link>
                 </CardContent>
               </Card>
             </motion.div>
@@ -262,9 +262,9 @@ const Index = () => {
                   <p className="text-gray-600 mb-4">
                     Analyze your resume like a recruiter does. Understand what bots see and fix what's missing with AI guidance.
                   </p>
-                  <RouterLink to="/ats-scanner" className="inline-flex items-center text-purple-600 font-medium hover:underline">
+                  <Link to="/ats-scanner" className="inline-flex items-center text-purple-600 font-medium hover:underline">
                     Run ATS Scan <ArrowRight className="ml-1 h-4 w-4" />
-                  </RouterLink>
+                  </Link>
                 </CardContent>
               </Card>
             </motion.div>
@@ -283,9 +283,9 @@ const Index = () => {
                   <p className="text-gray-600 mb-4">
                     Transform your LinkedIn into a professional magnet with profile scoring, keyword optimization, and visual suggestions.
                   </p>
-                  <RouterLink to="/linkedin-optimizer" className="inline-flex items-center text-sky-600 font-medium hover:underline">
+                  <Link to="/linkedin-optimizer" className="inline-flex items-center text-sky-600 font-medium hover:underline">
                     Optimize Profile <ArrowRight className="ml-1 h-4 w-4" />
-                  </RouterLink>
+                  </Link>
                 </CardContent>
               </Card>
             </motion.div>
@@ -304,9 +304,9 @@ const Index = () => {
                   <p className="text-gray-600 mb-4">
                     Upload multiple resumes to instantly compare structure, impact, and keyword relevance with detailed analytics.
                   </p>
-                  <RouterLink to="/resume-compare" className="inline-flex items-center text-amber-600 font-medium hover:underline">
+                  <Link to="/resume-compare" className="inline-flex items-center text-amber-600 font-medium hover:underline">
                     Compare Resumes <ArrowRight className="ml-1 h-4 w-4" />
-                  </RouterLink>
+                  </Link>
                 </CardContent>
               </Card>
             </motion.div>
@@ -325,9 +325,9 @@ const Index = () => {
                   <p className="text-gray-600 mb-4">
                     Earn blockchain-verified micro-certifications for in-demand skills with AI-curated learning recommendations.
                   </p>
-                  <RouterLink to="/certification-center" className="inline-flex items-center text-green-600 font-medium hover:underline">
+                  <Link to="/certification-center" className="inline-flex items-center text-green-600 font-medium hover:underline">
                     Explore Certifications <ArrowRight className="ml-1 h-4 w-4" />
-                  </RouterLink>
+                  </Link>
                 </CardContent>
               </Card>
             </motion.div>
@@ -346,9 +346,9 @@ const Index = () => {
                   <p className="text-gray-600 mb-4">
                     Find curated job opportunities with smart filters and AI matching based on your resume and professional profile.
                   </p>
-                  <RouterLink to="/job-board" className="inline-flex items-center text-pink-600 font-medium hover:underline">
+                  <Link to="/job-board" className="inline-flex items-center text-pink-600 font-medium hover:underline">
                     Browse Jobs <ArrowRight className="ml-1 h-4 w-4" />
-                  </RouterLink>
+                  </Link>
                 </CardContent>
               </Card>
             </motion.div>
@@ -367,9 +367,9 @@ const Index = () => {
                   <p className="text-gray-600 mb-4">
                     Access AI-personalized growth roadmaps for hundreds of roles with detailed learning paths and milestones.
                   </p>
-                  <RouterLink to="/career-paths" className="inline-flex items-center text-indigo-600 font-medium hover:underline">
+                  <Link to="/career-paths" className="inline-flex items-center text-indigo-600 font-medium hover:underline">
                     Explore Career Paths <ArrowRight className="ml-1 h-4 w-4" />
-                  </RouterLink>
+                  </Link>
                 </CardContent>
               </Card>
             </motion.div>
@@ -388,9 +388,9 @@ const Index = () => {
                   <p className="text-gray-600 mb-4">
                     Explore multiple career routes based on your skills and interests with visual simulations of potential paths.
                   </p>
-                  <RouterLink to="/career-path-simulator" className="inline-flex items-center text-teal-600 font-medium hover:underline">
+                  <Link to="/career-path-simulator" className="inline-flex items-center text-teal-600 font-medium hover:underline">
                     Try Simulator <ArrowRight className="ml-1 h-4 w-4" />
-                  </RouterLink>
+                  </Link>
                 </CardContent>
               </Card>
             </motion.div>
@@ -409,9 +409,9 @@ const Index = () => {
                   <p className="text-gray-600 mb-4">
                     Practice with AI mock interviews featuring instant feedback, response suggestions, and confidence building exercises.
                   </p>
-                  <RouterLink to="/interview-coach" className="inline-flex items-center text-cyan-600 font-medium hover:underline">
+                  <Link to="/interview-coach" className="inline-flex items-center text-cyan-600 font-medium hover:underline">
                     Start Mock Interview <ArrowRight className="ml-1 h-4 w-4" />
-                  </RouterLink>
+                  </Link>
                 </CardContent>
               </Card>
             </motion.div>
@@ -430,9 +430,9 @@ const Index = () => {
                   <p className="text-gray-600 mb-4">
                     Calculate career switch feasibility, identify learning gaps, and plan your ideal transition path with AI guidance.
                   </p>
-                  <RouterLink to="/job-switch-planner" className="inline-flex items-center text-violet-600 font-medium hover:underline">
+                  <Link to="/job-switch-planner" className="inline-flex items-center text-violet-600 font-medium hover:underline">
                     Plan Career Switch <ArrowRight className="ml-1 h-4 w-4" />
-                  </RouterLink>
+                  </Link>
                 </CardContent>
               </Card>
             </motion.div>
@@ -451,9 +451,9 @@ const Index = () => {
                   <p className="text-gray-600 mb-4">
                     Experience what it's like to "shadow" another career through realistic AI-generated workplace scenarios.
                   </p>
-                  <RouterLink to="/shadow-career-simulator" className="inline-flex items-center text-red-600 font-medium hover:underline">
+                  <Link to="/shadow-career-simulator" className="inline-flex items-center text-red-600 font-medium hover:underline">
                     Launch Simulator <ArrowRight className="ml-1 h-4 w-4" />
-                  </RouterLink>
+                  </Link>
                 </CardContent>
               </Card>
             </motion.div>
@@ -472,9 +472,9 @@ const Index = () => {
                   <p className="text-gray-600 mb-4">
                     Assess job stability, create backup plans, and prepare comprehensive career defense strategies for uncertain times.
                   </p>
-                  <RouterLink to="/layoff-readiness" className="inline-flex items-center text-orange-600 font-medium hover:underline">
+                  <Link to="/layoff-readiness" className="inline-flex items-center text-orange-600 font-medium hover:underline">
                     Launch Toolkit <ArrowRight className="ml-1 h-4 w-4" />
-                  </RouterLink>
+                  </Link>
                 </CardContent>
               </Card>
             </motion.div>
@@ -493,9 +493,9 @@ const Index = () => {
                   <p className="text-gray-600 mb-4">
                     Get real-time code mentoring with smart suggestions, time complexity analysis, and technical interview preparation.
                   </p>
-                  <RouterLink to="/coding-coach" className="inline-flex items-center text-emerald-600 font-medium hover:underline">
+                  <Link to="/coding-coach" className="inline-flex items-center text-emerald-600 font-medium hover:underline">
                     Meet Your Coach <ArrowRight className="ml-1 h-4 w-4" />
-                  </RouterLink>
+                  </Link>
                 </CardContent>
               </Card>
             </motion.div>
@@ -514,9 +514,9 @@ const Index = () => {
                   <p className="text-gray-600 mb-4">
                     Build an advanced professional portfolio to showcase projects, blogs, media, and GitHub repositories in one dynamic page.
                   </p>
-                  <RouterLink to="/portfolio-builder" className="inline-flex items-center text-blue-600 font-medium hover:underline">
+                  <Link to="/portfolio-builder" className="inline-flex items-center text-blue-600 font-medium hover:underline">
                     Build Portfolio <ArrowRight className="ml-1 h-4 w-4" />
-                  </RouterLink>
+                  </Link>
                 </CardContent>
               </Card>
             </motion.div>
@@ -535,9 +535,9 @@ const Index = () => {
                   <p className="text-gray-600 mb-4">
                     Upload your resume to identify missing skills and get personalized learning tracks to stay competitive in your field.
                   </p>
-                  <RouterLink to="/skill-gap" className="inline-flex items-center text-purple-600 font-medium hover:underline">
+                  <Link to="/skill-gap" className="inline-flex items-center text-purple-600 font-medium hover:underline">
                     Analyze Skills <ArrowRight className="ml-1 h-4 w-4" />
-                  </RouterLink>
+                  </Link>
                 </CardContent>
               </Card>
             </motion.div>
@@ -556,9 +556,9 @@ const Index = () => {
                   <p className="text-gray-600 mb-4">
                     Take an AI-driven psychological profile test to match your cognitive style, interests, and values with ideal career roles.
                   </p>
-                  <RouterLink to="/mindprint" className="inline-flex items-center text-rose-600 font-medium hover:underline">
+                  <Link to="/mindprint" className="inline-flex items-center text-rose-600 font-medium hover:underline">
                     Take Assessment <ArrowRight className="ml-1 h-4 w-4" />
-                  </RouterLink>
+                  </Link>
                 </CardContent>
               </Card>
             </motion.div>
