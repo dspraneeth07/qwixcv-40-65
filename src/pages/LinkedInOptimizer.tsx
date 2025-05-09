@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,6 +18,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import MainLayout from "@/components/layout/MainLayout";
 
 // Function to analyze LinkedIn profile
 const analyzeLinkedInProfile = async (url: string) => {
@@ -136,7 +136,7 @@ const LinkedInOptimizer = () => {
   };
 
   return (
-    <Layout>
+    <MainLayout>
       <div className="container py-10">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8 text-center">
@@ -237,7 +237,7 @@ const LinkedInOptimizer = () => {
               )}
             </CardContent>
           </Card>
-          
+        
           {analysisComplete && analysisResults && (
             <Tabs defaultValue="headline" className="mt-8">
               <TabsList className="grid grid-cols-4 mb-8">
@@ -425,20 +425,17 @@ const LinkedInOptimizer = () => {
                     
                     <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
                       <h4 className="text-sm font-medium text-blue-800 mb-2">Keyword Placement Tips</h4>
-                      <ul className="space-y-2 text-sm text-blue-700">
-                        <li className="flex items-start">
-                          <CheckCircle2 className="h-4 w-4 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
-                          <span>Include important keywords in your headline, summary, and job titles</span>
-                        </li>
-                        <li className="flex items-start">
-                          <CheckCircle2 className="h-4 w-4 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
-                          <span>Use variations of key terms (e.g., "UI/UX Design" and "User Interface Design")</span>
-                        </li>
-                        <li className="flex items-start">
-                          <CheckCircle2 className="h-4 w-4 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
-                          <span>Add relevant skills to the Skills section and get endorsements for them</span>
-                        </li>
-                      </ul>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          "Achieved", "Implemented", "Developed", "Led", "Managed", 
+                          "Increased", "Decreased", "Improved", "Created", "Launched",
+                          "Redesigned", "Streamlined", "Secured", "Negotiated", "Mentored"
+                        ].map((verb, idx) => (
+                          <Badge key={idx} variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200">
+                            {verb}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -510,7 +507,7 @@ const LinkedInOptimizer = () => {
           )}
         </div>
       </div>
-    </Layout>
+    </MainLayout>
   );
 };
 
