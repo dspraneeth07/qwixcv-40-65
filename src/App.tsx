@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
@@ -39,6 +40,8 @@ import AILayoffReadinessToolkit from "./pages/AILayoffReadinessToolkit";
 import MindprintAssessment from "./pages/MindprintAssessment";
 import AICodingCoach from "./pages/AICodingCoach";
 import ResumeCompare from "./pages/ResumeCompare";
+import QwiXProBuilder from "./pages/QwiXProBuilder";
+import AuthLayout from "./pages/Auth/AuthLayout";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -66,21 +69,25 @@ function App() {
         <AuthProvider>
           <BlockchainProvider>
             <Routes>
-              {/* Public routes */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/verify-cert/:certHash" element={<VerifyCertificate />} />
-              <Route path="/verify-document/:documentId" element={<VerifyDocument />} />
-              <Route path="/unauthorized" element={<Unauthorized />} />
+              {/* Auth routes with special layout */}
+              <Route path="/login" element={<AuthLayout><Login /></AuthLayout>} />
+              <Route path="/register" element={<AuthLayout><Register /></AuthLayout>} />
+              <Route path="/forgot-password" element={<AuthLayout><ForgotPassword /></AuthLayout>} />
+              <Route path="/reset-password" element={<AuthLayout><ResetPassword /></AuthLayout>} />
+              
+              {/* Public verification routes */}
+              <Route path="/verify-cert/:certHash" element={<Layout><VerifyCertificate /></Layout>} />
+              <Route path="/verify-document/:documentId" element={<Layout><VerifyDocument /></Layout>} />
+              <Route path="/unauthorized" element={<Layout><Unauthorized /></Layout>} />
 
               {/* Student landing page */}
               <Route 
                 path="/student-home" 
                 element={
                   <ProtectedRoute allowedRoles={['student', 'admin']}>
-                    <StudentHome />
+                    <Layout>
+                      <StudentHome />
+                    </Layout>
                   </ProtectedRoute>
                 } 
               />
@@ -90,7 +97,9 @@ function App() {
                 path="/organization-home" 
                 element={
                   <ProtectedRoute allowedRoles={['organization', 'admin']}>
-                    <OrganizationHome />
+                    <Layout>
+                      <OrganizationHome />
+                    </Layout>
                   </ProtectedRoute>
                 } 
               />
@@ -241,6 +250,17 @@ function App() {
                   </ProtectedRoute>
                 } 
               />
+
+              <Route 
+                path="/qwixpro-builder" 
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <QwiXProBuilder />
+                    </Layout>
+                  </ProtectedRoute>
+                } 
+              />
               
               <Route 
                 path="/job-board" 
@@ -370,13 +390,11 @@ function App() {
                 path="/" 
                 element={
                   <ProtectedRoute>
-                    {({ user }) => {
-                      if (user?.role === 'organization') {
-                        return <OrganizationHome />;
-                      } else {
-                        return <StudentHome />;
-                      }
-                    }}
+                    {({ user }) => (
+                      <Layout>
+                        {user?.role === 'organization' ? <OrganizationHome /> : <StudentHome />}
+                      </Layout>
+                    )}
                   </ProtectedRoute>
                 } 
               />

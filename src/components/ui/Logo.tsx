@@ -35,7 +35,7 @@ const Logo = ({ variant = 'default', size = 'md' }: LogoProps) => {
           ? 'text-white'
           : 'bg-clip-text text-transparent bg-gradient-to-r from-modern-blue-600 to-soft-purple'
       }`}>
-        QwiXEd360°
+        QwiXEd360°Suite
       </span>
     </Link>
   );

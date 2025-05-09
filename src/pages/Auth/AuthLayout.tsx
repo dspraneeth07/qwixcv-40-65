@@ -51,7 +51,7 @@ const AuthLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <Link to="/" className="flex items-center text-center gap-2 text-2xl font-bold">
             <GraduationCap className="h-8 w-8 text-primary" />
             <span className="font-sf-pro text-3xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-modern-blue-600 to-soft-purple">
-              QwiXEd360°
+              QwiXEd360°Suite
             </span>
           </Link>
         </div>
@@ -69,7 +69,7 @@ const AuthLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <ThemeToggle />
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            © {new Date().getFullYear()} QwiXEd360° by QwikZen. All rights reserved.
+            © {new Date().getFullYear()} QwiXEd360°Suite by QwikZen. All rights reserved.
           </p>
         </div>
       </footer>
