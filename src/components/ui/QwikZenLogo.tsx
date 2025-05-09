@@ -1,4 +1,5 @@
 
+import { GraduationCap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface QwikZenLogoProps {
@@ -8,11 +9,11 @@ interface QwikZenLogoProps {
 }
 
 const QwikZenLogo = ({ size = 'md', showText = true, variant = 'default' }: QwikZenLogoProps) => {
-  const getLogoSize = () => {
+  const getIconSize = () => {
     switch(size) {
-      case 'sm': return 'h-6 w-6';
-      case 'lg': return 'h-10 w-10';
-      default: return 'h-8 w-8';
+      case 'sm': return 'h-5 w-5';
+      case 'lg': return 'h-8 w-8';
+      default: return 'h-6 w-6';
     }
   };
 
@@ -28,22 +29,31 @@ const QwikZenLogo = ({ size = 'md', showText = true, variant = 'default' }: Qwik
     ? 'text-white' 
     : 'bg-gradient-to-r from-modern-blue-500 to-soft-purple bg-clip-text text-transparent';
 
+  const bgColor = variant === 'white'
+    ? 'bg-transparent' 
+    : 'bg-modern-blue-600';
+
   return (
     <Link to="/" className="flex items-center">
-      <div className="flex items-center">
-        <img 
-          src="/lovable-uploads/f5d06c81-a24b-4c51-8bf0-c6fd139438e3.png" 
-          alt="Founder Image" 
-          className={`${getLogoSize()} mr-2 rounded-full border-2 ${variant === 'white' ? 'border-white' : 'border-modern-blue-200'}`}
-        />
+      <div className="flex items-center gap-2">
         <img 
           src="/lovable-uploads/3265058c-5d87-416e-8812-a23917ab06ab.png" 
           alt="QwikZen Logo" 
-          className={`${getLogoSize()} mr-2`}
+          className={`${getIconSize()}`}
         />
+        
         {showText && (
-          <div className={`${getTextSize()} font-bold ${textColor} font-sf-pro`}>
-            QwikZen
+          <div className="flex items-center gap-1.5">
+            <div className={`${getTextSize()} font-bold ${textColor} font-sf-pro`}>
+              QwikZen
+            </div>
+            
+            <div className={`flex items-center ${variant === 'white' ? '' : 'pl-1 border-l border-gray-300'}`}>
+              <GraduationCap className={`${getIconSize()} ml-1.5 ${variant === 'white' ? 'text-white' : 'text-modern-blue-600'}`} />
+              <span className={`${getTextSize()} font-bold ${textColor} font-sf-pro ml-1`}>
+                QwiXEd360°Suite
+              </span>
+            </div>
           </div>
         )}
       </div>

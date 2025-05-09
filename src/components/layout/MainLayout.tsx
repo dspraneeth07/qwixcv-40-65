@@ -1,3 +1,4 @@
+
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { 
@@ -77,7 +78,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-gradient-to-r from-modern-blue-600 to-soft-purple text-white">
-        <div className="container flex h-16 items-center">
+        <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center">
             <QwikZenLogo variant="white" size="md" showText={true} />
           </div>
